@@ -48,6 +48,7 @@ trophic_tbl <- as.data.frame(read.csv(paste0(inpath_general, "trophic_tbl.csv"),
 ########################################################################################
 ###Settings
 ########################################################################################
+set <- c("frst", "nofrst", "allplts")
 #######################
 ###LiDAR Settings
 #######################
@@ -125,7 +126,7 @@ mrg_tbl$elevsq <- mrg_tbl$elevation^2
 nm_meta <- c("plotID", "cat", "selID")
 nm_resp_SR <- c(colnames(mrg_tbl)[c(which(colnames(mrg_tbl) == "SRmammals") : 
                                      which(colnames(mrg_tbl) == "SRmagnoliids"))])
-nm_pred <- c(colnames(mrg_tbl)[c(which(colnames(mrg_tbl) %in% "AGB"),
+nm_pred_pot <- c(colnames(mrg_tbl)[c(which(colnames(mrg_tbl) %in% "AGB"),
                               which(colnames(mrg_tbl) %in% "BE_FHD") : 
                                 which(colnames(mrg_tbl) %in% "LAI"),
                               which(colnames(mrg_tbl) %in% "chm_surface_ratio"),
@@ -140,7 +141,7 @@ nm_pred <- c(colnames(mrg_tbl)[c(which(colnames(mrg_tbl) %in% "AGB"),
                               which(colnames(mrg_tbl) %in% "qntl_rng"),
                               which(colnames(mrg_tbl) %in% "elevation"), 
                               which(colnames(tbl) %in% "elevsq"))])
-mrg_tbl <- mrg_tbl[which(colnames(mrg_tbl) %in% c(nm_meta, nm_resp_SR, nm_pred))]
+mrg_tbl <- mrg_tbl[which(colnames(mrg_tbl) %in% c(nm_meta, nm_resp_SR, nm_pred_pot))]
 #######################
 ###write out outs_lst and cvouts_lst for cross validation - 
 ###an Tabelle wird drangeschrieben, wann diese vorhergesagt werden, 
@@ -255,21 +256,67 @@ nm_resp_troph <- colnames(troph_sum)[-which(colnames(troph_sum) == "plotID")]
 #######################
 ###stuff done for each set (frst/nofrst/allplts)
 #######################
-#####
-###subset table
-#####
-#####
-###filter predictors  (min 50% different values)
-#####
-#####
-###choose if elevation and alevation square are in or out
-#####
-#####
-###scale predictors
-#####
-#append nm_pred with nm_pred_scl
-########################################################################################
-###initiate list
-########################################################################################
+for (o in set){
+  if (o != "allplts"){
+    if (o == "frst"){
+      cat <- c("fer", "flm", "foc", "fod", "fpd", "fpo", "hom")
+    }else if (o == "nofrst"){
+      cat <- c("cof", "gra", "hel", "mai", "sav")
+    }}else{
+      cat <- unique(mrg_tbl_troph$cat)
+    }
+  #####
+  ###subset table
+  #####
+  tbl_set <- mrg_tbl_troph[which(mrg_tbl_troph$cat %in% cat),]
+  #####
+  ###filter predictors  (min 50% different values)
+  #####
+  nm_pred <- nm_pred_pot
+  for (i in nm_pred_pot){
+    frq <- table(tbl_set[i])
+    if (max(frq) > floor(nrow(tbl_set) * 0.5)){
+      nm_pred <- nm_pred[!(nm_pred == i)]
+    }
+  }
+  tbl_set <- tbl_set[,which(colnames(tbl_set) %in% c(nm_meta, nm_resp_SR, nm_resp_troph, nm_pred))]
+  #####
+  ###scale predictors
+  #####
+  scl_lst <- lapply(colnames(tbl_set), function(m){
+    if(m %in% nm_pred){
+      if (class(tbl_set[,m]) == "numeric"){
+        scale(tbl_set[,m], center = T, scale = T)
+      }else if (class(tbl_set[,m]) == "integer"){
+        scale(as.numeric(tbl_set[,m]), center = T, scale = T)
+      }else{
+        tbl_set[,m] <- tbl_set[,m] #non numeric or integer columns stay as they are
+      }
+    }else{
+      tbl_set[,m] <- tbl_set[,m] #non numeric or integer columns stay as they are}
+    }})#lapply m
+  tbl_scl <- do.call(data.frame, scl_lst)
+  colnames(tbl_scl) <- colnames(tbl_set)
+  tbl_scl <- tbl_scl[,c(which(colnames(tbl_scl) == "plotID"), 
+                       which(colnames(tbl_scl) %in% nm_pred))]
+  colnames(tbl_scl)[which(colnames(tbl_scl) %in% nm_pred)] <- 
+    paste0("scl_", colnames(tbl_scl)[which(colnames(tbl_scl) %in% nm_pred)])
+  #append nm_pred with nm_pred_scl
+  nm_pred_scl <- colnames(tbl_scl)[-which(colnames(tbl_scl) == "plotID")]
+  #merge tbl_set and tbl_scl
+  tbl_mrg_set <- merge(tbl_set, tbl_scl, by = "plotID")
+  ########################################################################################
+  ###initiate an write list
+  ########################################################################################
+  master_lst <- list(meta = tbl_mrg_set[,which(colnames(tbl_mrg_set) %in% c(nm_meta, nm_pred, nm_pred_scl))], 
+                      resp = lapply(c(nm_resp_SR, nm_resp_troph), function(i){
+                        print(i)
+                        tbl <- tbl_mrg_set[,c(which(colnames(tbl_mrg_set) == "plotID"), 
+                                                   which(grepl(i, colnames(tbl_mrg_set))))]
+                      }))
+  names(master_lst)[[2]]
+  saveRDS(master_lst, file = paste0(outpath, "master_lst_", o, ".rds"))
+}#for o in set
+
 
 

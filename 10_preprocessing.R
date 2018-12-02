@@ -44,6 +44,7 @@ login_file <- paste0(inpath_general, ".remote_sensing_userpwd.txt")
 tec_crdnt <- read.csv(paste0(inpath_general,"tec_crdnt.csv"), header=T, sep=",")
 field_dat <- as.data.frame(read.table(file = paste0(inpath_general, "Biodiversity_Data_Marcel.csv"), 
                                     sep = ";", header = T, na.strings = "NA", dec = ","))
+trophic_tbl <- as.data.frame(read.csv(paste0(inpath_general, "trophic_tbl.csv"), sep = ";"))
 ########################################################################################
 ###Settings
 ########################################################################################
@@ -116,13 +117,15 @@ field_dat <- field_dat[!(apply(field_dat[,c(which(colnames(field_dat) == "SRmamm
 mrg_tbl <- merge(field_dat, ldr_mrg, by = "plotID")
 #create column selID
 mrg_tbl$selID <- as.numeric(substr(mrg_tbl$plotID, 4, 4))
+#create column elevation squared
+mrg_tbl$elevsq <- mrg_tbl$elevation^2
 #####
 ###decide which columns go to meta, resp and potential pred
 #####
-meta <- c("plotID", "cat", "selID")
-resp_SR <- c(colnames(mrg_tbl)[c(which(colnames(mrg_tbl) == "SRmammals") : 
+nm_meta <- c("plotID", "cat", "selID")
+nm_resp_SR <- c(colnames(mrg_tbl)[c(which(colnames(mrg_tbl) == "SRmammals") : 
                                      which(colnames(mrg_tbl) == "SRmagnoliids"))])
-pred <- c(colnames(mrg_tbl)[c(which(colnames(mrg_tbl) %in% "AGB"),
+nm_pred <- c(colnames(mrg_tbl)[c(which(colnames(mrg_tbl) %in% "AGB"),
                               which(colnames(mrg_tbl) %in% "BE_FHD") : 
                                 which(colnames(mrg_tbl) %in% "LAI"),
                               which(colnames(mrg_tbl) %in% "chm_surface_ratio"),
@@ -135,8 +138,9 @@ pred <- c(colnames(mrg_tbl)[c(which(colnames(mrg_tbl) %in% "AGB"),
                               which(colnames(mrg_tbl) %in% "mdn_rtrn"),
                               which(colnames(mrg_tbl) %in% "sd_rtrn_1"),
                               which(colnames(mrg_tbl) %in% "qntl_rng"),
-                              which(colnames(mrg_tbl) %in% "elevation"))])
-
+                              which(colnames(mrg_tbl) %in% "elevation"), 
+                              which(colnames(tbl) %in% "elevsq"))])
+mrg_tbl <- mrg_tbl[which(colnames(mrg_tbl) %in% c(nm_meta, nm_resp_SR, nm_pred))]
 #######################
 ###write out outs_lst and cvouts_lst for cross validation - 
 ###an Tabelle wird drangeschrieben, wann diese vorhergesagt werden, 
@@ -146,7 +150,6 @@ pred <- c(colnames(mrg_tbl)[c(which(colnames(mrg_tbl) %in% "AGB"),
 ind_nums <- sort(unique(mrg_tbl$selID))
 runs <- ind_nums[ind_nums > 0 & ind_nums < 6]
 cats <- unique(mrg_tbl$cat)
-
 rndm_draw <- c()
 outs_lst_rw <- lapply(runs, function(k){
   out_sel <- mrg_tbl[which(mrg_tbl$selID == k),]
@@ -175,7 +178,6 @@ for (j in runs){
   outs_lst[[j]] <- outs_lst_rw[[j]]$plotID
 }
 saveRDS(outs_lst, file = paste0(outpath, "outs_lst.rds"))
-
 
 ###cv index gleiches system wie outer loop (innerloop)
 rndm_draw_cv <- c()
@@ -215,6 +217,59 @@ cvouts_lst <- lapply(seq(outs_lst), function(i){
   }
   return(cvouts_lst_runs)
 })
-
 saveRDS(cvouts_lst, file = paste0(outpath, "cvouts_lst.rds"))
+#######################
+###calculate trophic levels
+#######################
+lvl <- c("predator", "generalist", "decomposer", "herbivore", "plant", "birds", "bats")
+trophic_tbl$Taxon <- as.character(trophic_tbl$Taxon)
+trophic_tbl$diet <- factor(trophic_tbl$diet, levels = lvl)
+
+troph_resp <- lapply(colnames(mrg_tbl)[which(colnames(mrg_tbl) %in% nm_resp_SR)], function(x){
+  trop <- NA
+  for (i in trophic_tbl$Taxon){
+    match <- grep(i, x, value=TRUE)
+    if (length(match) != 0){
+      trop <- i
+    }
+  }
+  return(c(resp = x, Taxon = trop))
+})
+troph_mrg <- merge(trophic_tbl, as.data.frame(do.call(rbind, troph_resp)), by = "Taxon")
+troph_sum <- data.frame(plotID = mrg_tbl$plotID)
+for (i in levels(trophic_tbl$diet)){
+  match <- colnames(mrg_tbl)[c(which(colnames(mrg_tbl) %in% 
+                     as.character(troph_mrg$resp[which(troph_mrg$diet == i)])))]
+  # drop = F, muss sein, weil es sonst für level mit nur einer Spalte (bats/birds) 
+  # fehlermeldung gibt, so können sie trotzdemtrotzdem weiter in die nächste Tabelle 
+  # geschrieben werden
+  summed <- rowSums(mrg_tbl[,match, drop = F], na.rm = T)
+  troph_sum$summed <- summed
+  colnames(troph_sum)[which(colnames(troph_sum) == "summed")] <- paste0("sum_", i, "_N", length(match))
+}
+mrg_tbl_troph <- merge(mrg_tbl, troph_sum, by = "plotID")
+#####
+###append nm_resp mit nm_resp_troph
+#####
+nm_resp_troph <- colnames(troph_sum)[-which(colnames(troph_sum) == "plotID")]
+#######################
+###stuff done for each set (frst/nofrst/allplts)
+#######################
+#####
+###subset table
+#####
+#####
+###filter predictors  (min 50% different values)
+#####
+#####
+###choose if elevation and alevation square are in or out
+#####
+#####
+###scale predictors
+#####
+#append nm_pred with nm_pred_scl
+########################################################################################
+###initiate list
+########################################################################################
+
 

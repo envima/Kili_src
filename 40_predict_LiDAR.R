@@ -52,11 +52,7 @@ cnt <- 0
 set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
   cnt <<- cnt+1
   runs <- sort(unique(i$meta$run))
-  # #vorübergehend: 
-  # for (n in seq(ncol(i$meta)))
-  # i$meta[is.nan(i$meta)] <- NA
   for(k in names(i$resp)){
-    # for (k in names(i$resp)){
     for (outs in runs){
       #####
       ###split for outer loop (independet cv)
@@ -77,11 +73,6 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
                             !(i$meta$plotID %in% tbl_in[is.na(tbl_in[,m]), "plotID"]),
                           grepl(pattern = "scl_", colnames(i$meta))]
           new_dat <- i$meta[i$meta$plotID %in% plt_out, grepl(pattern = "scl_", colnames(i$meta))]
-          #temp: 
-          # for (n in seq(ncol(new_dat))){
-          # # new_dat[n][is.nan(new_dat$scl_BE_H_SKEW)] <- NA
-          # new_dat[[n]][is.nan(new_dat[[n]])] <- NA
-          # }
           #####
           ###read actual model
           #####
@@ -93,31 +84,18 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
           #####
           if (!is.na(mod)){
           prdct <- predict(object = mod, newdata = new_dat)
-          col_nm <- paste0("ldr_pred_", m)
-          # i$resp[[k]]$ldr_pred[i$resp[[k]]$plotID %in% plt_out] <- prdct
+          col_nm <- paste0("ldr_pred_", m) #column depending on sr or resid
           i$resp[[k]][[col_nm]][i$resp[[k]]$plotID %in% plt_out] <- prdct
-          
-          # i$resp[names(i$resp) == k][i$resp[names(i$resp) == k]$plotID %in% plt_out] <- prdct
-          
-          # colnames(i$resp[[k]])[colnames(i$resp[[k]]) == "ldr_pred"] <- paste0("ldr_pred", m)
           }else{
-            col_nm <- paste0("ldr_pred_run_", outs)
-            i$resp[[k]]$ldr_pred[i$resp[[k]]$plotID %in% plt_out] <- NA
-            # colnames(i$resp[[k]])[colnames(i$resp[[k]]) == "ldr_pred"] <- paste0("ldr_pred", m)
+            col_nm <- paste0("ldr_pred_", m)
+            i$resp[[k]][[col_nm]][i$resp[[k]]$plotID %in% plt_out] <- NA
           }
-          # return(i$resp[[k]])
         }else{ # if only one value in tbl_in: modeling isn't possible ==> NA in prediction
-          col_nm <- paste0("ldr_pred_run_", outs)
-          i$resp[[k]]$ldr_pred[i$resp[[k]]$plotID %in% plt_out] <- NA
-          # colnames(i$resp[[k]])[colnames(i$resp[[k]]) == "ldr_pred"] <- paste0("ldr_pred", m)
-          # return(i$resp[[k]])
+          col_nm <- paste0("ldr_pred_", m)
+          i$resp[[k]][[col_nm]][i$resp[[k]]$plotID %in% plt_out] <- NA
         } 
-        
       }
-      # return(i$resp[[k]])
     }
-    # colnames(i$resp[[k]])[colnames(i$resp[[k]]) == "ldr_pred"] <- paste0("ldr_pred", m)
-    # return(i$resp)
   }
   saveRDS(i, file = paste0(outpath, "master_lst_ldr_", names(set_lst)[cnt], ".rds"))
   # readRDS(file = paste0(outpath, "master_lst_ldr_", names(set_lst)[cnt], ".rds"))

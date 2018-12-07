@@ -44,10 +44,11 @@ names(set_lst) <- set
 ########################################################################################
 
 cnt <- 0
-set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
+set_lst_cln <- lapply(set_lst, function(i){# i <- set_lst[[1]]
   cnt <<- cnt+1
   for (k in names(i$resp)){
-    print(k)
-    i$resp[[k]]
+    # print(k)
+    i$resp[[k]][["sum_elev_pred_ldr_pred_resid"]] <- rowSums(cbind(i$resp[[k]]$elev_pred, i$resp[[k]]$ldr_pred_resid))
   }
+  saveRDS(i, file = paste0(outpath, "master_lst_all_mods_", names(set_lst)[cnt], ".rds"))
 })

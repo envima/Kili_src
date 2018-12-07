@@ -99,10 +99,6 @@ ldr_lst <- lapply(ldr_nms, function(i){
   ldr_file <- readRDS(paste0(LiDAR_path, i))
 })
 ldr_mrg <- Reduce(function(x, y) merge(x, y, all=TRUE), ldr_lst)
-#replace Nan by NA
-# for (n in seq(ncol(ldr_mrg))){
-#   ldr_mrg[is.nan(ldr_mrg),n] <- NA
-# }
 
 saveRDS(ldr_mrg, file = paste0(outpath, "zw_ldr_mrg.rds"))
 # ldr_mrg <- readRDS(file = paste0(outpath, "zw_ldr_mrg.rds"))

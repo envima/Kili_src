@@ -24,7 +24,7 @@ set <- c("frst", "nofrst", "allplts")
 ###read files
 #####
 set_lst <- lapply(set, function(o){
-  readRDS(file = paste0(outpath, "master_lst_", o, ".rds"))
+  readRDS(file = paste0(outpath, "10_master_lst_", o, ".rds"))
 })
 names(set_lst) <- set
 ########################################################################################
@@ -101,7 +101,7 @@ set_lst_res <- lapply(set_lst, function(i){# i <- set_lst[[1]]
     #####
     i$resp[[k]]$resid <- i$resp[[k]][[k]] - i$resp[[k]]$elev_pred
   }
-  saveRDS(i, file = paste0(outpath, "master_lst_resid_", names(set_lst)[cnt], ".rds"))
+  saveRDS(i, file = paste0(outpath, "20_master_lst_resid_", names(set_lst)[cnt], ".rds"))
   return(i)
 })
 names(set_lst_res) <- set

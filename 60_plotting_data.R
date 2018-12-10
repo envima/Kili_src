@@ -26,7 +26,7 @@ set <- c("nofrst")
 ###read files
 #####
 set_lst <- lapply(set, function(o){
-  readRDS(file = paste0(outpath, "master_lst_all_mods_", o, ".rds"))
+  readRDS(file = paste0(outpath, "50_master_lst_all_mods_", o, ".rds"))
 })
 names(set_lst) <- set
 
@@ -64,5 +64,6 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
     val_df_all <- do.call(rbind, val_df_all_lst)
     i$val[[k]] <- val_df_all ##<- hier muss soll eigentlich ein df oder lsite, oder so reingeschreiben werden.
   }
+  saveRDS(i, file = paste0(outpath, "60_master_lst_val_", names(set_lst)[cnt], ".rds"))
   return(i)
 })

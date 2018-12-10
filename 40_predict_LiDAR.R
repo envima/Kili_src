@@ -29,7 +29,7 @@ set <- c("nofrst")
 ###read files
 #####
 set_lst <- lapply(set, function(o){
-  readRDS(file = paste0(outpath, "master_lst_resid_", o, ".rds"))
+  readRDS(file = paste0(outpath, "20_master_lst_resid_", o, ".rds"))
 })
 names(set_lst) <- set
 
@@ -97,7 +97,7 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
       }
     }
   }
-  saveRDS(i, file = paste0(outpath, "master_lst_ldr_", names(set_lst)[cnt], ".rds"))
+  saveRDS(i, file = paste0(outpath, "40_master_lst_ldr_", names(set_lst)[cnt], ".rds"))
   # readRDS(file = paste0(outpath, "master_lst_ldr_", names(set_lst)[cnt], ".rds"))
   return(i)
 })

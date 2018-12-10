@@ -192,6 +192,7 @@ troph_resp <- lapply(colnames(mrg_tbl)[which(colnames(mrg_tbl) %in% nm_resp_SR)]
   return(c(resp = x, Taxon = trop))
 })
 troph_mrg <- merge(trophic_tbl, as.data.frame(do.call(rbind, troph_resp)), by = "Taxon")
+saveRDS(troph_mrg, file = paste0(outpath, "troph_mrg.rds"))
 troph_sum <- data.frame(plotID = mrg_tbl$plotID)
 for (i in levels(trophic_tbl$diet)){
   match <- colnames(mrg_tbl)[c(which(colnames(mrg_tbl) %in% 
@@ -270,7 +271,7 @@ for (o in set){
                                              which(grepl(i, colnames(tbl_mrg_set))))]
                      }))
   names(master_lst$resp) <- c(nm_resp_SR, nm_resp_troph)
-  saveRDS(master_lst, file = paste0(outpath, "master_lst_", o, ".rds"))
+  saveRDS(master_lst, file = paste0(outpath, "10_master_lst_", o, ".rds"))
   # master_lst <- readRDS(file = paste0(outpath, "master_lst_", o, ".rds"))
 }#for o in set
 

@@ -1,6 +1,6 @@
 # Description:
 # Author: Alice Ziegler
-# Date: 2018-12-06 13:46:07
+# Date: 2018-12-10 11:49:55
 # to do:
 rm(list=ls())
 
@@ -10,7 +10,9 @@ rm(list=ls())
 #####
 ###load packages
 #####
-
+library(stringr)
+library(tidyr)
+library(ggplot2)
 #####
 ###set paths
 #####
@@ -26,10 +28,10 @@ set <- c("nofrst")
 ###read files
 #####
 set_lst <- lapply(set, function(o){
-  readRDS(file = paste0(outpath, "40_master_lst_ldr_", o, ".rds"))
+  readRDS(file = paste0(outpath, "60_master_lst_val_",o, ".rds"))
 })
 names(set_lst) <- set
-
+troph_mrg <- readRDS(paste0(inpath, "troph_mrg.rds"))
 ########################################################################################
 ###Settings
 ########################################################################################
@@ -42,13 +44,27 @@ names(set_lst) <- set
 ########################################################################################
 ########################################################################################
 ########################################################################################
-
 cnt <- 0
-set_lst_cln <- lapply(set_lst, function(i){# i <- set_lst[[1]]
+for (i in set_lst){# i <- set_lst[[1]]
   cnt <<- cnt+1
-  for (k in names(i$resp)){
-    # print(k)
-    i$resp[[k]][["sum_elev_pred_ldr_pred_resid"]] <- rowSums(cbind(i$resp[[k]]$elev_pred, i$resp[[k]]$ldr_pred_resid))
+  val_all <- do.call(rbind, i$val)
+  val_all$resp <- substr(rownames(val_all),1, nchar(rownames(val_all))-2)
+  for (k in val_all$resp){
+    val_all$troph[val_all$resp == k] <- as.character(troph_mrg$diet[troph_mrg$resp == k])
   }
-  saveRDS(i, file = paste0(outpath, "50_master_lst_all_mods_", names(set_lst)[cnt], ".rds"))
-})
+  val_all$troph[grepl("sum", val_all$resp)] <- paste0(val_all$troph[grepl("sum", val_all$resp)], "_sum")
+  val_type <- gather(val_all, type, value, -resp, -run, -troph)
+  myColors <- c("mediumslateblue", "blue2", "aquamarine3", "chocolate1", 
+                "firebrick1", "darkmagenta")
+  fillscl <- scale_fill_manual(name = "col",values = myColors)
+  print(ggplot(data = val_type, aes(x=resp, y=value)) + 
+          #geom_rect(fill=grey_pal()(length(levels(stats_all$troph_sep))+5)[as.numeric(stats_all$troph_sep)+5], 
+          #xmin = -Inf,xmax = Inf, ymin = -Inf,ymax = Inf) +
+          geom_boxplot(aes(fill=type), width = 1) + 
+          facet_grid(~troph, scales = "free_x", space="free_x", switch = "x") +
+          theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10)) + 
+          fillscl + 
+          ggtitle(paste0(set, "_", sub)))
+  
+  }
+

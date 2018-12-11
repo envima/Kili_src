@@ -137,6 +137,8 @@ mrg_tbl$elevsq <- mrg_tbl$elevation^2
 #####
 nm_meta_base <- c("plotID", "cat", "selID")
 nm_resp_SR <- c(colnames(mrg_tbl)[c(which(colnames(mrg_tbl) == "SRmammals") : 
+                                      which(colnames(mrg_tbl) == "SRsnails"), 
+                                    which(colnames(mrg_tbl) == "SRrosids") : 
                                       which(colnames(mrg_tbl) == "SRmagnoliids"))])
 nm_pred_pot <- c(colnames(mrg_tbl)[c(which(colnames(mrg_tbl) %in% "AGB"),
                                      which(colnames(mrg_tbl) %in% "BE_FHD") : 
@@ -192,9 +194,9 @@ troph_resp <- lapply(colnames(mrg_tbl)[which(colnames(mrg_tbl) %in% nm_resp_SR)]
   return(c(resp = x, Taxon = trop))
 })
 troph_mrg <- merge(trophic_tbl, as.data.frame(do.call(rbind, troph_resp)), by = "Taxon")
-saveRDS(troph_mrg, file = paste0(outpath, "troph_mrg.rds"))
+
 troph_sum <- data.frame(plotID = mrg_tbl$plotID)
-for (i in levels(trophic_tbl$diet)){
+for (i in unique(troph_mrg$diet[!troph_mrg$diet %in% c("birds", "bats")])){
   match <- colnames(mrg_tbl)[c(which(colnames(mrg_tbl) %in% 
                                        as.character(troph_mrg$resp[which(troph_mrg$diet == i)])))]
   # drop = F, muss sein, weil es sonst für level mit nur einer Spalte (bats/birds) 
@@ -205,6 +207,19 @@ for (i in levels(trophic_tbl$diet)){
   colnames(troph_sum)[which(colnames(troph_sum) == "summed")] <- paste0("sum_", i, "_N", length(match))
 }
 mrg_tbl_troph <- merge(mrg_tbl, troph_sum, by = "plotID")
+
+#####
+###append troph_mrg with sum trophics
+#####
+for (i in seq(colnames(troph_sum)[(grepl("sum", colnames(troph_sum)))])){
+  print(i)
+tmp <- data.frame(Taxon = colnames(troph_sum)[[i+1]], 
+           diet = str_split(colnames(troph_sum)[(grepl("sum", colnames(troph_sum)))], pattern = "_")[[i]][2], 
+           resp =  colnames(troph_sum)[[i+1]])
+troph_mrg <- rbind(troph_mrg, tmp)
+}
+
+saveRDS(troph_mrg, file = paste0(outpath, "troph_mrg.rds"))
 #####
 ###append nm_resp mit nm_resp_troph
 #####

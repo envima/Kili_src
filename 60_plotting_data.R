@@ -92,7 +92,7 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
 ###var Imp
 ########################################################################################
 cnt <- 0
-set_lst_var_imp <- lapply(set_lst, function(i){# i <- set_lst[[1]]
+set_lst_var_imp <- lapply(set_lst_val, function(i){# i <- set_lst[[1]]
   cnt <<- cnt+1
   runs <- sort(unique(i$meta$run))
   for(k in names(i$resp)){
@@ -125,4 +125,6 @@ set_lst_var_imp <- lapply(set_lst, function(i){# i <- set_lst[[1]]
     }
     
   }
+  saveRDS(i, file = paste0(outpath, "60_master_lst_varimp_", names(set_lst)[cnt], ".rds"))
+  return(i)
   })

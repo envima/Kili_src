@@ -22,15 +22,22 @@ setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 sub <- "dez18/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
-outpath <- paste0("../data/", sub)
-set <- c("frst", "nofrst", "allplts")
-# set <- c("nofrst")
+#####
+###where are the models and derived data
+#####
+set_dir <- "20181210_frst_nofrst_allplts/"
+mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
+# set <- c("frst", "nofrst", "allplts")
+set <- c("frst")
 #####
 ###read files
 #####
 set_lst <- lapply(set, function(o){
-  readRDS(file = paste0(outpath, "20_master_lst_resid_", o, ".rds"))
+  set_moddir <- mod_dir_lst[grepl(paste0("_", o, "_"), mod_dir_lst)]
+  modDir <- paste0(inpath, set_dir, set_moddir, "/")
+  readRDS(file = paste0(modDir, "data/", "20_master_lst_resid_",o, ".rds"))
 })
+
 names(set_lst) <- set
 
 ########################################################################################
@@ -39,7 +46,8 @@ names(set_lst) <- set
 comm <- ""
 method <- "pls"
 type <- "ffs"
-modDir <- "../data/dez18/2018-12-06_nofrst_ffs_pls_"
+
+
 
 ########################################################################################
 ########################################################################################
@@ -51,6 +59,8 @@ modDir <- "../data/dez18/2018-12-06_nofrst_ffs_pls_"
 cnt <- 0
 set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
   cnt <<- cnt+1
+  set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst)[cnt], "_"), mod_dir_lst)]
+  modDir <- paste0(inpath, set_dir, set_moddir, "/")
   runs <- sort(unique(i$meta$run))
   for(k in names(i$resp)){
     for (outs in runs){
@@ -97,8 +107,12 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
       }
     }
   }
-  saveRDS(i, file = paste0(outpath, "40_master_lst_ldr_", names(set_lst)[cnt], ".rds"))
-  # readRDS(file = paste0(outpath, "master_lst_ldr_", names(set_lst)[cnt], ".rds"))
+
+  if (file.exists(paste0(modDir, "data/"))==F){
+    dir.create(file.path(paste0(modDir, "data/")), recursive = T)
+  }
+  saveRDS(i, file = paste0(modDir, "data/", "40_master_lst_ldr_", names(set_lst)[cnt], ".rds"))
+  # readRDS(file = paste0(modDir, "40_master_lst_ldr_", names(set_lst)[cnt], ".rds"))
   return(i)
 })
 names(set_lst_ldr) <- set

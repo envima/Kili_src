@@ -21,14 +21,21 @@ setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 sub <- "dez18/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
-outpath <- paste0("../data/", sub)
+outpath <- paste0("../out/", sub)
+#####
+###where are the models and derived data
+#####
+set_dir <- "20181210_frst_nofrst_allplts/"
+mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 # set <- c("frst", "nofrst", "allplts")
-set <- c("nofrst")
+set <- c("frst")
 #####
 ###read files
 #####
 set_lst <- lapply(set, function(o){
-  readRDS(file = paste0(outpath, "60_master_lst_val_",o, ".rds"))
+  set_moddir <- mod_dir_lst[grepl(paste0("_", o, "_"), mod_dir_lst)]
+  modDir <- paste0(inpath, set_dir, set_moddir, "/")
+  readRDS(file = paste0(modDir, "data/", "60_master_lst_varimp_",o, ".rds"))
 })
 names(set_lst) <- set
 troph_mrg <- readRDS(paste0(inpath, "troph_mrg.rds"))
@@ -47,6 +54,11 @@ plts <- c("RMSEsd_", "RMSE_")
 cnt <- 0
 for (i in set_lst){# i <- set_lst[[1]]
   cnt <<- cnt+1
+  set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst)[cnt], "_"), mod_dir_lst)]
+  modDir <- paste0(outpath, set_dir, set_moddir, "/")
+  #######################
+  ###validation Plots
+  #######################
   val_all <- do.call(rbind, i$val)
   val_all$resp <- substr(rownames(val_all),1, nchar(rownames(val_all))-2)
   val_troph <- merge(val_all, troph_mrg, by = "resp") ###woher kommen die zusätzlchen einträge
@@ -63,7 +75,11 @@ for (i in set_lst){# i <- set_lst[[1]]
     val_plt <- subset(val_type, grepl(n, val_type$type))
     levels(val_plt$troph_sep) <- levels(val_type$troph_sep)
 
-  print(ggplot(data = val_plt, aes(x=resp, y=value)) + 
+    if (file.exists(paste0(outpath, set_dir, set_moddir))==F){
+      dir.create(file.path(paste0(outpath, set_dir, set_moddir)), recursive = T)
+    }
+    pdf(file = paste0(modDir, "/val_plot_", set, "_", n, ".pdf"), height= 10, width = 20)#, paper = "a4r")
+    print(ggplot(data = val_plt, aes(x=resp, y=value)) + 
           #geom_rect(fill=grey_pal()(length(levels(stats_all$troph_sep))+5)[as.numeric(stats_all$troph_sep)+5], 
           #xmin = -Inf,xmax = Inf, ymin = -Inf,ymax = Inf) +
           geom_boxplot(aes(fill=type), width = 1) + 
@@ -71,6 +87,15 @@ for (i in set_lst){# i <- set_lst[[1]]
           theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10)) + 
           fillscl + 
           ggtitle(paste0(set, "_", sub, " ", n)))
+    dev.off()
   }
+  
+  #######################
+  ###varsel plots
+  #######################
+  i$varimp$SRmammals
+
+  
+  
   }
 

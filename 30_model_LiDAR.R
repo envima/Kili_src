@@ -81,7 +81,7 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
         plt_cv_out <- i$meta$plotID[which(i$meta$run == cvouts)]
         res <- which(tbl_in$plotID %in% plt_cv_out)
       })
-      resp_set <- c(k, "resid") # loop model for SR and resid
+      resp_set <- c("SR", "resid") # loop model for SR and resid
       for (m in resp_set){
       if(length(unique(tbl_in[,m])) > 1){ #check if tbl_in has only 0 zB: SRlycopodiopsida/nofrst/outs = 1
         #####

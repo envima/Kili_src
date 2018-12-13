@@ -66,16 +66,16 @@ set_lst_res <- lapply(set_lst, function(i){# i <- set_lst[[1]]
         res <- which(tbl_in$plotID %in% plt_cv_out)
       })
       
-      if(length(unique(tbl_in[,k])) > 1){ #check if tbl_in has only 0 zB: SRlycopodiopsida/nofrst/outs = 1
+      if(length(unique(tbl_in$SR)) > 1){ #check if tbl_in has only 0 zB: SRlycopodiopsida/nofrst/outs = 1
         
         #####
         ###create resp, pred and newdata dataframes
         #####
-        resp <- tbl_in[!is.na(tbl_in[,k]),k] # take out NAs from resp so model can run
+        resp <- tbl_in[!is.na(tbl_in$SR),"SR"] # take out NAs from resp so model can run
         preds <- data.frame(scl_elevation = i$meta$scl_elevation[i$meta$plotID %in% plt_in & #take only plots from plt_in and take out NAs
-                                                                   !(i$meta$plotID %in% tbl_in[is.na(tbl_in[,k]), "plotID"])],
+                                                                   !(i$meta$plotID %in% tbl_in[is.na(tbl_in$SR), "plotID"])],
                             scl_elevsq = i$meta$scl_elevsq[i$meta$plotID %in% plt_in &
-                                                             !(i$meta$plotID %in% tbl_in[is.na(tbl_in[,k]), "plotID"])])
+                                                             !(i$meta$plotID %in% tbl_in[is.na(tbl_in$SR), "plotID"])])
         new_dat <- data.frame(scl_elevation = i$meta$scl_elevation[i$meta$plotID %in% plt_out], 
                               scl_elevsq = i$meta$scl_elevsq[i$meta$plotID %in% plt_out])
         #####
@@ -99,7 +99,7 @@ set_lst_res <- lapply(set_lst, function(i){# i <- set_lst[[1]]
     #####
     ###calculate residuals
     #####
-    i$resp[[k]]$resid <- i$resp[[k]][[k]] - i$resp[[k]]$elev_pred
+    i$resp[[k]]$resid <- i$resp[[k]]$SR - i$resp[[k]]$elev_pred
   }
   saveRDS(i, file = paste0(outpath, "20_master_lst_resid_", names(set_lst)[cnt], ".rds"))
   return(i)

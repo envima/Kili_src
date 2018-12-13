@@ -284,6 +284,9 @@ for (o in set){
                         # print(i)
                        tbl <- tbl_mrg_set[,c(which(colnames(tbl_mrg_set) == "plotID"), 
                                              which(grepl(i, colnames(tbl_mrg_set))))]
+                       ###rename resp in SR
+                       colnames(tbl) <- c("plotID", "SR")
+                       return(tbl)
                      }))
   names(master_lst$resp) <- c(nm_resp_SR, nm_resp_troph)
   saveRDS(master_lst, file = paste0(outpath, "10_master_lst_", o, ".rds"))

@@ -20,21 +20,27 @@ setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 sub <- "dez18/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
-outpath <- paste0("../data/", sub)
+#####
+###where are the models and derived data
+#####
+set_dir <- "20181210_frst_nofrst_allplts/"
+mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 # set <- c("frst", "nofrst", "allplts")
-set <- c("nofrst")
+set <- c("frst")
 #####
 ###read files
 #####
 set_lst <- lapply(set, function(o){
-  readRDS(file = paste0(outpath, "50_master_lst_all_mods_", o, ".rds"))
+  set_moddir <- mod_dir_lst[grepl(paste0("_", o, "_"), mod_dir_lst)]
+  modDir <- paste0(inpath, set_dir, set_moddir, "/")
+  readRDS(file = paste0(modDir, "data/", "50_master_lst_all_mods_",o, ".rds"))
 })
 names(set_lst) <- set
 
 ########################################################################################
 ###Settings
 ########################################################################################
-modDir <- "../data/dez18/2018-12-06_nofrst_ffs_pls_"
+
 ########################################################################################
 ########################################################################################
 ########################################################################################
@@ -48,6 +54,8 @@ modDir <- "../data/dez18/2018-12-06_nofrst_ffs_pls_"
 cnt <- 0
 set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
   cnt <<- cnt+1
+  set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst)[cnt], "_"), mod_dir_lst)]
+  modDir <- paste0(inpath, set_dir, set_moddir, "/")
   runs <- sort(unique(i$meta$run))
   for (k in names(i$resp)){
     val_df_all_lst <- lapply (runs, function(outs){
@@ -84,7 +92,10 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
     val_df_all <- do.call(rbind, val_df_all_lst)
     i$val[[k]] <- val_df_all ##<- hier muss soll eigentlich ein df oder lsite, oder so reingeschreiben werden.
   }
-  saveRDS(i, file = paste0(outpath, "60_master_lst_val_", names(set_lst)[cnt], ".rds"))
+  if (file.exists(paste0(modDir, "data/"))==F){
+    dir.create(file.path(paste0(modDir, "data/")), recursive = T)
+  }
+  saveRDS(i, file = paste0(modDir, "data/", "60_master_lst_val_", names(set_lst)[cnt], ".rds"))
   return(i)
 })
 
@@ -94,9 +105,13 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
 cnt <- 0
 set_lst_var_imp <- lapply(set_lst_val, function(i){# i <- set_lst[[1]]
   cnt <<- cnt+1
+  set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst)[cnt], "_"), mod_dir_lst)]
+  modDir <- paste0(inpath, set_dir, set_moddir, "/")
   runs <- sort(unique(i$meta$run))
   for(k in names(i$resp)){
+    # print(k)
     for (outs in runs){
+      # print(outs)
       #####
       ###split for outer loop (independet cv)
       #####
@@ -104,9 +119,9 @@ set_lst_var_imp <- lapply(set_lst_val, function(i){# i <- set_lst[[1]]
       plt_out <- i$meta$plotID[which(i$meta$run == outs)]
       tbl_in <- i$resp[[k]][which(i$resp[[k]]$plotID %in% plt_in),]
       # tbl_out <- i$resp[[k]][which(i$resp[[k]]$plotID %in% plt_out),]
-      
       resp_set <- c(k, "resid") # loop model for SR and resid
       for (m in resp_set){
+        # print(m)
         if(length(unique(tbl_in[,m])) > 1){ #check if tbl_in has only 0 zB: SRlycopodiopsida/nofrst/outs = 1
           #####
           ###read actual model
@@ -114,17 +129,20 @@ set_lst_var_imp <- lapply(set_lst_val, function(i){# i <- set_lst[[1]]
           mod <- tryCatch(
             readRDS(file = paste0(modDir, "/mod_run_", outs, "_", k, "_", m, ".rds")),
             error = function(e)mod <- NA)
-          mod <- tryCatch(
-          var_imp <- data.frame(sel_vars = mod$selectedvars, 
+          var_imp <- tryCatch(
+          data.frame(sel_vars = mod$selectedvars, 
                                varimp = varImp(mod)$importance), 
           error = function(e)var_imp <- NA)
+          i$varimp[[k]][[m]][[outs]] <- var_imp
+        }else{
+          i$varimp[[k]][[m]][[outs]] <- NA
         }
-        i$varimp[[k]][[m]][[outs]] <- var_imp
       }
-      
     }
-    
   }
-  saveRDS(i, file = paste0(outpath, "60_master_lst_varimp_", names(set_lst)[cnt], ".rds"))
+  if (file.exists(paste0(modDir, "data/"))==F){
+    dir.create(file.path(paste0(modDir, "data/")), recursive = T)
+  }
+  saveRDS(i, file = paste0(modDir, "data/", "60_master_lst_varimp_", names(set_lst)[cnt], ".rds"))
   return(i)
   })

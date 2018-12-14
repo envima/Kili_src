@@ -20,12 +20,12 @@ library(parallel)
 #####
 # setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 setwd("/mnt/sd19006/data/users/aziegler/src")
-sub <- "dez18/"
+sub <- "dez18_qa/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 outpath <- paste0("../data/", sub)
-set <- c("frst", "nofrst", "allplts")
-# set <- c("nofrst")
+set <- c("nofrst", "frst", "allplts")
+# set <- c("frst")
 #####
 ###read files
 #####
@@ -33,16 +33,18 @@ set_lst <- lapply(set, function(o){
   readRDS(file = paste0(outpath, "20_master_lst_resid_", o, ".rds"))
 })
 names(set_lst) <- set
+set_dir <- paste0(Sys.Date(), paste(set, collapse = "_"), "/")
+if (file.exists(paste0(outpath, set_dir))==F){
+  dir.create(file.path(paste0(outpath, set_dir)))
+}
 
 ########################################################################################
 ###Settings
 ########################################################################################
-cl <- 17
+cl <- 15
 comm <- ""
 method <- "pls"
 type <- "ffs"
-
-
 ########################################################################################
 ########################################################################################
 ########################################################################################
@@ -54,7 +56,7 @@ cnt <- 0
 set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
   cnt <<- cnt+1
   runs <- sort(unique(i$meta$run))
-  modDir <- paste0(outpath, Sys.Date(), "_", names(set_lst)[cnt], "_", type, "_", method, "_", comm)
+  modDir <- paste0(outpath, set_dir, Sys.Date(), "_", names(set_lst)[cnt], "_", type, "_", method, "_", comm)
   if (file.exists(modDir)==F){
     dir.create(file.path(modDir))
   }
@@ -68,31 +70,34 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
       #####
       plt_in <- i$meta$plotID[-which(i$meta$run == outs)]
       plt_out <- i$meta$plotID[which(i$meta$run == outs)]
-      tbl_in <- i$resp[[k]][which(i$resp[[k]]$plotID %in% plt_in),]
+      tbl_in <- list("meta"=i$meta[which(i$meta$plotID %in% plt_in),],
+                     "resp"=i$resp[[k]][which(i$resp[[k]]$plotID %in% plt_in),])
       # tbl_out <- i$resp[[k]][which(i$resp[[k]]$plotID %in% plt_out),]
       #####
       ### create index for inner loop within tbl_in
       #####
       cvIndex <- lapply(runs[-which(runs %in% outs)], function(cvouts){
         plt_cv_in <- i$meta$plotID[-which(i$meta$run == outs | i$meta$run == cvouts)]
-        res <- which(tbl_in$plotID %in% plt_cv_in)
+        res <- which(tbl_in$meta$plotID %in% plt_cv_in)
       })
       cvIndex_out <- lapply(runs[-which(runs %in% outs)], function(cvouts){
         plt_cv_out <- i$meta$plotID[which(i$meta$run == cvouts)]
-        res <- which(tbl_in$plotID %in% plt_cv_out)
+        res <- which(tbl_in$meta$plotID %in% plt_cv_out)
       })
+      
       resp_set <- c("SR", "resid") # loop model for SR and resid
       for (m in resp_set){
-      if(length(unique(tbl_in[,m])) > 1){ #check if tbl_in has only 0 zB: SRlycopodiopsida/nofrst/outs = 1
+      if(length(unique(tbl_in$resp$SR)) > 1){ #check if tbl_in has only 0 zB: SRlycopodiopsida/nofrst/outs = 1
         #####
         ###create resp, pred and newdata dataframes
         #####
         
-        resp <- tbl_in[!is.na(tbl_in[,m]),m] # take out NAs from resp so model can run
-        preds <- i$meta[i$meta$plotID %in% plt_in & #take only plots from plt_in and take out NAs, take only scl columns
-                          !(i$meta$plotID %in% tbl_in[is.na(tbl_in[,m]), "plotID"]),
-                        grepl(pattern = "scl_", colnames(i$meta))]
-        new_dat <- i$meta[i$meta$plotID %in% plt_out, grepl(pattern = "scl_", colnames(i$meta))]
+        notmissing <- !is.na(tbl_in$resp$SR)
+        resp <- tbl_in$resp[notmissing,m] # take out NAs from resp so model can run
+        predictors <- colnames(tbl_in$meta)[grepl(pattern = "scl_", colnames(i$meta))]
+        preds <- tbl_in$meta[notmissing,predictors] # take out NAs from resp so model can run
+        # resp <- tbl_in$resp[!is.na(tbl_in[,k]),k] # take out NAs from resp so model can run
+        # new_dat <- i$meta[i$meta$plotID%in%plt_out,]
         #####
         ###actual model
         #####
@@ -103,29 +108,14 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
                    trControl = trainControl(method = "cv", index = cvIndex, indexOut = cvIndex_out),
                    verbose = T)
         saveRDS(mod, file = paste0(modDir, "/mod_run_", outs, "_", k, "_", m, ".rds"))
-        # mod <- readRDS(file = paste0(modDir, "/mod_run_", outs, "_", k, "_", m, ".rds"))
-        #####
-        ###predict and write into new column
-        #####
-        # prdct <- predict(object = mod, newdata = new_dat)
-        # col_nm <- paste0("ldr_pred_run_", outs)
-        # i$resp[[k]][[col_nm]][i$resp[[k]]$plotID %in% plt_out] <- prdct
-        # colnames(i$resp[[k]])[colnames(i$resp[[k]]) == col_nm] <- paste0(col_nm, "_", m)
-        # return(i$resp[[k]])
       }
-        # }else{ # if only one value in tbl_in: modeling isn't possible ==> NA in prediction
-      #   col_nm <- paste0("ldr_pred_run_", outs)
-      #   i$resp[[k]][[col_nm]][i$resp[[k]]$plotID %in% plt_out] <- NA
-      #   colnames(i$resp[[k]])[colnames(i$resp[[k]]) == col_nm] <- paste0(col_nm, "_", m)
-      #   # return(i$resp[[k]])
-      # } 
       }
-      # return(i$resp[[k]])
     }
-    # return(i$resp)
+        # ##### Predict
+        # 
+        # prdct <- predict(object = mod, newdata = new_dat)
+        # col_nm <- paste0("ldr_pred_", m)
+        # i$resp[[k]][[col_nm]][i$resp[[k]]$plotID %in% plt_out] <- prdct
   }
-  # saveRDS(i, file = paste0(outpath, "master_lst_ldr_", names(set_lst)[cnt], ".rds"))
-  # readRDS(file = paste0(outpath, "master_lst_ldr_", names(set_lst)[cnt], ".rds"))
-  # return(i)
 })
-# names(set_lst_ldr) <- set
+names(set_lst_ldr) <- set 

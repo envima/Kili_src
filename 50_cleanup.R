@@ -16,26 +16,30 @@ rm(list=ls())
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 # setwd("/mnt/sd19006/data/users/aziegler/src")
-sub <- "dez18/"
+sub <- "dez18_qa/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 
 #####
 ###where are the models and derived data
 #####
-set_dir <- "20181210_frst_nofrst_allplts/"
+set_dir <- "2018-12-13nofrst_frst_allplts/"
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
-# set <- c("frst", "nofrst", "allplts")
-set <- c("frst")
+set <- c("nofrst", "frst", "allplts")
+
 #####
 ###read files
 #####
 set_lst <- lapply(set, function(o){
   set_moddir <- mod_dir_lst[grepl(paste0("_", o, "_"), mod_dir_lst)]
   modDir <- paste0(inpath, set_dir, set_moddir, "/")
-  readRDS(file = paste0(modDir, "data/", "40_master_lst_ldr_",o, ".rds"))
+  file <- tryCatch(
+  readRDS(file = paste0(modDir, "data/", "40_master_lst_ldr_",o, ".rds")),    
+  error = function(e)file <- NA)
+  return(file)
 })
 names(set_lst) <- set
+set_lst <- set_lst[!is.na(set_lst)]
 
 ########################################################################################
 ###Settings

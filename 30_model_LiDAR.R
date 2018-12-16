@@ -42,7 +42,7 @@ if (file.exists(paste0(outpath, set_dir))==F){
 ###Settings
 ########################################################################################
 cl <- 15
-comm <- ""
+comm <- "noelev"
 method <- "pls"
 type <- "ffs"
 ########################################################################################
@@ -95,6 +95,9 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
         notmissing <- !is.na(tbl_in$resp$SR)
         resp <- tbl_in$resp[notmissing,m] # take out NAs from resp so model can run
         predictors <- colnames(tbl_in$meta)[grepl(pattern = "scl_", colnames(i$meta))]
+        if(comm == "noelev"){
+          predictors <- predictors[!grepl("elev", predictors)]
+        }
         preds <- tbl_in$meta[notmissing,predictors] # take out NAs from resp so model can run
         # resp <- tbl_in$resp[!is.na(tbl_in[,k]),k] # take out NAs from resp so model can run
         # new_dat <- i$meta[i$meta$plotID%in%plt_out,]

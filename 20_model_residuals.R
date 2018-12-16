@@ -19,7 +19,7 @@ sub <- "dez18_qa/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 outpath <- paste0("../data/", sub)
-set <- c("frst", "nofrst", "allplts")
+set <- c("nofrst", "frst", "allplts")
 #####
 ###read files
 #####

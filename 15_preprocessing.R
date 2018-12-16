@@ -46,7 +46,7 @@ trophic_tbl <- as.data.frame(read.csv(paste0(inpath_general, "trophic_tbl.csv"),
 ########################################################################################
 ###Settings
 ########################################################################################
-set <- c("frst", "nofrst", "allplts")
+set <- c("nofrst", "frst", "allplts")
 #######################
 ###prepare general dataset
 #######################
@@ -97,7 +97,7 @@ nm_pred_pot <- c(colnames(mrg_tbl)[c(which(colnames(mrg_tbl) %in% "AGB"),
                                      which(colnames(mrg_tbl) %in% "mdn_rtrn"),
                                      which(colnames(mrg_tbl) %in% "sd_rtrn_1"),
                                      which(colnames(mrg_tbl) %in% "qntl_rng"),
-                                     which(colnames(mrg_tbl) %in% "elevation"), 
+                                     which(colnames(mrg_tbl) %in% "elevation"),
                                      which(colnames(mrg_tbl) %in% "elevsq"))])
 mrg_tbl <- mrg_tbl[which(colnames(mrg_tbl) %in% c(nm_meta_base, nm_resp_SR, nm_pred_pot))]
 #######################

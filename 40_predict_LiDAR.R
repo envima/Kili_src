@@ -64,7 +64,7 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
   set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst)[cnt], "_"), mod_dir_lst)]
   modDir <- paste0(inpath, set_dir, set_moddir, "/")
   for(k in names(i$resp)){
-    print(k)
+    # print(k)
     # for (k in names(i$resp)){
     for (outs in runs){
       #####
@@ -86,7 +86,7 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
           ###actual model
           #####
           mod <- tryCatch(
-            readRDS(file = paste0(modDir, "/mod_run_", outs, "_", k, "_", m, ".rds")),
+            readRDS(file = paste0(modDir, "mod_run_", outs, "_", k, "_", m, ".rds")),
             error = function(e)mod <- NA)
           #####
           ###predict and write into new column

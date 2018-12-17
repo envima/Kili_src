@@ -36,7 +36,7 @@ set_lst <- lapply(set, function(o){
   set_moddir <- mod_dir_lst[grepl(paste0("_", o, "_"), mod_dir_lst)]
   modDir <- paste0(inpath, set_dir, set_moddir, "/")
   file <- tryCatch(
-    readRDS(file = paste0(modDir, "data/", "60_master_lst_val_",o, ".rds")), 
+    readRDS(file = paste0(modDir, "data/", "60_master_lst_varimp_",o, ".rds")), 
     error = function(e)file <- NA)
   return(file)
 })
@@ -83,7 +83,7 @@ for (i in set_lst){# i <- set_lst[[1]]
     if (file.exists(paste0(outpath, set_dir, set_moddir))==F){
       dir.create(file.path(paste0(outpath, set_dir, set_moddir)), recursive = T)
     }
-    pdf(file = paste0(modDir, "/val_plot_", set, "_", n, ".pdf"), height= 10, width = 20)#, paper = "a4r")
+    pdf(file = paste0(modDir, "/val_plot_", names(set_lst)[cnt], "_", n, ".pdf"), height= 10, width = 20)#, paper = "a4r")
     print(ggplot(data = val_plt, aes(x=resp, y=value)) + 
           #geom_rect(fill=grey_pal()(length(levels(stats_all$troph_sep))+5)[as.numeric(stats_all$troph_sep)+5], 
           #xmin = -Inf,xmax = Inf, ymin = -Inf,ymax = Inf) +
@@ -91,7 +91,30 @@ for (i in set_lst){# i <- set_lst[[1]]
           facet_grid(~troph_sep, scales = "free_x", space="free_x", switch = "x") +
           theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10)) + 
           fillscl + 
-          ggtitle(paste0(set, "_", sub, " ", n)))
+          ggtitle(paste0(names(set_lst)[cnt], "_", sub, " ", n)))
     dev.off()
   }
+  #######################
+  ###validation Plots
+  #######################
+  resp_set <- c("SR", "resid") # loop model for SR and resid
+  SR_resid_lst <- lapply(resp_set, function(m){
+    resp_lst <- lapply(names(i$resp), function(k){
+      print(k)
+      varsel_lst <- i$varsel[[k]][[m]]
+    })
+    names(resp_lst) <- names(i$resp)
+    df <- Reduce(function(x,y) merge(x,y, by = "pred", all = T), resp_lst)
+    colnames(df) <- c("pred", names(i$resp)) #unschön und unsicher...Spalten könnten irgendwie durcheinander kommen??? gecheckt: 17.12.
+    return(df)
+  })
+  names(SR_resid_lst) <- resp_set
+  
+  # i$varsel[names(i$varsel)]
+  # test <- rbind(i$varsel)
+  # 
+  # test_pred <- Reduce(function(x, y) merge(x, y, by = "pred", all=TRUE), i$varsel)
+  # a <- i$varsel$SRmammals$resid
+  # b <- i$varsel$SRants$resid
+  # merge(a, b, by = "pred", all = T)
   }

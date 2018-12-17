@@ -108,68 +108,78 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
 ########################################################################################
 ###var Imp
 ########################################################################################
-# cnt <- 0
-# set_lst_var_imp <- lapply(set_lst_val, function(i){# i <- set_lst[[1]]
-#   cnt <<- cnt+1
-#   set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst)[cnt], "_"), mod_dir_lst)]
-#   modDir <- paste0(inpath, set_dir, set_moddir, "/")
-#   runs <- sort(unique(i$meta$run))
-#   for(k in names(i$resp)){
-#     print(k)
-#     for (outs in runs){
-#       print(outs)
-#       #####
-#       ###split for outer loop (independet cv)
-#       #####
-#       plt_in <- i$meta$plotID[-which(i$meta$run == outs)]
-#       plt_out <- i$meta$plotID[which(i$meta$run == outs)]
-#       tbl_in <- i$resp[[k]][which(i$resp[[k]]$plotID %in% plt_in),]
-#       # tbl_out <- i$resp[[k]][which(i$resp[[k]]$plotID %in% plt_out),]
-#       resp_set <- c(k, "resid") # loop model for SR and resid
-#       for (m in resp_set){
-#         print(m)
-#         if(length(unique(tbl_in[,m])) > 1){ #check if tbl_in has only 0 zB: SRlycopodiopsida/nofrst/outs = 1
-#           #####
-#           ###read actual model
-#           #####
-#           mod <- tryCatch(
-#             readRDS(file = paste0(modDir, "mod_run_", outs, "_", k, "_", m, ".rds")),
-#             error = function(e)mod <- NA)
-#           print("mod")
-#           var_imp <- tryCatch(
-#           data.frame(sel_vars = mod$selectedvars, 
-#                                varimp = varImp(mod)$importance), 
-#           error = function(e)var_imp <- NA)
-#           print("varimp")
-#           print(m)
-#           i$varimp[[k]][[m]][[outs]] <- var_imp
-#           print("write varimp")
-#         }else{
-#           print("else")
-#           i$varimp[[k]][[m]][[outs]] <- NA
-#         }
-#       }
-#     }
+cnt <- 0
+set_lst_var_imp <- lapply(set_lst_val, function(i){# i <- set_lst[[1]]
+  cnt <<- cnt+1
+  set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst)[cnt], "_"), mod_dir_lst)]
+  modDir <- paste0(inpath, set_dir, set_moddir, "/")
+  runs <- sort(unique(i$meta$run))
+  for(k in names(i$resp)){
+    print(k)
+    for (outs in runs){
+      print(outs)
+      #####
+      ###split for outer loop (independet cv)
+      #####
+      plt_in <- i$meta$plotID[-which(i$meta$run == outs)]
+      plt_out <- i$meta$plotID[which(i$meta$run == outs)]
+      tbl_in <- i$resp[[k]][which(i$resp[[k]]$plotID %in% plt_in),]
+      # tbl_out <- i$resp[[k]][which(i$resp[[k]]$plotID %in% plt_out),]
+      resp_set <- c("SR", "resid") # loop model for SR and resid
+      for (m in resp_set){
+        print(m)
+        if(length(unique(tbl_in[,m])) > 1){ #check if tbl_in has only 0 zB: SRlycopodiopsida/nofrst/outs = 1
+          #####
+          ###read actual model
+          #####
+          mod <- tryCatch(
+            readRDS(file = paste0(modDir, "mod_run_", outs, "_", k, "_", m, ".rds")),
+            error = function(e)mod <- NA)
+          print("mod")
+          var_imp <- tryCatch(
+          data.frame(sel_vars = mod$selectedvars,
+                               varimp = varImp(mod)$importance),
+          error = function(e)var_imp <- NA)
+          print("varimp")
+          print(m)
+          if (!is.na(var_imp)){
+            i$varimp[[k]][[m]][[outs]] <- var_imp
+            print("write varimp")
+          }else{
+            i$varimp[[k]][[m]][[outs]] <- data.frame(sel_vars = NA, Overall = NA)
+            
+          }
+        }else{
+          print("else")
+          i$varimp[[k]][[m]][[outs]] <- data.frame(sel_vars = NA, Overall = NA)
+        }
+      }
+    }
     #######################
     ###varsel plots
     #######################
     # for (k in i$varimp){
-    # # print(k)
-    # resp_set <- c(k, "resid") # loop model for SR and resid
-    # for (m in resp_set){
-    #   selvars_allruns <- do.call(rbind, i$varimp[[k]][[m]])
-    #   frq <- as.data.frame(table(selvars_allruns$sel_vars))
-    #   colnames(frq) <- c(paste0(k,m), "freq")
-    #   i$varsel[[k]][[m]] <- frq
-    # }
-    # 
+    print(k)
+    resp_set <- c("SR", "resid") # loop model for SR and resid
+    for (m in resp_set){
+      selvars_allruns <- do.call(rbind, i$varimp[[k]][[m]])
+      if (!is.na(sum(selvars_allruns$Overall))){
+      frq <- as.data.frame(table(selvars_allruns$sel_vars))
+      }else{
+        frq <- data.frame(resp = NA, frq = NA)
+      }
+      colnames(frq) <- c("pred", "freq")
+      # colnames(frq) <- c(paste0(k,"_", m), "freq")
+      i$varsel[[k]][[m]] <- frq
+    }
+
 
     # }
-  # }##k names resp
-  
-  # if (file.exists(paste0(modDir, "data/"))==F){
-  #   dir.create(file.path(paste0(modDir, "data/")), recursive = T)
-  # }
-  # saveRDS(i, file = paste0(modDir, "data/", "60_master_lst_varimp_", names(set_lst)[cnt], ".rds"))
-  # return(i)
-  # })
+  }##k names resp
+
+  if (file.exists(paste0(modDir, "data/"))==F){
+    dir.create(file.path(paste0(modDir, "data/")), recursive = T)
+  }
+  saveRDS(i, file = paste0(modDir, "data/", "60_master_lst_varimp_", names(set_lst)[cnt], ".rds"))
+  return(i)
+  })

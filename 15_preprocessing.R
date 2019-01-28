@@ -171,7 +171,7 @@ nm_resp_troph <- colnames(troph_sum)[-which(colnames(troph_sum) == "plotID")]
 #######################
 ###stuff done for each set (frst/nofrst/allplts)
 #######################
-for (o in set){
+for (o in set){ # o <- set[[1]]
   if (o != "allplts"){
     if (o == "frst"){
       cat <- c("fer", "flm", "foc", "fod", "fpd", "fpo", "hom")

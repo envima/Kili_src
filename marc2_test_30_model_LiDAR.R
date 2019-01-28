@@ -32,7 +32,8 @@ inpath_pre <- paste0(inpath, set_dir)
 ########################################################################################
 ###Settings
 ########################################################################################
-cl <- 15
+ncores <- 1
+cl <- makeCluster(ncores)
 # comm <- "elev"
 # comm <- "noelev"
 comm <- "flt_elev"
@@ -47,7 +48,7 @@ set_lst <- lapply(set, function(o){
   readRDS(file = paste0(outpath, "20_master_lst_resid_", o, ".rds"))
 })
 names(set_lst) <- set
-set_dir <- paste0(Sys.Date(), paste(set, collapse = "_"), "_", comm, "/")
+set_dir <- paste0(Sys.Date(), paste(set, collapse = "_"), "/")
 if (file.exists(paste0(outpath, set_dir))==F){
   dir.create(file.path(paste0(outpath, set_dir)))
 }
@@ -71,9 +72,9 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
   }
   # modDir <- "../data/dez18/2018-12-06_nofrst_ffs_pls_"
   registerDoParallel(cl)
-  foreach(k = names(i$resp), .errorhandling = "remove", .packages=c("caret", "CAST", "plyr"))%dopar%{
+  foreach(k = names(i$resp)[1], .errorhandling = "remove", .packages=c("caret", "CAST", "plyr"))%dopar%{
   # for (k in names(i$resp)){
-    for (outs in runs){
+    for (outs in runs[1]){
       #####
       ###split for outer loop (independet cv)
       #####

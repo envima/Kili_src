@@ -28,7 +28,7 @@ outpath <- paste0("../data/", sub)
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2018-12-13nofrst_frst_allplts/"
+set_dir <- "2019-01-08frst_nofrst_allplts/"
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
 # set <- c("nofrst")
@@ -39,10 +39,10 @@ set_lst <- lapply(set, function(o){
   readRDS(file = paste0(outpath, "20_master_lst_resid_", o, ".rds"))
 })
 names(set_lst) <- set 
+set_lst <- set_lst[!is.na(set_lst)]
 ########################################################################################
 ###Settings
 ########################################################################################
-comm <- ""
 method <- "pls"
 type <- "ffs"
 

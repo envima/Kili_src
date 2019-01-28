@@ -23,7 +23,7 @@ inpath_general <- "../data/"
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2018-12-13nofrst_frst_allplts/"
+set_dir <- "2019-01-08frst_nofrst_allplts/"
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
 
@@ -77,10 +77,10 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
       #####
       ###RMSE/sd
       #####
-      RMSEsd_elev_pred <- RMSE_elev_pred/sd(i$resp[[k]]$SR)
-      RMSEsd_ldr_pred_SR<- RMSE_ldr_pred_SR/sd(i$resp[[k]]$SR)
-      RMSEsd_ldr_pred_resid <- RMSE_ldr_pred_resid/sd(i$resp[[k]]$resid)
-      RMSEsd_sum_elev_pred_ldr_pred_resid <- RMSE_sum_elev_pred_ldr_pred_resid/sd(i$resp[[k]]$SR)
+      RMSEsd_elev_pred <- RMSE_elev_pred/sd(i$resp[[k]]$SR, na.rm = T)
+      RMSEsd_ldr_pred_SR<- RMSE_ldr_pred_SR/sd(i$resp[[k]]$SR, na.rm = T)
+      RMSEsd_ldr_pred_resid <- RMSE_ldr_pred_resid/sd(i$resp[[k]]$resid, na.rm = T)
+      RMSEsd_sum_elev_pred_ldr_pred_resid <- RMSE_sum_elev_pred_ldr_pred_resid/sd(i$resp[[k]]$SR, na.rm = T)
       #####
       ###new list element with validation
       #####
@@ -115,9 +115,9 @@ set_lst_var_imp <- lapply(set_lst_val, function(i){# i <- set_lst[[1]]
   modDir <- paste0(inpath, set_dir, set_moddir, "/")
   runs <- sort(unique(i$meta$run))
   for(k in names(i$resp)){
-    print(k)
+    # print(k)
     for (outs in runs){
-      print(outs)
+      # print(outs)
       #####
       ###split for outer loop (independet cv)
       #####
@@ -127,7 +127,7 @@ set_lst_var_imp <- lapply(set_lst_val, function(i){# i <- set_lst[[1]]
       # tbl_out <- i$resp[[k]][which(i$resp[[k]]$plotID %in% plt_out),]
       resp_set <- c("SR", "resid") # loop model for SR and resid
       for (m in resp_set){
-        print(m)
+        # print(m)
         if(length(unique(tbl_in[,m])) > 1){ #check if tbl_in has only 0 zB: SRlycopodiopsida/nofrst/outs = 1
           #####
           ###read actual model
@@ -135,22 +135,17 @@ set_lst_var_imp <- lapply(set_lst_val, function(i){# i <- set_lst[[1]]
           mod <- tryCatch(
             readRDS(file = paste0(modDir, "mod_run_", outs, "_", k, "_", m, ".rds")),
             error = function(e)mod <- NA)
-          print("mod")
           var_imp <- tryCatch(
           data.frame(sel_vars = mod$selectedvars,
                                varimp = varImp(mod)$importance),
           error = function(e)var_imp <- NA)
-          print("varimp")
-          print(m)
+          # print(m)
           if (!is.na(var_imp)){
             i$varimp[[k]][[m]][[outs]] <- var_imp
-            print("write varimp")
           }else{
             i$varimp[[k]][[m]][[outs]] <- data.frame(sel_vars = NA, Overall = NA)
-            
           }
         }else{
-          print("else")
           i$varimp[[k]][[m]][[outs]] <- data.frame(sel_vars = NA, Overall = NA)
         }
       }
@@ -159,7 +154,7 @@ set_lst_var_imp <- lapply(set_lst_val, function(i){# i <- set_lst[[1]]
     ###varsel plots
     #######################
     # for (k in i$varimp){
-    print(k)
+    # print(k)
     resp_set <- c("SR", "resid") # loop model for SR and resid
     for (m in resp_set){
       selvars_allruns <- do.call(rbind, i$varimp[[k]][[m]])

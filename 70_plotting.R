@@ -1,7 +1,8 @@
 # Description:
 # Author: Alice Ziegler
 # Date: 2018-12-10 11:49:55
-# to do:
+# to do: colnames(df) <- sicherer gegen umsortieren machen
+# bei selvar plot legende eindeutig welche farbe welche zahl ist. (nicht tick im übergang)
 rm(list=ls())
 
 ########################################################################################
@@ -13,6 +14,10 @@ rm(list=ls())
 library(stringr)
 library(tidyr)
 library(ggplot2)
+library(raster)
+library(rasterVis)
+library(compositions)
+library(RColorBrewer)
 #####
 ###set paths
 #####
@@ -25,7 +30,8 @@ outpath <- paste0("../out/", sub)
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2018-12-13nofrst_frst_allplts/"
+set_dir <- "2018-12-16nofrst_frst_allplts_noelev/"
+
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
 
@@ -44,11 +50,15 @@ names(set_lst) <- set
 set_lst <- set_lst[!is.na(set_lst)]
 
 troph_mrg <- readRDS(paste0(inpath, "15_troph_mrg.rds"))
+#####
+###read functions
+#####
+source("lvlplt.R")
 ########################################################################################
 ###Settings
 ########################################################################################
 plts <- c("RMSEsd_", "RMSE_")
-
+comm <- ""
 ########################################################################################
 ########################################################################################
 ########################################################################################
@@ -60,6 +70,7 @@ cnt <- 0
 for (i in set_lst){# i <- set_lst[[1]]
   cnt <<- cnt+1
   set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst)[cnt], "_"), mod_dir_lst)]
+  if (length(set_moddir) > 0){
   modDir <- paste0(outpath, set_dir, set_moddir, "/")
   #######################
   ###validation Plots
@@ -73,9 +84,19 @@ for (i in set_lst){# i <- set_lst[[1]]
                                    "decomposer_sum", "herbivore", "herbivore_sum", "plant", "plant_sum", 
                                    "birds", "bats")
   val_type <- gather(val_troph, type, value, -resp, -run, -diet, -troph_sep, -Taxon)
+  #####
+  ###sort resp by troph levels for further operations
+  #####
+  resp_srt <- unique(val_type[with(val_type, order(troph_sep, resp)),"resp"])
+  #####
+  ###plot settings
+  #####
   myColors <- c("mediumslateblue", "blue2", "aquamarine3", "chocolate1", 
                 "firebrick1", "darkmagenta")
   fillscl <- scale_fill_manual(name = "col",values = myColors)
+  #####
+  ###actual plotting
+  #####
   for (n in plts){
     val_plt <- subset(val_type, grepl(n, val_type$type))
     levels(val_plt$troph_sep) <- levels(val_type$troph_sep)
@@ -91,12 +112,15 @@ for (i in set_lst){# i <- set_lst[[1]]
           facet_grid(~troph_sep, scales = "free_x", space="free_x", switch = "x") +
           theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10)) + 
           fillscl + 
-          ggtitle(paste0(names(set_lst)[cnt], "_", sub, " ", n)))
+          ggtitle(paste0(names(set_lst)[cnt], "_", sub, "_", n)))
     dev.off()
   }
   #######################
   ###validation Plots
   #######################
+  #####
+  ###create df for heatmap, separate for SR and resid
+  #####
   resp_set <- c("SR", "resid") # loop model for SR and resid
   SR_resid_lst <- lapply(resp_set, function(m){
     resp_lst <- lapply(names(i$resp), function(k){
@@ -105,16 +129,31 @@ for (i in set_lst){# i <- set_lst[[1]]
     })
     names(resp_lst) <- names(i$resp)
     df <- Reduce(function(x,y) merge(x,y, by = "pred", all = T), resp_lst)
+    df <- df[complete.cases(df$pred),]
     colnames(df) <- c("pred", names(i$resp)) #unschön und unsicher...Spalten könnten irgendwie durcheinander kommen??? gecheckt: 17.12.
-    return(df)
+    df[is.na(df)] <- 0 #NAs are not working in levelplot
+    #####
+    ###sort dataframe for heatmap
+    ###cols by trophic levels
+    ###rows by number of occurances
+    #####
+    df <- df[c("pred", resp_srt)]
+    df <- df[order(rowSums(df[,2:ncol(df)], na.rm = T), decreasing = T),]
+    row.names(df) <- as.character(df$pred)
+    mat <- as.matrix(df[,!colnames(df) == "pred"])
+    
+    #######################
+    ###actual plotting
+    #######################
+    pdf(file = paste0(modDir, "heat_selvars_", names(set_lst)[cnt], "_", m, "_", comm, ".pdf"), width = 7, height = 10)#paper = "a4")
+    lvlplt(mat = mat, 
+           lbl_x = colnames(mat), 
+           lbl_y = rownames(mat), 
+           rnge = seq(min(mat)+0.5, max(mat)+0.5, 1), 
+           main = paste0(names(set_lst)[cnt], "_", sub, "_", m))
+    dev.off()
+    return(mat)
   })
   names(SR_resid_lst) <- resp_set
-  
-  # i$varsel[names(i$varsel)]
-  # test <- rbind(i$varsel)
-  # 
-  # test_pred <- Reduce(function(x, y) merge(x, y, by = "pred", all=TRUE), i$varsel)
-  # a <- i$varsel$SRmammals$resid
-  # b <- i$varsel$SRants$resid
-  # merge(a, b, by = "pred", all = T)
   }
+}

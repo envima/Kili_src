@@ -5,9 +5,9 @@
 #$ -o R_test.out            # specify file for stdout output
 #$ -j y                     # stderr -> stdout redirection
 #$ -m eas                   # notify by mail on end, abort, suspend             
-#$ -l h_rt=1000             # maximum estimated runtime in seconds (h_rt=1:00:00 is also a correct format)
+#$ -l h_rt=100             # maximum estimated runtime in seconds (h_rt=1:00:00 is also a correct format)
 #$ -l h_vmem=1.9G           # maximum requested memory per core
-#$ -pe orte_smp* 8          # parallel environment 'orte_smp', all processes on the same node with 8 cores
+#$ -pe orte_smp* 90          # parallel environment 'orte_smp', all processes on the same node with 8 cores
  
 #load modules
 . /etc/profile.d/modules.sh # Needed in every jobscript for correct module search path
@@ -18,4 +18,4 @@ module load tools/R-3.4.3
 echo "starting program"
  
 #run R example
-R CMD BATCH --vanilla testscript.R
+R CMD BATCH --vanilla 31_marc2_test_multi_prll.R

@@ -103,7 +103,7 @@ mrg_tbl <- mrg_tbl[which(colnames(mrg_tbl) %in% c(nm_meta_base, nm_resp_SR, nm_p
 #######################
 ###create column "run" with index for crossvalidation
 #######################
-#indeces that are not comun will be merged into different index for cv
+#indices that are not comun will be merged into different index for cv
 frq <- as.data.frame(table(mrg_tbl$selID))
 noruns <- frq[which(frq$Freq < (0.5 * max(frq$Freq))), "Var1"]
 runs <- frq[which(frq$Freq >= (0.5 * max(frq$Freq))), "Var1"]
@@ -221,7 +221,7 @@ for (o in set){ # o <- set[[1]]
   #merge tbl_set and tbl_scl
   tbl_mrg_set <- merge(tbl_set, tbl_scl, by = "plotID")
   ########################################################################################
-  ###initiate an write list
+  ###initiate a write list
   ########################################################################################
   master_lst <- list(meta = tbl_mrg_set[,which(colnames(tbl_mrg_set) %in% c(nm_meta, nm_pred, nm_pred_scl))], 
                      resp = lapply(c(nm_resp_SR, nm_resp_troph), function(i){

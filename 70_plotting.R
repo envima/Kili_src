@@ -30,7 +30,7 @@ outpath <- paste0("../out/", sub)
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2018-12-16nofrst_frst_allplts_noelev/"
+set_dir <- "2019-01-26frst_nofrst_allplts_flt_elev/"
 
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")

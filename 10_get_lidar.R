@@ -25,7 +25,7 @@ library(stringr)
 ###set paths
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-sub <- "dez18_qa/"
+sub <- "feb19/"
 inpath <- paste0("../data/", sub)
 if (file.exists(inpath)==F){
   dir.create(file.path(inpath))
@@ -53,7 +53,8 @@ r_pnts <- 25
 d_rst <- 50
 db_layers <- c("kili_campaign1_lidar_classified_2015", "kili_campaign2_lidar_classified_2016")
 db_login <- readChar(login_file, file.info(login_file)$size) # optional read account from file
-db <- "http://137.248.191.215:8081"
+# db <- "http://137.248.191.215:8081"
+db <- "http://192.168.191.183:8081"
 # location <- unique(tec_crdnt[, c("plotID", "x_pnt", "y_pnt")])
 rst_type <- c("chm")
 group_name <- "kili_poi_plots"

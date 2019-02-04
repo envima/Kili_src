@@ -15,7 +15,7 @@ library(caret)
 ###set paths
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-sub <- "dez18_qa/"
+sub <- "feb19/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 outpath <- paste0("../data/", sub)
@@ -42,7 +42,7 @@ names(set_lst) <- set
 cnt <- 0
 set_lst_res <- lapply(set_lst, function(i){# i <- set_lst[[1]]
   cnt <<- cnt+1
-  runs <- sort(unique(i$meta$run))
+  runs <- sort(unique(i$meta$cvindex_run))
   for (k in names(i$resp)){
     print(k)
     for (outs in runs){
@@ -50,19 +50,19 @@ set_lst_res <- lapply(set_lst, function(i){# i <- set_lst[[1]]
       #####
       ###split for outer loop (independet cv)
       #####
-      plt_in <- i$meta$plotID[-which(i$meta$run == outs)]
-      plt_out <- i$meta$plotID[which(i$meta$run == outs)]
+      plt_in <- i$meta$plotID[-which(i$meta$cvindex_run == outs)]
+      plt_out <- i$meta$plotID[which(i$meta$cvindex_run == outs)]
       tbl_in <- list("meta"=i$meta[which(i$meta$plotID %in% plt_in),],
         "resp"=i$resp[[k]][which(i$resp[[k]]$plotID %in% plt_in),])
       #####
       ### create index for inner loop within tbl_in
       #####
       cvIndex <- lapply(runs[-which(runs %in% outs)], function(cvouts){
-        plt_cv_in <- i$meta$plotID[-which(i$meta$run == outs | i$meta$run == cvouts)]
+        plt_cv_in <- i$meta$plotID[-which(i$meta$cvindex_run == outs | i$meta$cvindex_run == cvouts)]
         res <- which(tbl_in$meta$plotID %in% plt_cv_in)
       })
       cvIndex_out <- lapply(runs[-which(runs %in% outs)], function(cvouts){
-        plt_cv_out <- i$meta$plotID[which(i$meta$run == cvouts)]
+        plt_cv_out <- i$meta$plotID[which(i$meta$cvindex_run == cvouts)]
         res <- which(tbl_in$meta$plotID %in% plt_cv_out)
       })
 

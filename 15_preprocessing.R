@@ -20,11 +20,12 @@ rm(list=ls())
 #####
 library(plyr)
 library(stringr)
+library(caret)
 #####
 ###set paths
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-sub <- "dez18_qa/"
+sub <- "feb19/"
 inpath <- paste0("../data/", sub)
 if (file.exists(inpath)==F){
   dir.create(file.path(inpath))
@@ -101,24 +102,37 @@ nm_pred_pot <- c(colnames(mrg_tbl)[c(which(colnames(mrg_tbl) %in% "AGB"),
                                      which(colnames(mrg_tbl) %in% "elevsq"))])
 mrg_tbl <- mrg_tbl[which(colnames(mrg_tbl) %in% c(nm_meta_base, nm_resp_SR, nm_pred_pot))]
 #######################
-###create column "run" with index for crossvalidation
+###create column "cvindex_run" with index for crossvalidation by index (transect)
 #######################
-#indices that are not comun will be merged into different index for cv
+#indices that are not column will be merged into different index for cv
 frq <- as.data.frame(table(mrg_tbl$selID))
 noruns <- frq[which(frq$Freq < (0.5 * max(frq$Freq))), "Var1"]
 runs <- frq[which(frq$Freq >= (0.5 * max(frq$Freq))), "Var1"]
 
-mrg_tbl$run <- mrg_tbl$selID
+mrg_tbl$cvindex_run <- mrg_tbl$selID
 if(length(noruns) > 0){
   for (i in noruns){
     dist <- mrg_tbl[which(mrg_tbl$selID %in% i),]
     df_tmp <- mrg_tbl[which(mrg_tbl$cat == mrg_tbl$cat[which(mrg_tbl$selID == i)] & 
                               mrg_tbl$selID != i),]
     run_miss <- runs[-which(runs %in% df_tmp$selID)]
-    mrg_tbl[which(mrg_tbl$plotID == dist$plotID),"run"] <- as.numeric(as.character(run_miss))
+    mrg_tbl[which(mrg_tbl$plotID == dist$plotID),"cvindex_run"] <- as.numeric(as.character(run_miss))
   }
 }
-nm_meta <- c(nm_meta_base, "run")
+nm_meta <- c(nm_meta_base, "cvindex_run")
+
+#######################
+###create dataframe with 20 colums for cv20 cross validation by landuseclass 20 times randomly drawn plot of each landuse
+#######################
+folds <- createMultiFolds(y = mrg_tbl$cat, k = 5, times = 20)
+folds_outer <- folds[grepl(pattern = "Fold1", names(folds))]
+plots_outer <- lapply(folds_outer, function(reps){
+  mrg_tbl$plotID[-reps]
+})
+for (run in seq(1:length(plots_outer))){
+  mrg_tbl$tmp_run <- ifelse((mrg_tbl$plotID %in% plots_outer[run][[1]]), 1, 0)
+  colnames(mrg_tbl)[colnames(mrg_tbl) == "tmp_run"] <- paste0("cv", length(plots_outer), "_outerrun", run)
+}
 
 #######################
 ###calculate trophic levels

@@ -48,6 +48,8 @@ trophic_tbl <- as.data.frame(read.csv(paste0(inpath_general, "trophic_tbl.csv"),
 ###Settings
 ########################################################################################
 set <- c("nofrst", "frst", "allplts")
+cv_times <- 20
+cv_fold <- 5
 #######################
 ###prepare general dataset
 #######################
@@ -124,16 +126,18 @@ nm_meta <- c(nm_meta_base, "cvindex_run")
 #######################
 ###create dataframe with 20 colums for cv20 cross validation by landuseclass 20 times randomly drawn plot of each landuse
 #######################
-folds <- createMultiFolds(y = mrg_tbl$cat, k = 5, times = 20)
+set.seed(10)
+folds <- createMultiFolds(y = mrg_tbl$cat, k = cv_fold, times = cv_times)
 folds_outer <- folds[grepl(pattern = "Fold1", names(folds))]
 plots_outer <- lapply(folds_outer, function(reps){
   mrg_tbl$plotID[-reps]
 })
 for (run in seq(1:length(plots_outer))){
   mrg_tbl$tmp_run <- ifelse((mrg_tbl$plotID %in% plots_outer[run][[1]]), 1, 0)
-  colnames(mrg_tbl)[colnames(mrg_tbl) == "tmp_run"] <- paste0("cv", length(plots_outer), "_outerrun", run)
+  colnames(mrg_tbl)[colnames(mrg_tbl) == "tmp_run"] <- paste0("cv", length(plots_outer), "_outerrun_", run)
 }
-
+paste0("cv", length(plots_outer), "_outerrun_", seq(1:length(plots_outer)))
+nm_meta <- c(nm_meta, paste0("cv", length(plots_outer), "_outerrun_", seq(1:length(plots_outer))))
 #######################
 ###calculate trophic levels
 #######################

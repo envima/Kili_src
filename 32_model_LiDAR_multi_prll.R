@@ -72,23 +72,41 @@ foreach(i = seq(set), .errorhandling = "remove", .packages=c("caret", "CAST", "p
     for (outs in runs){
       #####
       ###split for outer loop (independet cv)
+      ###and inner index selection for model
       #####
-      plt_in <- set_lst[[i]]$meta$plotID[-which(set_lst[[i]]$meta$run == outs)]
-      plt_out <- set_lst[[i]]$meta$plotID[which(set_lst[[i]]$meta$run == outs)]
-      tbl_in <- list("meta"=set_lst[[i]]$meta[which(set_lst[[i]]$meta$plotID %in% plt_in),],
-                     "resp"=set_lst[[i]]$resp[[k]][which(set_lst[[i]]$resp[[k]]$plotID %in% plt_in),])
-      # tbl_out <- i$resp[[k]][which(i$resp[[k]]$plotID %in% plt_out),]
-      #####
-      ### create index for inner loop within tbl_in
-      #####
-      cvIndex <- lapply(runs[-which(runs %in% outs)], function(cvouts){
-        plt_cv_in <- set_lst[[i]]$meta$plotID[-which(set_lst[[i]]$meta$run == outs | set_lst[[i]]$meta$run == cvouts)]
-        res <- which(tbl_in$meta$plotID %in% plt_cv_in)
-      })
-      cvIndex_out <- lapply(runs[-which(runs %in% outs)], function(cvouts){
-        plt_cv_out <- set_lst[[i]]$meta$plotID[which(set_lst[[i]]$meta$run == cvouts)]
-        res <- which(tbl_in$meta$plotID %in% plt_cv_out)
-      })
+      if(grepl("cv_index", cv)){
+        ###index-cv
+        plt_in <- i$meta$plotID[-which(i$meta$cvindex_run == outs)]
+        plt_out <- i$meta$plotID[which(i$meta$cvindex_run == outs)]
+        tbl_in <- list("meta"=i$meta[which(i$meta$plotID %in% plt_in),],
+                       "resp"=i$resp[[k]][which(i$resp[[k]]$plotID %in% plt_in),])
+        #####
+        ### create index for inner loop within tbl_in
+        #####
+        cvIndex <- lapply(runs[-which(runs %in% outs)], function(cvouts){
+          plt_cv_in <- i$meta$plotID[-which(i$meta$cvindex_run == outs | i$meta$cvindex_run == cvouts)]
+          res <- which(tbl_in$meta$plotID %in% plt_cv_in)
+        })
+        cvIndex_out <- lapply(runs[-which(runs %in% outs)], function(cvouts){
+          plt_cv_out <- i$meta$plotID[which(i$meta$cvindex_run == cvouts)]
+          res <- which(tbl_in$meta$plotID %in% plt_cv_out)
+        })
+      }else{
+        ###cv-x
+        cv_nm <- colnames(i$meta)[grepl("outerrun", colnames(i$meta))][outs]
+        plt_in <- i$meta$plotID[i$meta[cv_nm] == 0]
+        plt_out <- i$meta$plotID[i$meta[cv_nm] == 1]
+        tbl_in <- list("meta"=i$meta[which(i$meta$plotID %in% plt_in),],
+                       "resp"=i$resp[[k]][which(i$resp[[k]]$plotID %in% plt_in),])
+        
+        #create multifolds for inner lop in traincontrol
+        tbl_folds <- data.frame(tbl_in$resp, cat = substr(tbl_in$resp$plotID, 1, 3))
+        set.seed(10)
+        cvIndex <- createMultiFolds(y = tbl_folds$cat, k = cv_fold_in, times = cv_times_in)
+        cvIndex_out <- lapply(seq(cvIndex), function(rsmpl){
+          seq(1, nrow(tbl_folds))[!seq(1, nrow(tbl_folds)) %in% cvIndex[[rsmpl]]]
+        })
+      }
       
       resp_set <- c("SR", "resid") #m <- "SR" #loop model for SR and resid
       for (m in resp_set){

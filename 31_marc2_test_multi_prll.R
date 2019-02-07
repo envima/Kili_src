@@ -32,7 +32,9 @@ inpath_pre <- paste0(inpath, set_dir)
 ########################################################################################
 ###Settings
 ########################################################################################
-cl <- 90
+cmdinput <- commandArgs(TRUE)
+i <- as.numeric(cmd_input[1])
+cl <- 30
 comm <- "elev"
 # comm <- "noelev"
 # comm <- "flt_elev"
@@ -62,7 +64,7 @@ if(grepl("flt", comm)){
 ########################################################################################
 ########################################################################################
 registerDoParallel(cl)
-foreach(i = seq(set), .errorhandling = "remove", .packages=c("caret", "CAST", "plyr")) %:% 
+# foreach(i = seq(set), .errorhandling = "remove", .packages=c("caret", "CAST", "plyr")) %:%
   foreach(k = names(set_lst[[i]]$resp), .errorhandling = "remove", .packages=c("caret", "CAST", "plyr"))%dopar%{
     runs <- sort(unique(set_lst[[i]]$meta$run))
     modDir <- paste0(outpath, set_dir, Sys.Date(), "_", names(set_lst)[i], "_", type, "_", method, "_", comm)

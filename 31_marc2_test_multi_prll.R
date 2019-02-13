@@ -27,14 +27,14 @@ outpath <- paste0("../data/", sub)
 set <- c("frst", "nofrst", "allplts")
 # set <- c("frst")
 ###settings from pre-models
-set_dir <- "2018-12-13nofrst_frst_allplts/"
-inpath_pre <- paste0(inpath, set_dir)
+# set_dir <- "2018-12-13nofrst_frst_allplts/"
+# inpath_pre <- paste0(inpath, set_dir)
 ########################################################################################
 ###Settings
 ########################################################################################
-cmdinput <- commandArgs(TRUE)
+cmd_input <- base::commandArgs(trailingOnly =TRUE)
 i <- as.numeric(cmd_input[1])
-cl <- 30
+core_num <- 30
 comm <- "elev"
 # comm <- "noelev"
 # comm <- "flt_elev"
@@ -63,6 +63,9 @@ if(grepl("flt", comm)){
 ########################################################################################
 ########################################################################################
 ########################################################################################
+# cl <- makeCluster(core_num, outfile = paste0(getwd(), "/", inpath, set_dir)) #../ in cluster für eine ebene hoch nicht möglich
+cl <- makeCluster(core_num, outfile = paste0("/home/ziegler5/data/dez18_qa/", set_dir, "out.txt")) #../ in cluster für eine ebene hoch nicht möglich
+
 registerDoParallel(cl)
 # foreach(i = seq(set), .errorhandling = "remove", .packages=c("caret", "CAST", "plyr")) %:%
   foreach(k = names(set_lst[[i]]$resp), .errorhandling = "remove", .packages=c("caret", "CAST", "plyr"))%dopar%{
@@ -112,7 +115,7 @@ registerDoParallel(cl)
         #####
         ###actual model
         #####
-        print("go")
+        # print("go")
         # mod <- ffs(preds, resp,
         #            method = "pls",
         #            metric = "RMSE",

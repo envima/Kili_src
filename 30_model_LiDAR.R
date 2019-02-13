@@ -33,14 +33,14 @@ inpath_pre <- paste0(inpath, set_dir)
 ###Settings
 ########################################################################################
 cl <- 30
-# comm <- "elev"
+comm <- "elev"
 # comm <- "noelev"
-comm <- "flt_elev"
+# comm <- "flt_elev"
 # comm <- "flt_noelev"
 method <- "pls"
 type <- "ffs"
-cv <- "cv_index"
-# cv <- "cv_20"
+# cv <- "cv_index"
+cv <- "cv_20"
 # cv <- "cv_50"
 
 #####

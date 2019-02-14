@@ -19,7 +19,7 @@ library(parallel)
 ###set paths
 #####
 # setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-setwd("/mnt/sd19006/data/users/aziegler/src")
+setwd("/home/ziegler5/src")
 sub <- "feb19/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
@@ -32,9 +32,7 @@ inpath_pre <- paste0(inpath, set_dir)
 ########################################################################################
 ###Settings
 ########################################################################################
-cmdinput <- base::commandArgs(trailingOnly =TRUE)
-i <- as.numeric(cmd_input[1])
-cl <- 30
+core_num <- 30
 comm <- "elev"
 # comm <- "noelev"
 # comm <- "flt_elev"
@@ -44,9 +42,9 @@ type <- "ffs"
 # cv <- "cv_index"
 cv <- "cv_20"
 # cv <- "cv_50"
+
 cv_fold_in <- 4
 cv_times_in <- 20
-
 #####
 ###read files
 #####
@@ -68,20 +66,22 @@ if(grepl("flt", comm)){
 ########################################################################################
 ########################################################################################
 ########################################################################################
+i <- 3
 
-  
-# foreach(i = seq(set), .errorhandling = "remove", .packages=c("caret", "CAST", "plyr")) %:%
+cl <- makeCluster(core_num, outfile = paste0(getwd(), "/", inpath, set_dir, "out_", i, ".txt")) #../ in cluster für eine ebene hoch nicht möglich?
+
+# foreach(i = seq(set), .errorhandling = "remove", .packages=c("caret", "CAST", "plyr")) %:% # k <- "SRmammals"
 foreach(k = names(set_lst[[i]]$resp), .errorhandling = "remove", .packages=c("caret", "CAST", "plyr"))%dopar%{
   if(grepl("cv_index", cv)){
     runs <- sort(unique(set_lst[[i]]$meta$cvindex_run))
   }else{
     runs <- seq(sum(grepl("outerrun", colnames(set_lst[[i]]$meta))))
-  }
+  }  
   modDir <- paste0(outpath, set_dir, Sys.Date(), "_", names(set_lst)[i], "_", type, "_", method, "_", comm)
   if (file.exists(modDir)==F){
     dir.create(file.path(modDir))
   }
-    for (outs in cvindex_run){
+    for (outs in runs){
       #####
       ###split for outer loop (independet cv)
       ###and inner index selection for model

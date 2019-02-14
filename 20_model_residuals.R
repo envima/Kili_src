@@ -52,7 +52,7 @@ set_lst_res <- lapply(set_lst, function(i){# i <- set_lst[[1]]
   if(grepl("cv_index", cv)){
     runs <- sort(unique(i$meta$cvindex_run))
   }else{
-    runs <- seq(as.numeric(strsplit(cv, "_")[[1]][2]))
+    runs <- seq(sum(grepl("outerrun", colnames(i$meta))))
   }
   for (k in names(i$resp)){ # k <- "SRmammals"
     print(k)

@@ -8,7 +8,6 @@
 #$ -l h_rt=100             # maximum estimated runtime in seconds (h_rt=1:00:00 is also a correct format)
 #$ -l h_vmem=1.9G           # maximum requested memory per core
 #$ -pe orte_smp* 30          # parallel environment 'orte_smp', all processes on the same node with 8 cores
-
  
 #load modules
 . /etc/profile.d/modules.sh # Needed in every jobscript for correct module search path
@@ -20,4 +19,4 @@ echo "starting program"
  
 #run R example
 #R CMD BATCH --vanilla 31_marc2_test_multi_prll.R $SGE_TASK_ID
-Rscript --vanilla 33_marc2_test_multi_prll.R
+Rscript --vanilla 33_marc2_test_sepjobs_prll.R 

@@ -82,7 +82,6 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
   registerDoParallel(cl)
   foreach(k = names(i$resp), .errorhandling = "remove", .packages=c("caret", "CAST", "plyr"))%dopar%{ 
     # k <- "SRmammals"
-  # for (k in names(i$resp)){
     for (outs in runs){ # outs <- 1
       #####
       ###split for outer loop (independet cv)
@@ -162,5 +161,5 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
         # i$resp[[k]][[col_nm]][i$resp[[k]]$plotID %in% plt_out] <- prdct
   }
 })
-names(set_lst_ldr) <- set 
+# names(set_lst_ldr) <- set 
 stopCluster(cl)

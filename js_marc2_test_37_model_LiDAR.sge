@@ -20,4 +20,4 @@ echo "starting program"
  
 #run R example
 # R CMD BATCH --vanilla 31_marc2_test_multi_prll.R $SGE_TASK_ID
-Rscript --vanilla 31_marc2_test_multi_prll.R $SGE_TASK_ID
+Rscript --vanilla 37_marc2_test_taskid_sevrds_prll.R $SGE_TASK_ID

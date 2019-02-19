@@ -56,18 +56,18 @@ cl <- makeCluster(core_num, outfile = paste0("/home/ziegler5/data/dez18_qa/", se
 
 #testing: i <- 1 # from SGE_TASK_ID argument
 registerDoParallel(cl)
-  foreach(k = names(set_lst[[i]]$resp), .errorhandling = "remove", .packages=c("caret", "CAST", "plyr"))%dopar%{ # testing: k <- "SRmammals"
-    runs <- sort(unique(set_lst[[i]]$meta$run))
-    modDir <- paste0(outpath, set_dir, Sys.Date(), "_", names(set_lst)[i])
-    if (file.exists(modDir)==F){
-      dir.create(file.path(modDir))
+foreach(k = names(set_lst[[i]]$resp), .errorhandling = "remove", .packages=c("caret", "CAST", "plyr"))%dopar%{ # testing: k <- "SRmammals"
+  runs <- sort(unique(set_lst[[i]]$meta$run))
+  modDir <- paste0(outpath, set_dir, Sys.Date(), "_", names(set_lst)[i])
+  if (file.exists(modDir)==F){
+    dir.create(file.path(modDir))
+  }
+  for (outs in runs){
+    resp_set <- c("SR", "resid") #testing: m <- "SR" #loop model for SR and resid
+    for (m in resp_set){
+      mod <- paste0(i, "_", k, "_", outs, "_", m, "_") #test ohne modell
+      saveRDS(mod, file = paste0(modDir, "/mod_run_", outs, "_", k, "_", m, ".rds"))
     }
-    for (outs in runs){
-      resp_set <- c("SR", "resid") #testing: m <- "SR" #loop model for SR and resid
-      for (m in resp_set){
-        mod <- paste0(i, "_", k, "_", outs, "_", m, "_") #test ohne modell
-        saveRDS(mod, file = paste0(modDir, "/mod_run_", outs, "_", k, "_", m, ".rds"))
-      }
-      }
-    }
+  }
+}
 stopCluster(cl)

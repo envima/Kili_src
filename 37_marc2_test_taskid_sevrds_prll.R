@@ -55,29 +55,21 @@ if (file.exists(paste0(outpath, set_dir))==F){
 # cl <- makeCluster(core_num, outfile = paste0(getwd(), "/", inpath, set_dir)) #../ in cluster für eine ebene hoch nicht möglich?
 # cl <- makeCluster(core_num, outfile = paste0("/home/ziegler5/data/dez18_qa/", set_dir, "out.txt")) #../ in cluster für eine ebene hoch nicht möglich
 cl <- makeCluster(core_num, type = "FORK", outfile = paste0("/home/ziegler5/data/dez18_qa/", set_dir, "out.txt")) 
-#../ in cluster für eine ebene hoch nicht möglich
-#type = "FORK" funktioniert nur auf Linux
 
 #testing: i <- 1 # from SGE_TASK_ID argument
 registerDoParallel(cl)
-mod_lst <- foreach(k = names(set_lst[[i]]$resp), 
-                   .errorhandling = "remove", 
-                   # .final = function(x) setNames(x, paste0(i, "_", k, "_", outs, "_", m, "_")), 
-                   .packages=c("caret", "CAST", "plyr"))%dopar%{ # testing: k <- "SRmammals"
-                     runs <- sort(unique(set_lst[[i]]$meta$run))
-                     # for (outs in runs){
-                     out_loop <- lapply(runs, function(outs){
-                       resp_set <- c("SR", "resid") #testing: m <- "SR" #loop model for SR and resid
-                       respons <- lapply(resp_set, function(m){
-                         # for (m in resp_set){
-                         mod <- paste0(i, "_", k, "_", outs, "_", m, "_") #test ohne modell
-                         # saveRDS(mod, file = paste0(modDir, "/mod_run_", outs, "_", k, "_", m, ".rds"))
-                       })
-                     })
-                   }
-modDir <- paste0(outpath, set_dir, Sys.Date(), "_", names(set_lst)[i])
-if (file.exists(modDir)==F){
-  dir.create(file.path(modDir))
+foreach(k = names(set_lst[[i]]$resp), .errorhandling = "remove", .packages=c("caret", "CAST", "plyr"))%dopar%{ # testing: k <- "SRmammals"
+  runs <- sort(unique(set_lst[[i]]$meta$run))
+  modDir <- paste0(outpath, set_dir, Sys.Date(), "_", names(set_lst)[i])
+  if (file.exists(modDir)==F){
+    dir.create(file.path(modDir))
+  }
+  for (outs in runs){
+    resp_set <- c("SR", "resid") #testing: m <- "SR" #loop model for SR and resid
+    for (m in resp_set){
+      mod <- paste0(i, "_", k, "_", outs, "_", m, "_") #test ohne modell
+      saveRDS(mod, file = paste0(modDir, "/mod_run_", outs, "_", k, "_", m, ".rds"))
+    }
+  }
 }
-saveRDS(mod_lst, file = paste0(modDir, "/mod_lst.rds"))
 stopCluster(cl)

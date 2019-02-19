@@ -31,8 +31,9 @@ set <- c("frst", "nofrst", "allplts")
 ########################################################################################
 ###Settings
 ########################################################################################
-cmd_input <- base::commandArgs(trailingOnly =TRUE)
-i <- as.numeric(cmd_input[1])
+# cmd_input <- base::commandArgs(trailingOnly =TRUE)
+# i <- as.numeric(cmd_input[1])
+i <- 1
 core_num <- 30
 #####
 ###read files
@@ -53,10 +54,7 @@ if (file.exists(paste0(outpath, set_dir))==F){
 ########################################################################################
 ########################################################################################
 # cl <- makeCluster(core_num, outfile = paste0(getwd(), "/", inpath, set_dir)) #../ in cluster für eine ebene hoch nicht möglich?
-# cl <- makeCluster(core_num, outfile = paste0("/home/ziegler5/data/dez18_qa/", set_dir, "out.txt")) #../ in cluster für eine ebene hoch nicht möglich
-cl <- makeCluster(core_num, type = "FORK", outfile = paste0("/home/ziegler5/data/dez18_qa/", set_dir, "out.txt")) 
-#../ in cluster für eine ebene hoch nicht möglich
-#type = "FORK" funktioniert nur auf Linux
+cl <- makeCluster(core_num, outfile = paste0("/home/ziegler5/data/dez18_qa/", set_dir, "out.txt")) #../ in cluster für eine ebene hoch nicht möglich
 
 #testing: i <- 1 # from SGE_TASK_ID argument
 registerDoParallel(cl)

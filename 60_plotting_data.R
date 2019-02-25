@@ -17,13 +17,13 @@ library(caret)
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 # setwd("/mnt/sd19006/data/users/aziegler/src")
-sub <- "dez18_qa/"
+sub <- "feb19/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2019-01-26frst_nofrst_allplts_flt_elev/"
+set_dir <- "2019-02-15frst_nofrst_allplts_elev/"
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
 
@@ -44,7 +44,9 @@ set_lst <- set_lst[!is.na(set_lst)]
 ########################################################################################
 ###Settings
 ########################################################################################
-
+# cv <- "cv_index"
+cv <- "cv_20"
+# cv <- "cv_50"
 ########################################################################################
 ########################################################################################
 ########################################################################################
@@ -60,20 +62,34 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
   cnt <<- cnt+1
   set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst)[cnt], "_"), mod_dir_lst)]
   modDir <- paste0(inpath, set_dir, set_moddir, "/")
-  runs <- sort(unique(i$meta$run))
+  if(grepl("cv_index", cv)){
+    runs <- sort(unique(i$meta$cvindex_run))
+  }else{
+    runs <- seq(sum(grepl("outerrun", colnames(i$meta))))
+  }
   for (k in names(i$resp)){
     val_df_all_lst <- lapply (runs, function(outs){
       #####
+      ###out rows for thisrun (has to be chosen first, as depending on cv20/cv-index, 
+      ###the rows are chosen by one column, or by several.)
+      #####
+      if(grepl("cv_index", cv)){
+        outrows <- which(i$meta$cvindex_run == outs)
+      }else{
+        cv_nm <- colnames(i$meta)[grepl("outerrun", colnames(i$meta))][outs]
+        outrows <- which(i$meta[cv_nm] == 1)
+      }
+      #####
       ###RMSE
       #####
-      RMSE_elev_pred <- caret::RMSE(pred = i$resp[[k]]$elev_pred[i$meta$run == outs], 
-                                    obs = i$resp[[k]]$SR[i$meta$run == outs], na.rm = T)
-      RMSE_ldr_pred_SR <- caret::RMSE(pred = i$resp[[k]][[paste0("ldr_pred_", "SR")]][i$meta$run == outs], 
-                                      obs = i$resp[[k]]$SR[i$meta$run == outs], na.rm = T)
-      RMSE_ldr_pred_resid <- caret::RMSE(pred = i$resp[[k]]$ldr_pred_resid[i$meta$run == outs], 
-                                         obs = i$resp[[k]]$resid[i$meta$run == outs], na.rm = T)
-      RMSE_sum_elev_pred_ldr_pred_resid <- caret::RMSE(pred = i$resp[[k]]$sum_elev_pred_ldr_pred_resid[i$meta$run == outs], 
-                                                       obs = i$resp[[k]]$SR[i$meta$run == outs], na.rm = T)
+      RMSE_elev_pred <- caret::RMSE(pred = i$resp[[k]]$elev_pred[outrows], 
+                                    obs = i$resp[[k]]$SR[outrows], na.rm = T)
+      RMSE_ldr_pred_SR <- caret::RMSE(pred = i$resp[[k]][[paste0("ldr_pred_", "SR")]][outrows], 
+                                      obs = i$resp[[k]]$SR[outrows], na.rm = T)
+      RMSE_ldr_pred_resid <- caret::RMSE(pred = i$resp[[k]]$ldr_pred_resid[outrows], 
+                                         obs = i$resp[[k]]$resid[outrows], na.rm = T)
+      RMSE_sum_elev_pred_ldr_pred_resid <- caret::RMSE(pred = i$resp[[k]]$sum_elev_pred_ldr_pred_resid[outrows], 
+                                                       obs = i$resp[[k]]$SR[outrows], na.rm = T)
       #####
       ###RMSE/sd
       #####
@@ -113,18 +129,33 @@ set_lst_var_imp <- lapply(set_lst_val, function(i){# i <- set_lst[[1]]
   cnt <<- cnt+1
   set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst)[cnt], "_"), mod_dir_lst)]
   modDir <- paste0(inpath, set_dir, set_moddir, "/")
-  runs <- sort(unique(i$meta$run))
+  if(grepl("cv_index", cv)){
+    runs <- sort(unique(i$meta$cvindex_run))
+  }else{
+    runs <- seq(sum(grepl("outerrun", colnames(i$meta))))
+  }  
   for(k in names(i$resp)){
     # print(k)
     for (outs in runs){
       # print(outs)
       #####
       ###split for outer loop (independet cv)
+      ###and inner index selection for model
       #####
-      plt_in <- i$meta$plotID[-which(i$meta$run == outs)]
-      plt_out <- i$meta$plotID[which(i$meta$run == outs)]
-      tbl_in <- i$resp[[k]][which(i$resp[[k]]$plotID %in% plt_in),]
-      # tbl_out <- i$resp[[k]][which(i$resp[[k]]$plotID %in% plt_out),]
+      if(grepl("cv_index", cv)){
+        ###index-cv
+        plt_in <- i$meta$plotID[-which(i$meta$cvindex_run == outs)]
+        plt_out <- i$meta$plotID[which(i$meta$cvindex_run == outs)]
+        tbl_in <- i$resp[[k]][which(i$resp[[k]]$plotID %in% plt_in),]
+        
+      }else{
+        ###cv-x
+        cv_nm <- colnames(i$meta)[grepl("outerrun", colnames(i$meta))][outs]
+        plt_in <- i$meta$plotID[i$meta[cv_nm] == 0]
+        plt_out <- i$meta$plotID[i$meta[cv_nm] == 1]
+        tbl_in <- i$resp[[k]][which(i$resp[[k]]$plotID %in% plt_in),]
+      }
+      
       resp_set <- c("SR", "resid") # loop model for SR and resid
       for (m in resp_set){
         # print(m)

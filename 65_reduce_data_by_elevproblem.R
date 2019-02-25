@@ -17,14 +17,14 @@ rm(list=ls())
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 # setwd("/mnt/sd19006/data/users/aziegler/src")
-sub <- "dez18_qa/"
+sub <- "feb19/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 outpath <- paste0("../out/", sub)
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2018-12-16nofrst_frst_allplts_noelev/"
+set_dir <- "2019-02-15frst_nofrst_allplts_elev/"
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
 
@@ -58,15 +58,14 @@ for (i in set_lst){# i <- set_lst[[1]]
     resp_ok <- c()
     # j <- "SRmagnoliids"
     # j <- "SRmammals"
+    # j <- "SRbirds"
     for(j in names(i$resp)){
       print(j)
       if(sum(i$val[[j]]$RMSEsd_elev_pred, na.rm = T) !=0 &
          sum(i$val[[j]]$RMSEsd_ldr_pred_SR, na.rm = T) !=0 &
          sum(i$val[[j]]$RMSEsd_sum_elev_pred_ldr_pred_resid, na.rm = T)){
         if (median(i$val[[j]]$RMSEsd_elev_pred, na.rm = T) > 
-            median(i$val[[j]]$RMSEsd_ldr_pred_SR, na.rm = T) & 
-            median(i$val[[j]]$RMSEsd_elev_pred, na.rm = T) > 
-            median(i$val[[j]]$RMSEsd_sum_elev_pred_ldr_pred_resid, na.rm = T)){
+            median(i$val[[j]]$RMSEsd_ldr_pred_SR, na.rm = T)){
           resp_ok <- c(resp_ok, j)
       }}
       
@@ -74,6 +73,7 @@ for (i in set_lst){# i <- set_lst[[1]]
     i$val_ok <- i$val[names(i$val) %in% resp_ok]
     i$varimp_ok <- i$varimp[names(i$varimp) %in% resp_ok]
     i$varsel_ok <- i$varsel[names(i$varsel) %in% resp_ok]
+    i$resp <- i$resp[names(i$resp) %in% resp_ok]
     
     if (file.exists(paste0(modDir, "data/"))==F){
       dir.create(file.path(paste0(modDir, "data/")), recursive = T)

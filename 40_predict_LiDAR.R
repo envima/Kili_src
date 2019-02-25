@@ -20,15 +20,14 @@ library(parallel)
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 # setwd("/mnt/sd19006/data/users/aziegler/src")
-sub <- "dez18_qa/"
+sub <- "feb19/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 outpath <- paste0("../data/", sub)
-####################################################################################change modDir in i loop!!!!!!!!!!!!!!!!!!!!!!!!!
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2019-01-26frst_nofrst_allplts_flt_elev/"
+set_dir <- "2019-02-15frst_nofrst_allplts_elev/"
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
 # set <- c("nofrst")
@@ -45,7 +44,9 @@ set_lst <- set_lst[!is.na(set_lst)]
 ########################################################################################
 method <- "pls"
 type <- "ffs"
-
+# cv <- "cv_index"
+cv <- "cv_20"
+# cv <- "cv_50"
 ########################################################################################
 ########################################################################################
 ########################################################################################
@@ -56,7 +57,11 @@ type <- "ffs"
 cnt <- 0
 set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
   cnt <<- cnt+1
-  runs <- sort(unique(i$meta$run))
+  if(grepl("cv_index", cv)){
+    runs <- sort(unique(i$meta$cvindex_run))
+  }else{
+    runs <- seq(sum(grepl("outerrun", colnames(i$meta))))
+  }
   # modDir <- paste0(outpath, Sys.Date(), "_", names(set_lst)[cnt], "_", type, "_", method, "_", comm)
   # modDir <- paste0(outpath, set_dir, "_", names(set_lst)[cnt], "_", type, "_", method, "_", comm)
   
@@ -70,11 +75,16 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
       #####
       ###split for outer loop (independet cv)
       #####
-      plt_in <- i$meta$plotID[-which(i$meta$run == outs)]
-      plt_out <- i$meta$plotID[which(i$meta$run == outs)]
-      # tbl_in <- list("meta"=i$meta[which(i$meta$plotID %in% plt_in),],
-      #                "resp"=i$resp[[k]][which(i$resp[[k]]$plotID %in% plt_in),])
-
+      if(grepl("cv_index", cv)){
+        ###index-cv
+        plt_in <- i$meta$plotID[-which(i$meta$cvindex_run == outs)]
+        plt_out <- i$meta$plotID[which(i$meta$cvindex_run == outs)]
+      }else{
+        ###cv-x
+        cv_nm <- colnames(i$meta)[grepl("outerrun", colnames(i$meta))][outs]
+        plt_in <- i$meta$plotID[i$meta[cv_nm] == 0]
+        plt_out <- i$meta$plotID[i$meta[cv_nm] == 1]
+      }
       resp_set <- c("SR", "resid") # loop model for SR and resid
       for (m in resp_set){
         # if(length(unique(tbl_in[,m])) > 1){ #check if tbl_in has only 0 zB: SRlycopodiopsida/nofrst/outs = 1

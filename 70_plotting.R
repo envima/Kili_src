@@ -23,14 +23,14 @@ library(RColorBrewer)
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 # setwd("/mnt/sd19006/data/users/aziegler/src")
-sub <- "dez18_qa/"
+sub <- "feb19/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 outpath <- paste0("../out/", sub)
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2019-01-26frst_nofrst_allplts_flt_elev/"
+set_dir <- "2019-02-15frst_nofrst_allplts_elev/"
 
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
@@ -50,6 +50,7 @@ names(set_lst) <- set
 set_lst <- set_lst[!is.na(set_lst)]
 
 troph_mrg <- readRDS(paste0(inpath, "15_troph_mrg.rds"))
+troph_mrg <- troph_mrg[!duplicated(troph_mrg),]
 #####
 ###read functions
 #####
@@ -76,13 +77,17 @@ for (i in set_lst){# i <- set_lst[[1]]
   ###validation Plots
   #######################
   val_all <- do.call(rbind, i$val)
-  val_all$resp <- substr(rownames(val_all),1, nchar(rownames(val_all))-2)
-  val_troph <- merge(val_all, troph_mrg, by = "resp") ###woher kommen die zusätzlchen einträge
+  resp_nm <- lapply(rownames(val_all), function(nm){
+    splt <- strsplit(nm, split = "\\.")[[1]][1]
+    })
+  val_all$resp <- do.call(c,resp_nm)
+  val_troph <- merge(val_all, troph_mrg, by = "resp") 
   val_troph$troph_sep[grepl("sum", val_troph$resp)] <- paste0(val_troph$diet[grepl("sum", val_troph$resp)], "_sum")
   val_troph$troph_sep[is.na(val_troph$troph_sep)] <- as.character(val_troph$diet[is.na(val_troph$troph_sep)])
   levels(val_troph$troph_sep) <- c("predator", "predator_sum", "generalist", "generalist_sum", "decomposer", 
                                    "decomposer_sum", "herbivore", "herbivore_sum", "plant", "plant_sum", 
                                    "birds", "bats")
+  
   val_type <- gather(val_troph, type, value, -resp, -run, -diet, -troph_sep, -Taxon)
   #####
   ###sort resp by troph levels for further operations

@@ -16,14 +16,14 @@ rm(list=ls())
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 # setwd("/mnt/sd19006/data/users/aziegler/src")
-sub <- "dez18_qa/"
+sub <- "feb19/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2019-01-26frst_nofrst_allplts_flt_elev/"
+set_dir <- "2019-02-15frst_nofrst_allplts_elev/"
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
 

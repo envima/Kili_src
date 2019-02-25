@@ -28,7 +28,7 @@ outpath <- paste0("../data/", sub)
 set <- c("frst", "nofrst", "allplts")
 # set <- c("frst")
 ###settings from pre-models
-set_dir <- "2018-12-13nofrst_frst_allplts/"
+set_dir <- "2019-02-15frst_nofrst_allplts_elev/"
 inpath_pre <- paste0(inpath, set_dir)
 ########################################################################################
 ###Settings
@@ -40,6 +40,7 @@ comm <- "elev"
 # comm <- "noelev"
 # comm <- "flt_elev"
 # comm <- "flt_noelev"
+rdc <- T # use reduced data (plots with elevation problem are eliminated by script 65)
 method <- "pls"
 type <- "ffs"
 # cv <- "cv_index"
@@ -51,8 +52,13 @@ cv_times_in <- 20
 #####
 ###read files
 #####
-set_lst <- lapply(set, function(o){
-  readRDS(file = paste0(outpath, "20_master_lst_resid_", o, ".rds"))
+set_lst <- lapply(set, function(o){ # o <- "frst"
+  file <- readRDS(file = paste0(outpath, "20_master_lst_resid_", o, ".rds"))
+  if (rdc == T){
+    rdc_path <- list.dirs(path = inpath_pre, recursive = F)[grep(paste0("_", o, "_ffs_"), list.dirs(path = inpath_pre, recursive = F))]
+    file <- readRDS(paste0(rdc_path, "/data/", "65_master_lst_rdc_by_elevprob_", o, ".rds"))
+  }
+  return(file)
 })
 names(set_lst) <- set
 set_dir <- paste0(Sys.Date(), paste(set, collapse = "_"), "_", comm, "/")
@@ -62,6 +68,8 @@ if (file.exists(paste0(outpath, set_dir))==F){
 if(grepl("flt", comm)){
   preds_flt <- readRDS(file = paste0(inpath_pre, "80_preds_flt.rds"))
 }
+
+
 ########################################################################################
 ########################################################################################
 ########################################################################################

@@ -60,6 +60,7 @@ source("lvlplt.R")
 ########################################################################################
 plts <- c("RMSEsd_", "RMSE_")
 comm <- ""
+maxcat <- 20 #depending on the number of levels run
 ########################################################################################
 ########################################################################################
 ########################################################################################
@@ -84,11 +85,13 @@ for (i in set_lst){# i <- set_lst[[1]]
   val_troph <- merge(val_all, troph_mrg, by = "resp") 
   val_troph$troph_sep[grepl("sum", val_troph$resp)] <- paste0(val_troph$diet[grepl("sum", val_troph$resp)], "_sum")
   val_troph$troph_sep[is.na(val_troph$troph_sep)] <- as.character(val_troph$diet[is.na(val_troph$troph_sep)])
-  levels(val_troph$troph_sep) <- c("predator", "predator_sum", "generalist", "generalist_sum", "decomposer", 
+  val_troph_flt <- val_troph[is.finite(val_troph$RMSEsd_ldr_pred_SR),]
+  
+  levels(val_troph_flt$troph_sep) <- c("predator", "predator_sum", "generalist", "generalist_sum", "decomposer", 
                                    "decomposer_sum", "herbivore", "herbivore_sum", "plant", "plant_sum", 
                                    "birds", "bats")
   
-  val_type <- gather(val_troph, type, value, -resp, -run, -diet, -troph_sep, -Taxon)
+  val_type <- gather(val_troph_flt, type, value, -resp, -run, -diet, -troph_sep, -Taxon)
   #####
   ###sort resp by troph levels for further operations
   #####
@@ -102,7 +105,7 @@ for (i in set_lst){# i <- set_lst[[1]]
   #####
   ###actual plotting
   #####
-  for (n in plts){
+  for (n in plts){ #n <- "RMSEsd_"
     val_plt <- subset(val_type, grepl(n, val_type$type))
     levels(val_plt$troph_sep) <- levels(val_type$troph_sep)
 
@@ -133,7 +136,7 @@ for (i in set_lst){# i <- set_lst[[1]]
   ###create df for heatmap, separate for SR and resid
   #####
   resp_set <- c("SR", "resid") # loop model for SR and resid
-  SR_resid_lst <- lapply(resp_set, function(m){
+  SR_resid_lst <- lapply(resp_set, function(m){ #m <- "SR"
     resp_lst <- lapply(names(i$resp), function(k){
       print(k)
       varsel_lst <- i$varsel[[k]][[m]]
@@ -151,12 +154,16 @@ for (i in set_lst){# i <- set_lst[[1]]
     df <- df[c("pred", resp_srt)]
     df <- df[order(rowSums(df[,2:ncol(df)], na.rm = T), decreasing = T),]
     row.names(df) <- as.character(df$pred)
-    mat <- as.matrix(df[,!colnames(df) == "pred"])
+    
+    df_flt <- df[,colSums(df[,c(2:ncol(df))]) > 0]
+    
+    mat <- as.matrix(df_flt[,!colnames(df_flt) == "pred"])
     
     #######################
     ###actual plotting
     #######################
     l <- lvlplt(mat = mat, 
+                maxcat = maxcat, 
            lbl_x = colnames(mat), 
            lbl_y = rownames(mat), 
            rnge = seq(min(mat)+0.5, max(mat)+0.5, 1), 

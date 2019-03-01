@@ -1,5 +1,5 @@
 lvlplt <- function(mat, name, font_sz = 0.35, 
-                   lbl_x, lbl_y, rnge = seq(0,1,0.1), main = "", 
+                   lbl_x, lbl_y, rnge = seq(0,1,0.1), main = "", maxcat = 5,
                    clr = colorRampPalette(brewer.pal(9, "YlOrRd"))){
   xdim <- dim(mat)[2]
   ydim <- dim(mat)[1]
@@ -14,7 +14,7 @@ lvlplt <- function(mat, name, font_sz = 0.35,
                                      y = list(at = c(ydim:1), cex = font_sz, labels = lbl_y)), 
                   margin = FALSE, 
                   main = main, 
-                  col.regions = clr(7)[seq(rst@data@min ,rst@data@max)], 
+                  col.regions = c("#FFFFFF", clr(maxcat)[seq(rst@data@min ,rst@data@max)]), 
                   # colorkey = list(space = "bottom"), 
                   at = rnge))
 }

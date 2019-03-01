@@ -27,18 +27,17 @@ outpath <- paste0("../data/", sub)
 set <- c("frst", "nofrst", "allplts")
 # set <- c("frst")
 ###settings from pre-models
-set_dir <- "2018-12-13nofrst_frst_allplts/"
+set_dir <- "2019-02-15frst_nofrst_allplts_elev/"
 inpath_pre <- paste0(inpath, set_dir)
 ########################################################################################
 ###Settings
 ########################################################################################
-cmdinput <- base::commandArgs(trailingOnly =TRUE)
-i <- as.numeric(cmd_input[1])
-cl <- 30
-comm <- "elev"
-# comm <- "noelev"
+core_num <- 36
+# comm <- "elev"
+comm <- "noelev"
 # comm <- "flt_elev"
 # comm <- "flt_noelev"
+rdc <- T # use reduced data (plots with elevation problem are eliminated by script 65)
 method <- "pls"
 type <- "ffs"
 # cv <- "cv_index"
@@ -50,8 +49,13 @@ cv_times_in <- 20
 #####
 ###read files
 #####
-set_lst <- lapply(set, function(o){
-  readRDS(file = paste0(outpath, "20_master_lst_resid_", o, ".rds"))
+set_lst <- lapply(set, function(o){ # o <- "frst"
+  file <- readRDS(file = paste0(outpath, "20_master_lst_resid_", o, ".rds"))
+  if (rdc == T){
+    rdc_path <- list.dirs(path = inpath_pre, recursive = F)[grep(paste0("_", o, "_ffs_"), list.dirs(path = inpath_pre, recursive = F))]
+    file <- readRDS(paste0(rdc_path, "/data/", "65_master_lst_rdc_by_elevprob_", o, ".rds"))
+  }
+  return(file)
 })
 names(set_lst) <- set
 set_dir <- paste0(Sys.Date(), paste(set, collapse = "_"), "_", comm, "/")
@@ -68,9 +72,9 @@ if(grepl("flt", comm)){
 ########################################################################################
 ########################################################################################
 ########################################################################################
+cl <- registerDoParallel(core_num)
 
-  
-# foreach(i = seq(set), .errorhandling = "remove", .packages=c("caret", "CAST", "plyr")) %:%
+foreach(i = seq(set), .errorhandling = "remove", .packages=c("caret", "CAST", "plyr")) %:%
 foreach(k = names(set_lst[[i]]$resp), .errorhandling = "remove", .packages=c("caret", "CAST", "plyr"))%dopar%{
   if(grepl("cv_index", cv)){
     runs <- sort(unique(set_lst[[i]]$meta$cvindex_run))
@@ -81,7 +85,7 @@ foreach(k = names(set_lst[[i]]$resp), .errorhandling = "remove", .packages=c("ca
   if (file.exists(modDir)==F){
     dir.create(file.path(modDir))
   }
-    for (outs in cvindex_run){
+    for (outs in runs){
       #####
       ###split for outer loop (independet cv)
       ###and inner index selection for model
@@ -111,7 +115,7 @@ foreach(k = names(set_lst[[i]]$resp), .errorhandling = "remove", .packages=c("ca
         tbl_in <- list("meta"=set_lst[[i]]$meta[which(set_lst[[i]]$meta$plotID %in% plt_in),],
                        "resp"=set_lst[[i]]$resp[[k]][which(set_lst[[i]]$resp[[k]]$plotID %in% plt_in),])
         
-        #create multifolds for inner lop in traincontrol
+        #create multifolds for inner loop in traincontrol
         tbl_folds <- data.frame(tbl_in$resp, cat = substr(tbl_in$resp$plotID, 1, 3))
         set.seed(10)
         cvIndex <- createMultiFolds(y = tbl_folds$cat, k = cv_fold_in, times = cv_times_in)
@@ -160,3 +164,5 @@ foreach(k = names(set_lst[[i]]$resp), .errorhandling = "remove", .packages=c("ca
     # i$resp[[k]][[col_nm]][i$resp[[k]]$plotID %in% plt_out] <- prdct
 }
 # }# outer foreach(i) which is commented at marc2
+stopCluster(cl)
+

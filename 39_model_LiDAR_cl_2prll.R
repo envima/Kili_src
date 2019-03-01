@@ -76,7 +76,18 @@ if(grepl("flt", comm)){
 ########################################################################################
 ########################################################################################
 ########################################################################################
+modDir <- paste0(outpath, set_dir, Sys.Date(), "_", names(set_lst)[i], "_", type, "_", method, "_", comm)
+if (file.exists(modDir)==F){
+  dir.create(file.path(modDir))
+}
+if(grepl("cv_index", cv)){
+  runs <- sort(unique(set_lst[[i]]$meta$cvindex_run))
+}else{
+  runs <- seq(sum(grepl("outerrun", colnames(set_lst[[i]]$meta))))
+}  
+
 cl <- makeCluster(core_num, type = "FORK", outfile = paste0("/home/ziegler5/data/feb19/", set_dir, "out.txt")) 
+# cl <- makeCluster(core_num, outfile = paste0("../data/feb19/", set_dir, "out.txt")) 
 
 # cnt <- 0
 # set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
@@ -86,18 +97,9 @@ foreach(k = names(set_lst[[i]]$resp),
         .errorhandling = "remove", 
         .packages=c("caret", "CAST", "plyr"))%dopar%{ # testing: k <- "SRmammals"
           # k <- "SRmammals"
-          modDir <- paste0(outpath, set_dir, Sys.Date(), "_", names(set_lst)[i], "_", type, "_", method, "_", comm)
-          if (file.exists(modDir)==F){
-            dir.create(file.path(modDir))
-          }
-          if(grepl("cv_index", cv)){
-            runs <- sort(unique(set_lst[[i]]$meta$cvindex_run))
-          }else{
-            runs <- seq(sum(grepl("outerrun", colnames(set_lst[[i]]$meta))))
-          }  
-          
-          for (outs in runs){ # outs <- 1
-            
+          foreach (outs = runs, 
+                   .errorhandling = "remove", 
+                   .packages=c("caret", "CAST", "plyr"))%dopar%{ # outs <- 1
             #####
             ###split for outer loop (independet cv)
             ###and inner index selection for model
@@ -127,7 +129,7 @@ foreach(k = names(set_lst[[i]]$resp),
               tbl_in <- list("meta"=set_lst[[i]]$meta[which(set_lst[[i]]$meta$plotID %in% plt_in),],
                              "resp"=set_lst[[i]]$resp[[k]][which(set_lst[[i]]$resp[[k]]$plotID %in% plt_in),])
               
-              #create multifolds for inner loop in traincontrol
+              #create multifolds for inner lop in traincontrol
               tbl_folds <- data.frame(tbl_in$resp, cat = substr(tbl_in$resp$plotID, 1, 3))
               set.seed(10)
               cvIndex <- createMultiFolds(y = tbl_folds$cat, k = cv_fold_in, times = cv_times_in)

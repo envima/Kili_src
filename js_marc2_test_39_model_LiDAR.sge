@@ -1,6 +1,6 @@
 #!/bin/bash
 #$ -S /bin/bash             # use bash
-#$ -N LiDAR_model_cl_2prll                # jobname
+#$ -N LiDAR_model_cl                # jobname
 #$ -cwd                     # use current directory as job working directory
 #$ -o R_test.out            # specify file for stdout output
 #$ -j y                     # stderr -> stdout redirection
@@ -20,4 +20,4 @@ echo "starting program"
  
 #run R example
 # R CMD BATCH --vanilla 31_marc2_test_multi_prll.R $SGE_TASK_ID
-Rscript --vanilla 39_model_LiDAR_cl_2prll.R $SGE_TASK_ID
+Rscript --vanilla 38_model_LiDAR_cl.R $SGE_TASK_ID

@@ -30,7 +30,7 @@ outpath <- paste0("../out/", sub)
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2019-02-15frst_nofrst_allplts_elev/"
+set_dir <- "2019-02-26frst_nofrst_allplts_noelev/"
 
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
@@ -109,15 +109,21 @@ for (i in set_lst){# i <- set_lst[[1]]
     if (file.exists(paste0(outpath, set_dir, set_moddir))==F){
       dir.create(file.path(paste0(outpath, set_dir, set_moddir)), recursive = T)
     }
-    pdf(file = paste0(modDir, "/val_plot_", names(set_lst)[cnt], "_", n, ".pdf"), height= 10, width = 20)#, paper = "a4r")
-    print(ggplot(data = val_plt, aes(x=resp, y=value)) + 
+    
+    p <- ggplot(data = val_plt, aes(x=resp, y=value)) + 
           #geom_rect(fill=grey_pal()(length(levels(stats_all$troph_sep))+5)[as.numeric(stats_all$troph_sep)+5], 
           #xmin = -Inf,xmax = Inf, ymin = -Inf,ymax = Inf) +
           geom_boxplot(aes(fill=type), width = 1) + 
           facet_grid(~troph_sep, scales = "free_x", space="free_x", switch = "x") +
           theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10)) + 
           fillscl + 
-          ggtitle(paste0(names(set_lst)[cnt], "_", sub, "_", n)))
+          ggtitle(paste0(names(set_lst)[cnt], "_", sub, "_", n))
+    pdf(file = paste0(modDir, "/val_plot_", names(set_lst)[cnt], "_", n, ".pdf"), height= 10, width = 20)#, paper = "a4r")
+    print(p)
+    dev.off()
+    png(paste0(modDir, "/val_plot_", names(set_lst)[cnt], "_", n, ".png"), 
+        width = 297, height = 210, units = "mm", res = 720)
+    print(p)
     dev.off()
   }
   #######################
@@ -150,12 +156,17 @@ for (i in set_lst){# i <- set_lst[[1]]
     #######################
     ###actual plotting
     #######################
-    pdf(file = paste0(modDir, "heat_selvars_", names(set_lst)[cnt], "_", m, "_", comm, ".pdf"), width = 7, height = 10)#paper = "a4")
-    lvlplt(mat = mat, 
+    l <- lvlplt(mat = mat, 
            lbl_x = colnames(mat), 
            lbl_y = rownames(mat), 
            rnge = seq(min(mat)+0.5, max(mat)+0.5, 1), 
            main = paste0(names(set_lst)[cnt], "_", sub, "_", m))
+    pdf(file = paste0(modDir, "heat_selvars_", names(set_lst)[cnt], "_", m, "_", comm, ".pdf"), width = 7, height = 10)#paper = "a4")
+    print(l)
+    dev.off()
+    png(paste0(modDir, "heat_selvars_", names(set_lst)[cnt], "_", m, "_", comm, ".png"), 
+        width = 210, height = 297, units = "mm", res = 720)
+    print(l)
     dev.off()
     return(mat)
   })

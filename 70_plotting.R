@@ -18,6 +18,7 @@ library(raster)
 library(rasterVis)
 library(compositions)
 library(RColorBrewer)
+library(dplyr)
 #####
 ###set paths
 #####
@@ -85,52 +86,101 @@ for (i in set_lst){# i <- set_lst[[1]]
   val_troph <- merge(val_all, troph_mrg, by = "resp") 
   val_troph$troph_sep[grepl("sum", val_troph$resp)] <- paste0(val_troph$diet[grepl("sum", val_troph$resp)], "_sum")
   val_troph$troph_sep[is.na(val_troph$troph_sep)] <- as.character(val_troph$diet[is.na(val_troph$troph_sep)])
+  val_troph$troph_sep <- factor(val_troph$troph_sep, 
+                                levels = c("predator", "predator_sum", "generalist", 
+                                           "generalist_sum", "decomposer", 
+                                           "decomposer_sum", "herbivore", "herbivore_sum", 
+                                           "plant", "plant_sum", "birds", "bats"))
+  val_troph$resp <- factor(val_troph$resp, 
+                           levels = unique(val_troph[with(val_troph, order(troph_sep, resp)),"resp"]))
+  val_troph$diet <- factor(val_troph$diet, 
+                           levels = levels(val_troph$diet))
+  
   val_troph_flt <- val_troph[is.finite(val_troph$RMSEsd_ldr_pred_SR),]
   
-  levels(val_troph_flt$troph_sep) <- c("predator", "predator_sum", "generalist", "generalist_sum", "decomposer", 
-                                   "decomposer_sum", "herbivore", "herbivore_sum", "plant", "plant_sum", 
-                                   "birds", "bats")
   
-  val_type <- gather(val_troph_flt, type, value, -resp, -run, -diet, -troph_sep, -Taxon)
+  val_type <- gather(val_troph_flt, type, value, -resp, -run, -diet, -troph_sep, -Taxon, -sd)
+  
+  val_type$color[val_type$diet == "birds"] <- "cadetblue3"
+  val_type$color[val_type$diet == "bats"] <- "grey25"
+  val_type$color[val_type$diet == "predator"] <- "orange"
+  val_type$color[val_type$diet == "generalist"] <- "dodgerblue4"
+  val_type$color[val_type$diet == "decomposer"] <- "indianred3"
+  val_type$color[val_type$diet == "herbivore"] <- "limegreen"
+  val_type$color[val_type$diet == "plant"] <- "springgreen4"
+  val_type$color <- factor(val_type$color, levels = c("orange", "dodgerblue4", "indianred3", "limegreen", 
+                              "springgreen4", "cadetblue3", "grey25"))
+
   #####
   ###sort resp by troph levels for further operations
   #####
-  resp_srt <- unique(val_type[with(val_type, order(troph_sep, resp)),"resp"])
+  # resp_srt <- unique(val_type[with(val_type, order(troph_sep, resp)),"resp"])
   #####
   ###plot settings
   #####
-  myColors <- c("mediumslateblue", "blue2", "aquamarine3", "chocolate1", 
-                "firebrick1", "darkmagenta")
-  fillscl <- scale_fill_manual(name = "col",values = myColors)
+  # myColors <- c(rev(levels(val_type$color)), "mediumslateblue", "blue2", "aquamarine3", "chocolate1")
+  # myColors <- c(rev(levels(val_type$color)), "black", "grey70", "grey30", "white") ##needs to be changed, so reduced number of respnses is dispayed correctly
+  # myColors <- c(rev(levels(droplevels(val_type$color))), "black", "grey70", "grey30", "white")
+  # myColors <- c(levels(droplevels(val_type$color)), "black", "grey70", "grey30", "white")
+
+  sort_by_diet_alphabet <- (val_type %>% distinct(diet, .keep_all = TRUE))[match(sort(levels(droplevels(val_type$diet))), (val_type %>% distinct(diet, .keep_all = TRUE))[,which(colnames(val_type %>% distinct(diet, .keep_all = TRUE)) == "diet")]),]
+  myColors <- c(as.character(sort_by_diet_alphabet$color), "black", "grey70", "grey30", "white")
+  # unique(val_type$color)[order(match(unique(val_type$color),levels(val_type$color)))]
+  # myColors <- c("mediumslateblue", "blue2", "aquamarine3", "chocolate1", 
+  #               "firebrick1", "darkmagenta", "aquamarine", "aquamarine1", 
+  #               "aquamarine2", "aquamarine3", "aquamarine4", "azure", 
+  #               "azure1", "azure2", "azure3", "azure4")
+
   #####
   ###actual plotting
   #####
   for (n in plts){ #n <- "RMSEsd_"
     val_plt <- subset(val_type, grepl(n, val_type$type))
     levels(val_plt$troph_sep) <- levels(val_type$troph_sep)
-
+    levels(val_plt$color) <- levels(val_type$color)
+    levels(val_plt$resp) <- levels(val_type$resp)
+    levels(val_plt$diet) <- levels(val_type$diet)
+    
+    val_plt$troph_sep <- droplevels(val_plt$troph_sep)
+    val_plt$color <- droplevels(val_plt$color)
+    val_plt$resp <- droplevels(val_plt$resp)
+    val_plt$diet <- droplevels(val_plt$diet)
+    
+    table <- aggregate(val_plt$value, by = list(val_plt$Taxon, val_plt$type), FUN = median)
+    colnames(table) <- c("Taxon", "type", "mdn_value")
+    unq_sd <- data.frame(val_troph_flt[,c("Taxon", "sd")])[!duplicated(data.frame(val_troph_flt[,c("Taxon", "sd")])),]
+   
+    table_sd <- merge(table, unq_sd, by = "Taxon", all = F)
+    write.csv(table_sd, file = paste0(inpath, set_dir, set_moddir, "/data/validation_table_", n, ".csv"))
+  
     if (file.exists(paste0(outpath, set_dir, set_moddir))==F){
       dir.create(file.path(paste0(outpath, set_dir, set_moddir)), recursive = T)
     }
     
-    p <- ggplot(data = val_plt, aes(x=resp, y=value)) + 
-          #geom_rect(fill=grey_pal()(length(levels(stats_all$troph_sep))+5)[as.numeric(stats_all$troph_sep)+5], 
-          #xmin = -Inf,xmax = Inf, ymin = -Inf,ymax = Inf) +
-          geom_boxplot(aes(fill=type), width = 1) + 
-          facet_grid(~troph_sep, scales = "free_x", space="free_x", switch = "x") +
-          theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10)) + 
-          fillscl + 
-          ggtitle(paste0(names(set_lst)[cnt], "_", sub, "_", n))
-    pdf(file = paste0(modDir, "/val_plot_", names(set_lst)[cnt], "_", n, ".pdf"), height= 10, width = 20)#, paper = "a4r")
+    
+    p <- ggplot() +
+      geom_rect(data = val_plt,aes(fill = val_plt$diet),xmin = -Inf,xmax = Inf,
+                ymin = -Inf,ymax = Inf, alpha = 0.007) +
+      geom_boxplot(data = val_plt, aes(x=resp, y=value, fill=type), width = 1) +   #in aes(position=position_dodge(5))
+        facet_grid(~val_plt$troph_sep, scales = "free_x", space="free_x", switch = "x") +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+              strip.text.x = element_blank()) +
+      theme(axis.text.x = element_text(size = 16))+
+        scale_fill_manual(name = "col",values = myColors) +
+        ggtitle(paste0(names(set_lst)[cnt], "_", sub, "_", n))
+    pdf(file = paste0(modDir, "/val_plot_", names(set_lst)[cnt], "_", n, ".pdf"), height= 10, 
+        width = 20)
+    # par(mar=c(50, 50, 50, 50) + 1)#, paper = "a4r")
     print(p)
     dev.off()
     png(paste0(modDir, "/val_plot_", names(set_lst)[cnt], "_", n, ".png"), 
         width = 297, height = 210, units = "mm", res = 720)
+    # par(mai=c(50, 50, 50, 50) + 1)
     print(p)
     dev.off()
   }
   #######################
-  ###validation Plots
+  ###varimp Plots
   #######################
   #####
   ###create df for heatmap, separate for SR and resid
@@ -151,11 +201,11 @@ for (i in set_lst){# i <- set_lst[[1]]
     ###cols by trophic levels
     ###rows by number of occurances
     #####
-    df <- df[c("pred", resp_srt)]
+    df <- df[c("pred", levels(val_troph$resp))]
     df <- df[order(rowSums(df[,2:ncol(df)], na.rm = T), decreasing = T),]
     row.names(df) <- as.character(df$pred)
     
-    df_flt <- df[,colSums(df[,c(2:ncol(df))]) > 0]
+    df_flt <- df[,which(colSums(df[,c(2:ncol(df))]) > 0) +1]
     
     mat <- as.matrix(df_flt[,!colnames(df_flt) == "pred"])
     
@@ -168,11 +218,12 @@ for (i in set_lst){# i <- set_lst[[1]]
            lbl_y = rownames(mat), 
            rnge = seq(min(mat)+0.5, max(mat)+0.5, 1), 
            main = paste0(names(set_lst)[cnt], "_", sub, "_", m))
-    pdf(file = paste0(modDir, "heat_selvars_", names(set_lst)[cnt], "_", m, "_", comm, ".pdf"), width = 7, height = 10)#paper = "a4")
+    pdf(file = paste0(modDir, "heat_selvars_", names(set_lst)[cnt], "_", m, "_", comm, ".pdf"), 
+        width = 7, height = 10); par(mar=c(6, 4, 4, 2) + 0.1)#paper = "a4")
     print(l)
     dev.off()
     png(paste0(modDir, "heat_selvars_", names(set_lst)[cnt], "_", m, "_", comm, ".png"), 
-        width = 210, height = 297, units = "mm", res = 720)
+        width = 210, height = 297, units = "mm", res = 720); par(mar=c(6, 4, 4, 2) + 0.1)
     print(l)
     dev.off()
     return(mat)
@@ -180,3 +231,4 @@ for (i in set_lst){# i <- set_lst[[1]]
   names(SR_resid_lst) <- resp_set
   }
 }
+

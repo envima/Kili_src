@@ -93,6 +93,7 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
       #####
       ###RMSE/sd
       #####
+      sd <- sd(i$resp[[k]]$SR, na.rm = T)
       RMSEsd_elev_pred <- RMSE_elev_pred/sd(i$resp[[k]]$SR, na.rm = T)
       RMSEsd_ldr_pred_SR<- RMSE_ldr_pred_SR/sd(i$resp[[k]]$SR, na.rm = T)
       RMSEsd_ldr_pred_resid <- RMSE_ldr_pred_resid/sd(i$resp[[k]]$resid, na.rm = T)
@@ -108,7 +109,8 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
                            RMSEsd_elev_pred = RMSEsd_elev_pred, 
                            RMSEsd_ldr_pred_SR = RMSEsd_ldr_pred_SR,
                            RMSEsd_ldr_pred_resid = RMSEsd_ldr_pred_resid,
-                           RMSEsd_sum_elev_pred_ldr_pred_resid = RMSEsd_sum_elev_pred_ldr_pred_resid)
+                           RMSEsd_sum_elev_pred_ldr_pred_resid = RMSEsd_sum_elev_pred_ldr_pred_resid, 
+                           sd = sd)
       
     })
     val_df_all <- do.call(rbind, val_df_all_lst)

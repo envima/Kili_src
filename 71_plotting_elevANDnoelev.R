@@ -43,7 +43,7 @@ set_lst <- lapply(set, function(o){
   set_moddir <- mod_dir_lst[grepl(paste0("_", o, "_"), mod_dir_lst)]
   modDir <- paste0(inpath, set_dir, set_moddir, "/")
   file <- tryCatch(
-    readRDS(file = paste0(modDir, "data/", "60_master_lst_varimp_",o, ".rds")), 
+    readRDS(file = paste0(modDir, "data/", "61_master_lst_val_elevANDnoelev_",o, ".rds")), 
     error = function(e)file <- NA)
   return(file)
 })
@@ -55,12 +55,12 @@ troph_mrg <- troph_mrg[!duplicated(troph_mrg),]
 #####
 ###read functions
 #####
-source("lvlplt.R")
+# source("lvlplt.R")
 ########################################################################################
 ###Settings
 ########################################################################################
 plts <- c("RMSEsd_", "RMSE_")
-comm <- ""
+comm <- "elevANDnoelev"
 maxcat <- 20 #depending on the number of levels run
 ########################################################################################
 ########################################################################################
@@ -124,7 +124,7 @@ for (i in set_lst){# i <- set_lst[[1]]
   # myColors <- c(levels(droplevels(val_type$color)), "black", "grey70", "grey30", "white")
 
   sort_by_diet_alphabet <- (val_type %>% distinct(diet, .keep_all = TRUE))[match(sort(levels(droplevels(val_type$diet))), (val_type %>% distinct(diet, .keep_all = TRUE))[,which(colnames(val_type %>% distinct(diet, .keep_all = TRUE)) == "diet")]),]
-  myColors <- c(as.character(sort_by_diet_alphabet$color), "black", "grey70", "grey30", "white")
+  myColors <- c(as.character(sort_by_diet_alphabet$color), "black", "grey80", "grey60", "grey40", "white")
   # unique(val_type$color)[order(match(unique(val_type$color),levels(val_type$color)))]
   # myColors <- c("mediumslateblue", "blue2", "aquamarine3", "chocolate1", 
   #               "firebrick1", "darkmagenta", "aquamarine", "aquamarine1", 
@@ -179,56 +179,57 @@ for (i in set_lst){# i <- set_lst[[1]]
     print(p)
     dev.off()
   }
-  #######################
-  ###varimp Plots
-  #######################
-  #####
-  ###create df for heatmap, separate for SR and resid
-  #####
-  resp_set <- c("SR", "resid") # loop model for SR and resid
-  SR_resid_lst <- lapply(resp_set, function(m){ #m <- "SR"
-    resp_lst <- lapply(names(i$resp), function(k){
-      print(k)
-      varsel_lst <- i$varsel[[k]][[m]]
-    })
-    names(resp_lst) <- names(i$resp)
-    df <- Reduce(function(x,y) merge(x,y, by = "pred", all = T), resp_lst)
-    df <- df[complete.cases(df$pred),]
-    colnames(df) <- c("pred", names(i$resp)) #unschön und unsicher...Spalten könnten irgendwie durcheinander kommen??? gecheckt: 17.12.
-    df[is.na(df)] <- 0 #NAs are not working in levelplot
-    #####
-    ###sort dataframe for heatmap
-    ###cols by trophic levels
-    ###rows by number of occurances
-    #####
-    df <- df[c("pred", levels(val_troph$resp))]
-    df <- df[order(rowSums(df[,2:ncol(df)], na.rm = T), decreasing = T),]
-    row.names(df) <- as.character(df$pred)
-    
-    df_flt <- df[,which(colSums(df[,c(2:ncol(df))]) > 0) +1]
-    
-    mat <- as.matrix(df_flt[,!colnames(df_flt) == "pred"])
-    
-    #######################
-    ###actual plotting
-    #######################
-    l <- lvlplt(mat = mat, 
-                maxcat = maxcat, 
-           lbl_x = colnames(mat), 
-           lbl_y = rownames(mat), 
-           rnge = seq(min(mat)+0.5, max(mat)+0.5, 1), 
-           main = paste0(names(set_lst)[cnt], "_", sub, "_", m))
-    pdf(file = paste0(modDir, "heat_selvars_", names(set_lst)[cnt], "_", m, "_", comm, ".pdf"), 
-        width = 7, height = 10); par(mar=c(6, 4, 4, 2) + 0.1)#paper = "a4")
-    print(l)
-    dev.off()
-    png(paste0(modDir, "heat_selvars_", names(set_lst)[cnt], "_", m, "_", comm, ".png"), 
-        width = 210, height = 297, units = "mm", res = 720); par(mar=c(6, 4, 4, 2) + 0.1)
-    print(l)
-    dev.off()
-    return(mat)
-  })
-  names(SR_resid_lst) <- resp_set
   }
 }
+  ##noch nicht angepasst für eingefügtes elev model. müsste erst in script 61 mit eingelesen werden
+#   #######################
+#   ###varimp Plots
+#   #######################
+#   #####
+#   ###create df for heatmap, separate for SR and resid
+#   #####
+#   resp_set <- c("SR", "resid") # loop model for SR and resid
+#   SR_resid_lst <- lapply(resp_set, function(m){ #m <- "SR"
+#     resp_lst <- lapply(names(i$resp), function(k){
+#       print(k)
+#       varsel_lst <- i$varsel[[k]][[m]]
+#     })
+#     names(resp_lst) <- names(i$resp)
+#     df <- Reduce(function(x,y) merge(x,y, by = "pred", all = T), resp_lst)
+#     df <- df[complete.cases(df$pred),]
+#     colnames(df) <- c("pred", names(i$resp)) #unschön und unsicher...Spalten könnten irgendwie durcheinander kommen??? gecheckt: 17.12.
+#     df[is.na(df)] <- 0 #NAs are not working in levelplot
+#     #####
+#     ###sort dataframe for heatmap
+#     ###cols by trophic levels
+#     ###rows by number of occurances
+#     #####
+#     df <- df[c("pred", levels(val_troph$resp))]
+#     df <- df[order(rowSums(df[,2:ncol(df)], na.rm = T), decreasing = T),]
+#     row.names(df) <- as.character(df$pred)
+#     
+#     df_flt <- df[,which(colSums(df[,c(2:ncol(df))]) > 0) +1]
+#     
+#     mat <- as.matrix(df_flt[,!colnames(df_flt) == "pred"])
+#     
+#     #######################
+#     ###actual plotting
+#     #######################
+#     l <- lvlplt(mat = mat, 
+#                 maxcat = maxcat, 
+#            lbl_x = colnames(mat), 
+#            lbl_y = rownames(mat), 
+#            rnge = seq(min(mat)+0.5, max(mat)+0.5, 1), 
+#            main = paste0(names(set_lst)[cnt], "_", sub, "_", m))
+#     pdf(file = paste0(modDir, "heat_selvars_", names(set_lst)[cnt], "_", m, "_", comm, ".pdf"), 
+#         width = 7, height = 10); par(mar=c(6, 4, 4, 2) + 0.1)#paper = "a4")
+#     print(l)
+#     dev.off()
+#     png(paste0(modDir, "heat_selvars_", names(set_lst)[cnt], "_", m, "_", comm, ".png"), 
+#         width = 210, height = 297, units = "mm", res = 720); par(mar=c(6, 4, 4, 2) + 0.1)
+#     print(l)
+#     dev.off()
+#     return(mat)
+#   })
+#   names(SR_resid_lst) <- resp_set
 

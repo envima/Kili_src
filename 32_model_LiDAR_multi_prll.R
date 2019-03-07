@@ -45,7 +45,7 @@ cv <- "cv_20"
 # cv <- "cv_50"
 cv_fold_in <- 4
 cv_times_in <- 20
-
+resp_set <- c("SR", "resid") #m <- "SR" #loop model for SR and resid
 #####
 ###read files
 #####
@@ -124,7 +124,7 @@ foreach(k = names(set_lst[[i]]$resp), .errorhandling = "remove", .packages=c("ca
         })
       }
       
-      resp_set <- c("SR", "resid") #m <- "SR" #loop model for SR and resid
+
       for (m in resp_set){
         if(length(unique(tbl_in$resp$SR)) > 1){ #check if tbl_in has only 0 zB: SRlycopodiopsida/nofrst/outs = 1
           #####

@@ -40,7 +40,7 @@ core_num <- 30
 comm <- "noelev"
 # comm <- "flt_elev"
 # comm <- "flt_noelev"
-rdc <- T # use reduced data (plots with elevation problem are eliminated by script 65)
+rdc <- F # use reduced data (plots with elevation problem are eliminated by script 65)
 method <- "pls"
 type <- "ffs"
 # cv <- "cv_index"
@@ -48,7 +48,8 @@ cv <- "cv_20"
 # cv <- "cv_50"
 cv_fold_in <- 4
 cv_times_in <- 20
-
+# resp_set <- c("SR", "resid")
+resp_set <- c("SR")
 #####
 ###read files
 #####
@@ -85,7 +86,6 @@ registerDoParallel(cl)
 foreach(k = names(set_lst[[i]]$resp), 
         .errorhandling = "remove", 
         .packages=c("caret", "CAST", "plyr"))%dopar%{ # testing: k <- "SRmammals"
-          # k <- "SRmammals"
           modDir <- paste0(outpath, set_dir, Sys.Date(), "_", names(set_lst)[i], "_", type, "_", method, "_", comm)
           if (file.exists(modDir)==F){
             dir.create(file.path(modDir))
@@ -136,7 +136,7 @@ foreach(k = names(set_lst[[i]]$resp),
               })
             }
             
-            resp_set <- c("SR", "resid") #m <- "SR" #loop model for SR and resid
+            #m <- "SR" #loop model for SR and resid
             for (m in resp_set){
               if(length(unique(tbl_in$resp$SR)) > 1){ #check if tbl_in has only 0 zB: SRlycopodiopsida/nofrst/outs = 1
                 #####

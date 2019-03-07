@@ -33,8 +33,8 @@ inpath_pre <- paste0(inpath, set_dir)
 ###Settings
 ########################################################################################
 cl <- 30
-comm <- "elev"
-# comm <- "noelev"
+# comm <- "elev"
+comm <- "noelev"
 # comm <- "flt_elev"
 # comm <- "flt_noelev"
 method <- "pls"
@@ -44,7 +44,8 @@ cv <- "cv_20"
 # cv <- "cv_50"
 cv_fold_in <- 4
 cv_times_in <- 20
-
+resp_set <- c("SR", "resid") #m <- "SR" #loop model for SR and resid
+# resp_set <- c("SR")
 #####
 ###read files
 #####
@@ -121,7 +122,7 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
         })
       }
       
-      resp_set <- c("SR", "resid") #m <- "SR" #loop model for SR and resid
+
       for (m in resp_set){
       if(length(unique(tbl_in$resp$SR)) > 1){ #check if tbl_in has only 0 zB: SRlycopodiopsida/nofrst/outs = 1
         #####

@@ -37,6 +37,21 @@ set_lst <- lapply(set, function(o){
 names(set_lst) <- set
 set_lst <- set_lst[!is.na(set_lst)]
 
+set_dir_SR <- "2019-03-06frst_nofrst_allplts_noelev/"
+mod_dir_lst_SR <- list.dirs(path = paste0(inpath, set_dir_SR), recursive = F, full.names = F)
+set <- c("nofrst", "frst", "allplts")
+
+set_lst_SR <- lapply(set, function(o){
+  set_moddir <- mod_dir_lst_SR[grepl(paste0("_", o, "_"), mod_dir_lst_SR)]
+  modDir <- paste0(inpath, set_dir_SR, set_moddir, "/")
+  file <- tryCatch(
+    readRDS(file = paste0(modDir, "data/", "50_master_lst_all_mods_",o, ".rds")),    
+    error = function(e)file <- NA)
+  return(file)
+})
+names(set_lst_SR) <- set
+set_lst_SR <- set_lst_SR[!is.na(set_lst_SR)]
+
 set_dir_elev <- "2019-02-15frst_nofrst_allplts_elev/"
 mod_dir_lst_elev <- list.dirs(path = paste0(inpath, set_dir_elev), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
@@ -77,8 +92,17 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
       runs <- seq(sum(grepl("outerrun", colnames(i$meta))))
     }
   for (k in names(i$resp)){ # k <- "SRdungbeetles" k <- "SRbirds" k <- "SRrosids"
+    #####
+    ###hier werden spalten aus verschiedenen Modellen zusammengefügt
+    #####
     i$resp[[k]]$ldr_pred_SR_elev <- set_lst_elev[[names(set_lst)[cnt]]]$resp[[k]]$ldr_pred_SR
-
+    i$resp[[k]]$ldr_pred_SR <- set_lst_SR[[names(set_lst)[cnt]]]$resp[[k]]$ldr_pred_SR
+    i$resp[[k]]$ldr_pred_resid <- set_lst_elev[[names(set_lst)[cnt]]]$resp[[k]]$ldr_pred_resid # bei sauberer Version müsste hier die nicht elev Variante verwendet werden. (ist exakt gleich, weil höhe in Modellen nicht verwendet wird)
+    i$resp[[k]]$sum_elev_pred_ldr_pred_resid <- set_lst_elev[[names(set_lst)[cnt]]]$resp[[k]]$sum_elev_pred_ldr_pred_resid # bei sauberer Version müsste hier die nicht elev Variante verwendet werden. (ist exakt gleich, weil höhe in Modellen nicht verwendet wird)
+    
+    #####
+    ###end:spalten sind zusammengefügt
+    #####
         val_df_all_lst <- lapply (runs, function(outs){
           #####
           ###out rows for thisrun (has to be chosen first, as depending on cv20/cv-index, 
@@ -109,7 +133,7 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
           sd <- sd(i$resp[[k]]$SR, na.rm = T)
           RMSEsd_elev_pred <- RMSE_elev_pred/sd
           RMSEsd_ldr_pred_SR <- RMSE_ldr_pred_SR/sd
-          RMSEsd_ldr_pred_resid <- RMSE_ldr_pred_resid/sd
+          RMSEsd_ldr_pred_resid <- RMSE_ldr_pred_resid/sd(i$resp[[k]]$resid, na.rm = T)
           RMSEsd_sum_elev_pred_ldr_pred_resid <- RMSE_sum_elev_pred_ldr_pred_resid/sd
           RMSEsd_ldr_pred_SR_elev <- RMSE_ldr_pred_SR_elev/sd
           
@@ -131,7 +155,66 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
           
         })
         val_df_all <- do.call(rbind, val_df_all_lst)
-        i$val[[k]] <- val_df_all ##<- hier muss soll eigentlich ein df oder lsite, oder so reingeschreiben werden.
+        #####
+        ###add columns with statistical information about the RMSE and RMSEsd errors
+        #####
+        for (p in colnames(val_df_all)[colnames(val_df_all) != c("run", "sd")]){ #p <- "RMSEsd_ldr_pred_SR"
+          val_df_all$sd_tmp <- sd(val_df_all[[p]])
+          colnames(val_df_all)[colnames(val_df_all) == "sd_tmp"] <- paste0(p, "_sd")
+          val_df_all$mdn_tmp <- median(val_df_all[[p]])
+          colnames(val_df_all)[colnames(val_df_all) == "mdn_tmp"] <- paste0(p, "_mdn")
+          qntls <- quantile(val_df_all[[p]], probs = c(0.25, 0.75), na.rm = T)
+          val_df_all$q25_tmp <- qntls[[1]]
+          val_df_all$q75_tmp <- qntls[[2]]
+          val_df_all$IQR_tmp <- val_df_all$q75_tmp - val_df_all$q25_tmp
+          colnames(val_df_all)[colnames(val_df_all) == "q25_tmp"] <- paste0(p, "_q25")
+          colnames(val_df_all)[colnames(val_df_all) == "q75_tmp"] <- paste0(p, "_q75")
+          colnames(val_df_all)[colnames(val_df_all) == "IQR_tmp"] <- paste0(p, "_IQR")
+          }
+        val_df_all$RMSE_IQR_min <- min(val_df_all[,grepl(pattern = "q25", colnames(val_df_all))& 
+                                                    grepl(pattern = "RMSE_", colnames(val_df_all))])
+        val_df_all$RMSE_IQR_max <- max(val_df_all[,grepl(pattern = "q75", colnames(val_df_all)) & 
+                                                   grepl(pattern = "RMSE_", colnames(val_df_all))])
+        val_df_all$RMSEsd_IQR_min <- min(val_df_all[,grepl(pattern = "q25", colnames(val_df_all))& 
+                                                    grepl(pattern = "RMSEsd_", colnames(val_df_all))])
+        val_df_all$RMSEsd_IQR_max <- max(val_df_all[,grepl(pattern = "q75", colnames(val_df_all)) & 
+                                                    grepl(pattern = "RMSEsd_", colnames(val_df_all))])
+        #####
+        ###add szenario information, which model performances resemble the ranking of other respnses between each other
+        #####
+        ###rank by median - RMSEsd
+        mod_df_mdn_tmp <- val_df_all[,grepl(pattern = "mdn", colnames(val_df_all)) & 
+                     grepl(pattern = "RMSEsd_", colnames(val_df_all))]
+        mod_df_mdn_tmp_t <- t(mod_df_mdn_tmp[!duplicated(mod_df_mdn_tmp),])
+        mod_df__mdn_tmp_srt <- mod_df_mdn_tmp_t[order(mod_df_mdn_tmp_t[,1]),]
+        val_df_all$RMSEsd_elev_pred_mdn_rank <- which(names(mod_df__mdn_tmp_srt) == "RMSEsd_elev_pred_mdn")
+        val_df_all$RMSEsd_sum_elev_pred_ldr_pred_resid_mdn_rank <- which(names(mod_df__mdn_tmp_srt) == "RMSEsd_sum_elev_pred_ldr_pred_resid_mdn")
+        val_df_all$RMSEsd_ldr_pred_SR_mdn_rank <- which(names(mod_df__mdn_tmp_srt) == "RMSEsd_ldr_pred_SR_mdn")
+        val_df_all$RMSEsd_ldr_pred_SR_elev_mdn_rank <- which(names(mod_df__mdn_tmp_srt) == "RMSEsd_ldr_pred_SR_elev_mdn")
+        val_df_all$RMSEsd_ldr_pred_resid_mdn_rank <- which(names(mod_df__mdn_tmp_srt) == "RMSEsd_ldr_pred_resid_mdn")
+        #####
+        ###column with different model constellations
+        #####
+        #best model
+        val_df_all$constll1_mdn[val_df_all$RMSEsd_elev_pred_mdn_rank == 1] <- 1
+        val_df_all$constll1_mdn[val_df_all$RMSEsd_sum_elev_pred_ldr_pred_resid_mdn_rank == 1] <- 2
+        val_df_all$constll1_mdn[val_df_all$RMSEsd_ldr_pred_SR_mdn_rank == 1] <- 3
+        val_df_all$constll1_mdn[val_df_all$RMSEsd_ldr_pred_SR_elev_mdn_rank == 1] <- 4
+        val_df_all$constll1_mdn[val_df_all$RMSEsd_ldr_pred_resid_mdn_rank == 1] <- 5
+        ###second best, ... could follow
+        ###rank by IQR - RMSEsd
+        mod_df_IQR_tmp <- val_df_all[,grepl(pattern = "IQR$", colnames(val_df_all)) & 
+                                       grepl(pattern = "RMSEsd_", colnames(val_df_all))]
+        mod_df_IQR_tmp_t <- t(mod_df_IQR_tmp[!duplicated(mod_df_IQR_tmp),])
+        mod_df__IQR_tmp_srt <- mod_df_IQR_tmp_t[order(mod_df_IQR_tmp_t[,1]),]
+        val_df_all$RMSEsd_elev_pred_IQR_rank <- which(names(mod_df__IQR_tmp_srt) == "RMSEsd_elev_pred_IQR")
+        val_df_all$RMSEsd_sum_elev_pred_ldr_pred_resid_IQR_rank <- which(names(mod_df__IQR_tmp_srt) == "RMSEsd_sum_elev_pred_ldr_pred_resid_IQR")
+        val_df_all$RMSEsd_ldr_pred_SR_IQR_rank <- which(names(mod_df__IQR_tmp_srt) == "RMSEsd_ldr_pred_SR_IQR")
+        val_df_all$RMSEsd_ldr_pred_SR_elev_IQR_rank <- which(names(mod_df__IQR_tmp_srt) == "RMSEsd_ldr_pred_SR_elev_IQR")
+        val_df_all$RMSEsd_ldr_pred_resid_IQR_rank <- which(names(mod_df__IQR_tmp_srt) == "RMSEsd_ldr_pred_resid_IQR")
+          
+        
+        i$val[[k]] <- val_df_all 
       }
       if (file.exists(paste0(modDir, "data/"))==F){
         dir.create(file.path(paste0(modDir, "data/")), recursive = T)

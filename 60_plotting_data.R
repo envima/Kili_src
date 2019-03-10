@@ -23,7 +23,7 @@ inpath_general <- "../data/"
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2019-02-26frst_nofrst_allplts_noelev/"
+set_dir <- "2019-03-06frst_nofrst_allplts_noelev/"
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
 

@@ -19,6 +19,7 @@ library(rasterVis)
 library(compositions)
 library(RColorBrewer)
 library(dplyr)
+library(vegan)
 #####
 ###set paths
 #####
@@ -61,7 +62,7 @@ troph_mrg <- troph_mrg[!duplicated(troph_mrg),]
 ########################################################################################
 plts <- c("RMSEsd_", "RMSE_")
 comm <- "elevANDnoelev"
-maxcat <- 20 #depending on the number of levels run
+maxcat <- 20 #depending on the number ofruns
 ########################################################################################
 ########################################################################################
 ########################################################################################
@@ -99,8 +100,80 @@ for (i in set_lst){# i <- set_lst[[1]]
   val_troph_flt <- val_troph[is.finite(val_troph$RMSEsd_ldr_pred_SR),]
   
   
-  val_type <- gather(val_troph_flt, type, value, -resp, -run, -diet, -troph_sep, -Taxon, -sd)
+  # val_type <- gather(val_troph_flt, type, value, -resp, -run, -diet, -troph_sep, -Taxon, -sd)
+  val_type <- gather(val_troph_flt, key = type, value = value, -c(resp, run, sd:troph_sep))
   
+
+  #######################
+  ###begin: sort and troph by median relations
+  #######################
+  n <- "RMSEsd_"
+  val_plt <- subset(val_type, grepl(n, val_type$type))
+  val_plt$szenario <- val_plt$constll1_mdn
+  val_plt$szenario[val_plt$constll1_mdn == 4 & 
+                     val_plt$RMSEsd_elev_pred_mdn_rank < val_plt$RMSEsd_ldr_pred_resid_mdn_rank] <- 4.1
+  val_plt$szenario[val_plt$constll1_mdn == 4 & 
+                     val_plt$RMSEsd_ldr_pred_resid_mdn_rank < val_plt$RMSEsd_elev_pred_mdn_rank] <- 4.2
+  
+  plt <- ggplot() +
+                  geom_boxplot(data = val_plt, aes(x=resp, y=value, fill=type), width = 1) +   #in aes(position=position_dodge(5))
+                  facet_grid(~val_plt$szenario, scales = "free_x", space="free_x", switch = "x") +
+                  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10)) + #,
+                  #       strip.text.x = element_blank()) +
+                  theme(axis.text.x = element_text(size = 16))+
+                  # # scale_fill_manual(name = "col",values = myColors) +
+                  ggtitle(paste0(names(set_lst)[cnt], "_", sub, "_", n))
+  pdf(file = paste0(modDir, "val_plot_sortconstll1_", names(set_lst)[cnt], "_", comm, n, ".pdf"), 
+      height= 21, width = 29)
+  print(plt)
+  dev.off()
+  #######################
+  ###end: sort and troph by median relations
+  #######################
+  
+  #######################
+  ###begin: ordination plotting
+  #######################
+  ord_tbl <- val_plt[,colnames(val_plt) %in% c("resp", 
+                                               "RMSEsd_elev_pred_sd", 
+                                               "RMSEsd_sum_elev_pred_ldr_pred_resid_sd", 
+                                               "RMSEsd_ldr_pred_SR_sd", 
+                                               "RMSEsd_ldr_pred_SR_elev_sd", 
+                                               "RMSEsd_ldr_pred_resid_sd")]
+  ord_tbl <- ord_tbl[!duplicated(ord_tbl),]
+  rownames(ord_tbl) <- ord_tbl$resp
+  ord_tbl <- ord_tbl[,!colnames(ord_tbl) == "resp"]
+  
+  ord_tbl_rank <- val_plt[,colnames(val_plt) %in% c("resp", 
+                                               "RMSEsd_elev_pred_mdn_rank", 
+                                               "RMSEsd_sum_elev_pred_ldr_pred_resid_mdn_rank", 
+                                               "RMSEsd_ldr_pred_SR_mdn_rank", 
+                                               "RMSEsd_ldr_pred_SR_elev_mdn_rank", 
+                                               "RMSEsd_ldr_pred_resid_mdn_rank")]
+  ord_tbl_rank <- ord_tbl_rank[!duplicated(ord_tbl_rank),]
+  rownames(ord_tbl_rank) <- ord_tbl_rank$resp
+  ord_tbl_rank <- ord_tbl_rank[,!colnames(ord_tbl_rank) == "resp"]
+
+  ord <- decorana(ord_tbl_rank)
+  plot(ord)
+  
+  rda_data <- rda(ord_tbl_rank)
+  uscores <- data.frame(rda_data$CA$u)
+  uscores1 <- inner_join(rownames_to_column(ord_tbl_rank), rownames_to_column(data.frame(uscores)), type = "right", by = "rowname")
+  vscores <- data.frame(rda_data$CA$v)
+  pdf(file = paste0(modDir, "/ord_plot_", names(set_lst)[cnt], "_", comm, n, ".pdf"), height= 10, 
+      width = 20)
+  biplot(rda_data)
+  dev.off()
+  #ord_nmds <- metaMDS(dune)
+  #######################
+  ###end: ordination plotting
+  #######################
+  
+  
+ #######################
+ ###begin sort andn plot by trophic levels
+ #######################
   val_type$color[val_type$diet == "birds"] <- "cadetblue3"
   val_type$color[val_type$diet == "bats"] <- "grey25"
   val_type$color[val_type$diet == "predator"] <- "orange"
@@ -181,6 +254,12 @@ for (i in set_lst){# i <- set_lst[[1]]
   }
   }
 }
+#######################
+###end: sort and plot by trophic levels
+#######################
+
+
+
   ##noch nicht angepasst für eingefügtes elev model. müsste erst in script 61 mit eingelesen werden
 #   #######################
 #   ###varimp Plots

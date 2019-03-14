@@ -138,6 +138,16 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
           RMSEsd_ldr_pred_SR_elev <- RMSE_ldr_pred_SR_elev/sd
           
           #####
+          ###RMSE/median
+          #####
+          mdn <- median(i$resp[[k]]$SR, na.rm = T)
+          RMSEmdn_elev_pred <- RMSE_elev_pred/mdn
+          RMSEmdn_ldr_pred_SR<- RMSE_ldr_pred_SR/mdn
+          RMSEmdn_ldr_pred_resid <- RMSE_ldr_pred_resid/median(i$resp[[k]]$resid, na.rm = T)
+          RMSEmdn_sum_elev_pred_ldr_pred_resid <- RMSE_sum_elev_pred_ldr_pred_resid/mdn
+          RMSEmdn_ldr_pred_SR_elev <- RMSE_ldr_pred_SR_elev/mdn
+          
+          #####
           ###new list element with validation
           #####
           val_df <- data.frame(run = outs, 
@@ -151,14 +161,20 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
                                RMSEsd_ldr_pred_resid = RMSEsd_ldr_pred_resid,
                                RMSEsd_sum_elev_pred_ldr_pred_resid = RMSEsd_sum_elev_pred_ldr_pred_resid, 
                                RMSEsd_ldr_pred_SR_elev = RMSEsd_ldr_pred_SR_elev, 
-                               sd = sd)
+                               sd = sd, 
+                               RMSEmdn_elev_pred = RMSEmdn_elev_pred, 
+                               RMSEmdn_ldr_pred_SR = RMSEmdn_ldr_pred_SR, 
+                               RMSEmdn_ldr_pred_resid = RMSEmdn_ldr_pred_resid, 
+                               RMSEmdn_sum_elev_pred_ldr_pred_resid = RMSEmdn_sum_elev_pred_ldr_pred_resid,
+                               RMSEmdn_ldr_pred_SR_elev = RMSEmdn_ldr_pred_SR_elev, 
+                               mdn = mdn)
           
         })
         val_df_all <- do.call(rbind, val_df_all_lst)
         #####
         ###add columns with statistical information about the RMSE and RMSEsd errors
         #####
-        for (p in colnames(val_df_all)[colnames(val_df_all) != c("run", "sd")]){ #p <- "RMSEsd_ldr_pred_SR"
+        for (p in colnames(val_df_all)[!colnames(val_df_all) %in% c("run", "sd", "mdn")]){ #p <- "RMSEsd_ldr_pred_SR"
           val_df_all$sd_tmp <- sd(val_df_all[[p]])
           colnames(val_df_all)[colnames(val_df_all) == "sd_tmp"] <- paste0(p, "_sd")
           val_df_all$mdn_tmp <- median(val_df_all[[p]])
@@ -179,6 +195,10 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
                                                     grepl(pattern = "RMSEsd_", colnames(val_df_all))])
         val_df_all$RMSEsd_IQR_max <- max(val_df_all[,grepl(pattern = "q75", colnames(val_df_all)) & 
                                                     grepl(pattern = "RMSEsd_", colnames(val_df_all))])
+        val_df_all$RMSEmdn_IQR_min <- min(val_df_all[,grepl(pattern = "q25", colnames(val_df_all))& 
+                                                      grepl(pattern = "RMSEmdn_", colnames(val_df_all))])
+        val_df_all$RMSEmdn_IQR_max <- max(val_df_all[,grepl(pattern = "q75", colnames(val_df_all)) & 
+                                                      grepl(pattern = "RMSEmdn_", colnames(val_df_all))])
         #####
         ###add szenario information, which model performances resemble the ranking of other respnses between each other
         #####
@@ -186,33 +206,61 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
         mod_df_mdn_tmp <- val_df_all[,grepl(pattern = "mdn", colnames(val_df_all)) & 
                      grepl(pattern = "RMSEsd_", colnames(val_df_all))]
         mod_df_mdn_tmp_t <- t(mod_df_mdn_tmp[!duplicated(mod_df_mdn_tmp),])
-        mod_df__mdn_tmp_srt <- mod_df_mdn_tmp_t[order(mod_df_mdn_tmp_t[,1]),]
-        val_df_all$RMSEsd_elev_pred_mdn_rank <- which(names(mod_df__mdn_tmp_srt) == "RMSEsd_elev_pred_mdn")
-        val_df_all$RMSEsd_sum_elev_pred_ldr_pred_resid_mdn_rank <- which(names(mod_df__mdn_tmp_srt) == "RMSEsd_sum_elev_pred_ldr_pred_resid_mdn")
-        val_df_all$RMSEsd_ldr_pred_SR_mdn_rank <- which(names(mod_df__mdn_tmp_srt) == "RMSEsd_ldr_pred_SR_mdn")
-        val_df_all$RMSEsd_ldr_pred_SR_elev_mdn_rank <- which(names(mod_df__mdn_tmp_srt) == "RMSEsd_ldr_pred_SR_elev_mdn")
-        val_df_all$RMSEsd_ldr_pred_resid_mdn_rank <- which(names(mod_df__mdn_tmp_srt) == "RMSEsd_ldr_pred_resid_mdn")
+        mod_df_mdn_tmp_srt <- mod_df_mdn_tmp_t[order(mod_df_mdn_tmp_t[,1]),]
+        val_df_all$RMSEsd_elev_pred_mdn_rank <- which(names(mod_df_mdn_tmp_srt) == "RMSEsd_elev_pred_mdn")
+        val_df_all$RMSEsd_sum_elev_pred_ldr_pred_resid_mdn_rank <- which(names(mod_df_mdn_tmp_srt) == "RMSEsd_sum_elev_pred_ldr_pred_resid_mdn")
+        val_df_all$RMSEsd_ldr_pred_SR_mdn_rank <- which(names(mod_df_mdn_tmp_srt) == "RMSEsd_ldr_pred_SR_mdn")
+        val_df_all$RMSEsd_ldr_pred_SR_elev_mdn_rank <- which(names(mod_df_mdn_tmp_srt) == "RMSEsd_ldr_pred_SR_elev_mdn")
+        val_df_all$RMSEsd_ldr_pred_resid_mdn_rank <- which(names(mod_df_mdn_tmp_srt) == "RMSEsd_ldr_pred_resid_mdn")
+        
+        ###rank by median - RMSEmdn
+        mod_df_mdn_tmp <- val_df_all[,grepl(pattern = "_mdn$", colnames(val_df_all)) & 
+                                       grepl(pattern = "RMSEmdn_", colnames(val_df_all))]
+        mod_df_mdn_tmp_t <- t(mod_df_mdn_tmp[!duplicated(mod_df_mdn_tmp),])
+        mod_df_mdn_tmp_srt <- mod_df_mdn_tmp_t[order(mod_df_mdn_tmp_t[,1]),]
+        val_df_all$RMSEmdn_elev_pred_mdn_rank <- which(names(mod_df_mdn_tmp_srt) == "RMSEmdn_elev_pred_mdn")
+        val_df_all$RMSEmdn_sum_elev_pred_ldr_pred_resid_mdn_rank <- which(names(mod_df_mdn_tmp_srt) == "RMSEmdn_sum_elev_pred_ldr_pred_resid_mdn")
+        val_df_all$RMSEmdn_ldr_pred_SR_mdn_rank <- which(names(mod_df_mdn_tmp_srt) == "RMSEmdn_ldr_pred_SR_mdn")
+        val_df_all$RMSEmdn_ldr_pred_SR_elev_mdn_rank <- which(names(mod_df_mdn_tmp_srt) == "RMSEmdn_ldr_pred_SR_elev_mdn")
+        val_df_all$RMSEmdn_ldr_pred_resid_mdn_rank <- which(names(mod_df_mdn_tmp_srt) == "RMSEmdn_ldr_pred_resid_mdn")
         #####
         ###column with different model constellations
         #####
-        #best model
-        val_df_all$constll1_mdn[val_df_all$RMSEsd_elev_pred_mdn_rank == 1] <- 1
-        val_df_all$constll1_mdn[val_df_all$RMSEsd_sum_elev_pred_ldr_pred_resid_mdn_rank == 1] <- 2
-        val_df_all$constll1_mdn[val_df_all$RMSEsd_ldr_pred_SR_mdn_rank == 1] <- 3
-        val_df_all$constll1_mdn[val_df_all$RMSEsd_ldr_pred_SR_elev_mdn_rank == 1] <- 4
-        val_df_all$constll1_mdn[val_df_all$RMSEsd_ldr_pred_resid_mdn_rank == 1] <- 5
+        #best model by mdn RMSEsd
+        val_df_all$constll1_RMSEsd_mdn[val_df_all$RMSEsd_elev_pred_mdn_rank == 1] <- 1
+        val_df_all$constll1_RMSEsd_mdn[val_df_all$RMSEsd_sum_elev_pred_ldr_pred_resid_mdn_rank == 1] <- 2
+        val_df_all$constll1_RMSEsd_mdn[val_df_all$RMSEsd_ldr_pred_SR_mdn_rank == 1] <- 3
+        val_df_all$constll1_RMSEsd_mdn[val_df_all$RMSEsd_ldr_pred_SR_elev_mdn_rank == 1] <- 4
+        val_df_all$constll1_RMSEsd_mdn[val_df_all$RMSEsd_ldr_pred_resid_mdn_rank == 1] <- 5
+        #best model by median RMSemdn
+        val_df_all$constll1_RMSEmdn_mdn[val_df_all$RMSEmdn_elev_pred_mdn_rank == 1] <- 1
+        val_df_all$constll1_RMSEmdn_mdn[val_df_all$RMSEmdn_sum_elev_pred_ldr_pred_resid_mdn_rank == 1] <- 2
+        val_df_all$constll1_RMSEmdn_mdn[val_df_all$RMSEmdn_ldr_pred_SR_mdn_rank == 1] <- 3
+        val_df_all$constll1_RMSEmdn_mdn[val_df_all$RMSEmdn_ldr_pred_SR_elev_mdn_rank == 1] <- 4
+        val_df_all$constll1_RMSEmdn_mdn[val_df_all$RMSEmdn_ldr_pred_resid_mdn_rank == 1] <- 5
         ###second best, ... could follow
         ###rank by IQR - RMSEsd
         mod_df_IQR_tmp <- val_df_all[,grepl(pattern = "IQR$", colnames(val_df_all)) & 
                                        grepl(pattern = "RMSEsd_", colnames(val_df_all))]
         mod_df_IQR_tmp_t <- t(mod_df_IQR_tmp[!duplicated(mod_df_IQR_tmp),])
-        mod_df__IQR_tmp_srt <- mod_df_IQR_tmp_t[order(mod_df_IQR_tmp_t[,1]),]
-        val_df_all$RMSEsd_elev_pred_IQR_rank <- which(names(mod_df__IQR_tmp_srt) == "RMSEsd_elev_pred_IQR")
-        val_df_all$RMSEsd_sum_elev_pred_ldr_pred_resid_IQR_rank <- which(names(mod_df__IQR_tmp_srt) == "RMSEsd_sum_elev_pred_ldr_pred_resid_IQR")
-        val_df_all$RMSEsd_ldr_pred_SR_IQR_rank <- which(names(mod_df__IQR_tmp_srt) == "RMSEsd_ldr_pred_SR_IQR")
-        val_df_all$RMSEsd_ldr_pred_SR_elev_IQR_rank <- which(names(mod_df__IQR_tmp_srt) == "RMSEsd_ldr_pred_SR_elev_IQR")
-        val_df_all$RMSEsd_ldr_pred_resid_IQR_rank <- which(names(mod_df__IQR_tmp_srt) == "RMSEsd_ldr_pred_resid_IQR")
+        mod_df_IQR_tmp_srt <- mod_df_IQR_tmp_t[order(mod_df_IQR_tmp_t[,1]),]
+        val_df_all$RMSEsd_elev_pred_IQR_rank <- which(names(mod_df_IQR_tmp_srt) == "RMSEsd_elev_pred_IQR")
+        val_df_all$RMSEsd_sum_elev_pred_ldr_pred_resid_IQR_rank <- which(names(mod_df_IQR_tmp_srt) == "RMSEsd_sum_elev_pred_ldr_pred_resid_IQR")
+        val_df_all$RMSEsd_ldr_pred_SR_IQR_rank <- which(names(mod_df_IQR_tmp_srt) == "RMSEsd_ldr_pred_SR_IQR")
+        val_df_all$RMSEsd_ldr_pred_SR_elev_IQR_rank <- which(names(mod_df_IQR_tmp_srt) == "RMSEsd_ldr_pred_SR_elev_IQR")
+        val_df_all$RMSEsd_ldr_pred_resid_IQR_rank <- which(names(mod_df_IQR_tmp_srt) == "RMSEsd_ldr_pred_resid_IQR")
           
+        ###rank by IQR - RMSEmdn
+        mod_df_IQR_tmp <- val_df_all[,grepl(pattern = "IQR$", colnames(val_df_all)) & 
+                                       grepl(pattern = "RMSEmdn_", colnames(val_df_all))]
+        mod_df_IQR_tmp_t <- t(mod_df_IQR_tmp[!duplicated(mod_df_IQR_tmp),])
+        mod_df_IQR_tmp_srt <- mod_df_IQR_tmp_t[order(mod_df_IQR_tmp_t[,1]),]
+        val_df_all$RMSEmdn_elev_pred_IQR_rank <- which(names(mod_df_IQR_tmp_srt) == "RMSEmdn_elev_pred_IQR")
+        val_df_all$RMSEmdn_sum_elev_pred_ldr_pred_resid_IQR_rank <- which(names(mod_df_IQR_tmp_srt) == "RMSEmdn_sum_elev_pred_ldr_pred_resid_IQR")
+        val_df_all$RMSEmdn_ldr_pred_SR_IQR_rank <- which(names(mod_df_IQR_tmp_srt) == "RMSEmdn_ldr_pred_SR_IQR")
+        val_df_all$RMSEmdn_ldr_pred_SR_elev_IQR_rank <- which(names(mod_df_IQR_tmp_srt) == "RMSEmdn_ldr_pred_SR_elev_IQR")
+        val_df_all$RMSEmdn_ldr_pred_resid_IQR_rank <- which(names(mod_df_IQR_tmp_srt) == "RMSEmdn_ldr_pred_resid_IQR")
+        
         
         i$val[[k]] <- val_df_all 
       }

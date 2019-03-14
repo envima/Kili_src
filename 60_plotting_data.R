@@ -99,6 +99,15 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
       RMSEsd_ldr_pred_resid <- RMSE_ldr_pred_resid/sd(i$resp[[k]]$resid, na.rm = T)
       RMSEsd_sum_elev_pred_ldr_pred_resid <- RMSE_sum_elev_pred_ldr_pred_resid/sd(i$resp[[k]]$SR, na.rm = T)
       #####
+      ###RMSE/median
+      #####
+      mdn <- median(i$resp[[k]]$SR, na.rm = T)
+      RMSEmdn_elev_pred <- RMSE_elev_pred/mdn
+      RMSEmdn_ldr_pred_SR<- RMSE_ldr_pred_SR/mdn
+      RMSEmdn_ldr_pred_resid <- RMSE_ldr_pred_resid/median(i$resp[[k]]$resid, na.rm = T)
+      RMSEmdn_sum_elev_pred_ldr_pred_resid <- RMSE_sum_elev_pred_ldr_pred_resid/mdn
+      
+      #####
       ###new list element with validation
       #####
       val_df <- data.frame(run = outs, 
@@ -110,7 +119,12 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
                            RMSEsd_ldr_pred_SR = RMSEsd_ldr_pred_SR,
                            RMSEsd_ldr_pred_resid = RMSEsd_ldr_pred_resid,
                            RMSEsd_sum_elev_pred_ldr_pred_resid = RMSEsd_sum_elev_pred_ldr_pred_resid, 
-                           sd = sd)
+                           sd = sd,
+                           RMSEmdn_elev_pred = RMSEmdn_elev_pred, 
+                           RMSEmdn_ldr_pred_SR = RMSEmdn_ldr_pred_SR, 
+                           RMSEmdn_ldr_pred_resid = RMSEmdn_ldr_pred_resid, 
+                           RMSEmdn_sum_elev_pred_ldr_pred_resid = RMSEmdn_sum_elev_pred_ldr_pred_resid,
+                           mdn = mdn)
       
     })
     val_df_all <- do.call(rbind, val_df_all_lst)

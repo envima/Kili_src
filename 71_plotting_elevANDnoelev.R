@@ -62,7 +62,7 @@ troph_mrg <- troph_mrg[!duplicated(troph_mrg),]
 ########################################################################################
 plts <- c("RMSEsd_", "RMSE_")
 comm <- "elevANDnoelev"
-maxcat <- 20 #depending on the number ofruns
+maxcat <- 20 #depending on the number of runs
 ########################################################################################
 ########################################################################################
 ########################################################################################
@@ -103,7 +103,9 @@ for (i in set_lst){# i <- set_lst[[1]]
   # val_type <- gather(val_troph_flt, type, value, -resp, -run, -diet, -troph_sep, -Taxon, -sd)
   val_type <- gather(val_troph_flt, key = type, value = value, -c(resp, run, sd, mdn:troph_sep))
   
-
+  val_type_per_resp <- val_type[,!names(val_type) %in% c("run", "value")]
+  val_overview <- val_overview[!duplicated(val_overview),]
+  saveRDS(val_overview, file = paste0(modDir, "val_overview", names(set_lst)[cnt], "_", comm, ".rds"))
   #######################
   ###begin: sort and troph by median relations
   #######################
@@ -145,41 +147,41 @@ for (i in set_lst){# i <- set_lst[[1]]
   #######################
   ###begin: ordination plotting
   #######################
-  ord_tbl <- val_plt[,colnames(val_plt) %in% c("resp", 
-                                               "RMSEsd_elev_pred_sd", 
-                                               "RMSEsd_sum_elev_pred_ldr_pred_resid_sd", 
-                                               "RMSEsd_ldr_pred_SR_sd", 
-                                               "RMSEsd_ldr_pred_SR_elev_sd")]
-                                               
-                                               # , 
-                                               # "RMSEsd_ldr_pred_resid_sd")]
+  ord_tbl <- val_plt[,colnames(val_plt) %in% c("resp",
+                                               "RMSEsd_elev_pred_sd",
+                                               "RMSEsd_sum_elev_pred_ldr_pred_resid_sd",
+                                               "RMSEsd_ldr_pred_SR_sd")]
+  #, "RMSEsd_ldr_pred_SR_elev_sd" ,
+  # "RMSEsd_ldr_pred_resid_sd")]
   ord_tbl <- ord_tbl[!duplicated(ord_tbl),]
   rownames(ord_tbl) <- ord_tbl$resp
   ord_tbl <- ord_tbl[,!colnames(ord_tbl) == "resp"]
   
+  
+  rda <- rda(-ord_tbl)
+  
+  pdf(file = paste0(modDir, "/ord_plot_", names(set_lst)[cnt], "_", comm, n, ".pdf"), height= 10, 
+      width = 20)
+  biplot(rda)
+  dev.off()
+  
   ord_tbl_rank <- val_plt[,colnames(val_plt) %in% c("resp", 
                                                "RMSEsd_elev_pred_mdn_rank", 
                                                "RMSEsd_sum_elev_pred_ldr_pred_resid_mdn_rank", 
-                                               "RMSEsd_ldr_pred_SR_mdn_rank", 
-                                               "RMSEsd_ldr_pred_SR_elev_mdn_rank")]
+                                               "RMSEsd_ldr_pred_SR_mdn_rank")]
+                                               #, 
+                                               #"RMSEsd_ldr_pred_SR_elev_mdn_rank"
                                                
-                                               # , 
-                                               # "RMSEsd_ldr_pred_resid_mdn_rank")]
+                                               # , RMSEsd_ldr_pred_resid_mdn_rank")]
   ord_tbl_rank <- ord_tbl_rank[!duplicated(ord_tbl_rank),]
   rownames(ord_tbl_rank) <- ord_tbl_rank$resp
   ord_tbl_rank <- ord_tbl_rank[,!colnames(ord_tbl_rank) == "resp"]
-
-  ord <- decorana(ord_tbl_rank)
-  plot(ord)
   
-  rda <- rda(ord_tbl)
-  biplot(rda)
-  
-  rda_data <- rda(ord_tbl_rank)
+  rda_data <- rda(-ord_tbl_rank)
   # uscores <- data.frame(rda_data$CA$u)
   # uscores1 <- inner_join(rownames_to_column(ord_tbl_rank), rownames_to_column(data.frame(uscores)), type = "right", by = "rowname")
   # vscores <- data.frame(rda_data$CA$v)
-  pdf(file = paste0(modDir, "/ord_plot_", names(set_lst)[cnt], "_", comm, n, ".pdf"), height= 10, 
+  pdf(file = paste0(modDir, "/ord_plot_rank_", names(set_lst)[cnt], "_", comm, n, ".pdf"), height= 10, 
       width = 20)
   biplot(rda_data)
   dev.off()

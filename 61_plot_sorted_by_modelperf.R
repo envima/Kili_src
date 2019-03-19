@@ -203,15 +203,18 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
         ###add szenario information, which model performances resemble the ranking of other respnses between each other
         #####
         ###rank by median - RMSEsd
-        mod_df_mdn_tmp <- val_df_all[,grepl(pattern = "mdn", colnames(val_df_all)) & 
-                     grepl(pattern = "RMSEsd_", colnames(val_df_all))]
+        # mod_df_mdn_tmp <- val_df_all[,grepl(pattern = "mdn", colnames(val_df_all)) & 
+        #              grepl(pattern = "RMSEsd_", colnames(val_df_all))]
+        mod_df_mdn_tmp <- val_df_all[,c("RMSEsd_elev_pred_mdn", 
+                                        "RMSEsd_ldr_pred_SR_mdn", 
+                                        "RMSEsd_sum_elev_pred_ldr_pred_resid_mdn")]
         mod_df_mdn_tmp_t <- t(mod_df_mdn_tmp[!duplicated(mod_df_mdn_tmp),])
         mod_df_mdn_tmp_srt <- mod_df_mdn_tmp_t[order(mod_df_mdn_tmp_t[,1]),]
         val_df_all$RMSEsd_elev_pred_mdn_rank <- which(names(mod_df_mdn_tmp_srt) == "RMSEsd_elev_pred_mdn")
         val_df_all$RMSEsd_sum_elev_pred_ldr_pred_resid_mdn_rank <- which(names(mod_df_mdn_tmp_srt) == "RMSEsd_sum_elev_pred_ldr_pred_resid_mdn")
         val_df_all$RMSEsd_ldr_pred_SR_mdn_rank <- which(names(mod_df_mdn_tmp_srt) == "RMSEsd_ldr_pred_SR_mdn")
-        val_df_all$RMSEsd_ldr_pred_SR_elev_mdn_rank <- which(names(mod_df_mdn_tmp_srt) == "RMSEsd_ldr_pred_SR_elev_mdn")
-        val_df_all$RMSEsd_ldr_pred_resid_mdn_rank <- which(names(mod_df_mdn_tmp_srt) == "RMSEsd_ldr_pred_resid_mdn")
+        # val_df_all$RMSEsd_ldr_pred_SR_elev_mdn_rank <- which(names(mod_df_mdn_tmp_srt) == "RMSEsd_ldr_pred_SR_elev_mdn")
+        # val_df_all$RMSEsd_ldr_pred_resid_mdn_rank <- which(names(mod_df_mdn_tmp_srt) == "RMSEsd_ldr_pred_resid_mdn")
         
         ###rank by median - RMSEmdn
         mod_df_mdn_tmp <- val_df_all[,grepl(pattern = "_mdn$", colnames(val_df_all)) & 
@@ -230,8 +233,8 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
         val_df_all$constll1_RMSEsd_mdn[val_df_all$RMSEsd_elev_pred_mdn_rank == 1] <- 1
         val_df_all$constll1_RMSEsd_mdn[val_df_all$RMSEsd_sum_elev_pred_ldr_pred_resid_mdn_rank == 1] <- 2
         val_df_all$constll1_RMSEsd_mdn[val_df_all$RMSEsd_ldr_pred_SR_mdn_rank == 1] <- 3
-        val_df_all$constll1_RMSEsd_mdn[val_df_all$RMSEsd_ldr_pred_SR_elev_mdn_rank == 1] <- 4
-        val_df_all$constll1_RMSEsd_mdn[val_df_all$RMSEsd_ldr_pred_resid_mdn_rank == 1] <- 5
+        # val_df_all$constll1_RMSEsd_mdn[val_df_all$RMSEsd_ldr_pred_SR_elev_mdn_rank == 1] <- 4
+        # val_df_all$constll1_RMSEsd_mdn[val_df_all$RMSEsd_ldr_pred_resid_mdn_rank == 1] <- 5
         #best model by median RMSemdn
         val_df_all$constll1_RMSEmdn_mdn[val_df_all$RMSEmdn_elev_pred_mdn_rank == 1] <- 1
         val_df_all$constll1_RMSEmdn_mdn[val_df_all$RMSEmdn_sum_elev_pred_ldr_pred_resid_mdn_rank == 1] <- 2

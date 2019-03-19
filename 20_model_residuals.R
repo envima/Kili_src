@@ -15,7 +15,7 @@ library(caret)
 ###set paths
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-sub <- "feb19/"
+sub <- "mar19/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 outpath <- paste0("../data/", sub)
@@ -127,7 +127,7 @@ set_lst_res <- lapply(set_lst, function(i){# i <- set_lst[[1]]
     #####
     ###calculate residuals
     #####
-    i$resp[[k]]$resid <- i$resp[[k]]$SR - i$resp[[k]]$elev_pred
+    i$resp[[k]]$RES <- i$resp[[k]]$SR - i$resp[[k]]$elev_pred
     # i$resp[[k]]$resid <- i$resp[[k]]$SR - i$resp[[k]]$elev_pred
     
   }

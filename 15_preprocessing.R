@@ -25,7 +25,7 @@ library(caret)
 ###set paths
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-sub <- "feb19/"
+sub <- "mar19/"
 inpath <- paste0("../data/", sub)
 if (file.exists(inpath)==F){
   dir.create(file.path(inpath))
@@ -84,9 +84,11 @@ mrg_tbl$elevsq <- mrg_tbl$elevation^2
 #####
 nm_meta_base <- c("plotID", "cat", "selID")
 nm_resp_SR <- c(colnames(mrg_tbl)[c(which(colnames(mrg_tbl) == "SRmammals") : 
-                                      which(colnames(mrg_tbl) == "SRsnails"), 
-                                    which(colnames(mrg_tbl) == "SRrosids") : 
-                                      which(colnames(mrg_tbl) == "SRmagnoliids"))])
+                                      which(colnames(mrg_tbl) == "SRsnails")
+                                    # , 
+                                    # which(colnames(mrg_tbl) == "SRrosids") : 
+                                    #   which(colnames(mrg_tbl) == "SRmagnoliids")
+                                    )])
 nm_pred_pot <- c(colnames(mrg_tbl)[c(which(colnames(mrg_tbl) %in% "AGB"),
                                      which(colnames(mrg_tbl) %in% "BE_FHD") : 
                                        which(colnames(mrg_tbl) %in% "LAI"),

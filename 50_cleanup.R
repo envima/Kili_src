@@ -16,14 +16,14 @@ rm(list=ls())
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 # setwd("/mnt/sd19006/data/users/aziegler/src")
-sub <- "feb19/"
+sub <- "mar19/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2019-03-06frst_nofrst_allplts_noelev/"
+set_dir <- "2019-03-19frst_nofrst_allplts_noelev/"
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
 
@@ -59,9 +59,9 @@ set_lst_cln <- lapply(set_lst, function(i){# i <- set_lst[[1]]
   cnt <<- cnt+1
   set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst)[cnt], "_"), mod_dir_lst)]
   modDir <- paste0(inpath, set_dir, set_moddir, "/")
-  for (k in names(i$resp)){
+  for (k in names(i$resp)){ #k <- "SRmammals
     # print(k)
-    i$resp[[k]][["sum_elev_pred_ldr_pred_resid"]] <- rowSums(cbind(i$resp[[k]]$elev_pred, i$resp[[k]]$ldr_pred_resid))
+    i$resp[[k]][["pred_sumSR"]] <- rowSums(cbind(i$resp[[k]]$pred_elevSR, i$resp[[k]]$pred_lidarRES))
   }
   if (file.exists(paste0(modDir, "data/"))==F){
     dir.create(file.path(paste0(modDir, "data/")), recursive = T)

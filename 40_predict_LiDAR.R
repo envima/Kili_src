@@ -20,14 +20,14 @@ library(parallel)
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 # setwd("/mnt/sd19006/data/users/aziegler/src")
-sub <- "feb19/"
+sub <- "mar19/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 outpath <- paste0("../data/", sub)
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2019-03-06frst_nofrst_allplts_noelev/"
+set_dir <- "2019-03-19frst_nofrst_allplts_noelev/"
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
 # set <- c("nofrst")
@@ -47,6 +47,7 @@ type <- "ffs"
 # cv <- "cv_index"
 cv <- "cv_20"
 # cv <- "cv_50"
+resp_set <- c("lidarSR", "lidarelevSR", "lidarRES") #m <- "lidarSR" #loop model for SR and resid
 ########################################################################################
 ########################################################################################
 ########################################################################################
@@ -68,10 +69,10 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
   
   set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst)[cnt], "_"), mod_dir_lst)]
   modDir <- paste0(inpath, set_dir, set_moddir, "/")
-  for(k in names(i$resp)){
+  for(k in names(i$resp)){ # k <- "SRmammals"
     # print(k)
     # for (k in names(i$resp)){
-    for (outs in runs){
+    for (outs in runs){ #outs <- 1
       #####
       ###split for outer loop (independet cv)
       #####
@@ -85,8 +86,7 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
         plt_in <- i$meta$plotID[i$meta[cv_nm] == 0]
         plt_out <- i$meta$plotID[i$meta[cv_nm] == 1]
       }
-      resp_set <- c("SR", "resid") # loop model for SR and resid
-      for (m in resp_set){
+      for (m in resp_set){ #m <- "lidarSR"
         # if(length(unique(tbl_in[,m])) > 1){ #check if tbl_in has only 0 zB: SRlycopodiopsida/nofrst/outs = 1
           #####
           ###create newdata dataframes
@@ -103,14 +103,18 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
           #####
           if (!is.na(mod)){
             prdct <- predict(object = mod, newdata = new_dat)
-            col_nm <- paste0("ldr_pred_", m) #column depending on sr or resid
+            col_nm <- paste0("pred_", m) #column depending on sr or resid
             i$resp[[k]][[col_nm]][i$resp[[k]]$plotID %in% plt_out] <- prdct
           }else{
-            col_nm <- paste0("ldr_pred_", m)
+            col_nm <- paste0("pred_", m)
             i$resp[[k]][[col_nm]][i$resp[[k]]$plotID %in% plt_out] <- NA
+            ###vorübergehend: 
+            colnames(i$resp[[k]])[colnames(i$resp[[k]]) == "elev_pred"] <- "pred_elevSR"
+            colnames(i$resp[[k]])[colnames(i$resp[[k]]) == "RES"] <- "calc_elevRES"
+            
           }
         # }else{ # if only one value in tbl_in: modeling isn't possible ==> NA in prediction
-          # col_nm <- paste0("ldr_pred_", m)
+          # col_nm <- paste0("pred_", m)
           # i$resp[[k]][[col_nm]][i$resp[[k]]$plotID %in% plt_out] <- NA
         # } 
         }
@@ -120,6 +124,8 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
 if (file.exists(paste0(modDir, "data/"))==F){
   dir.create(file.path(paste0(modDir, "data/")), recursive = T)
 }
+  
+
 saveRDS(i, file = paste0(modDir, "data/", "40_master_lst_ldr_", names(set_lst)[cnt], ".rds"))
 # readRDS(file = paste0(modDir, "40_master_lst_ldr_", names(set_lst)[cnt], ".rds"))
 return(i)

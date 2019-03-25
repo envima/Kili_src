@@ -104,7 +104,7 @@ for (i in set_lst){# i <- set_lst[[1]]
   val_type <- gather(val_troph_flt, key = type, value = value, -c(resp, run, sd, mdn:troph_sep))
   
   val_type_per_resp <- val_type[,!names(val_type) %in% c("run", "value")]
-  val_overview <- val_overview[!duplicated(val_overview),]
+  val_overview <- val_type_per_resp[!duplicated(val_type_per_resp),]
   saveRDS(val_overview, file = paste0(modDir, "val_overview", names(set_lst)[cnt], "_", comm, ".rds"))
   #######################
   ###begin: sort and troph by median relations
@@ -128,9 +128,12 @@ for (i in set_lst){# i <- set_lst[[1]]
   val_plt$szenario[val_plt$constll1_RMSEsd_mdn == 4 & 
                      val_plt$RMSEsd_ldr_pred_resid_mdn_rank < val_plt$RMSEsd_elev_pred_mdn_rank] <- 4.2
   val_plt <- val_plt[val_plt$diet != "plant",]
+  val_plt_flt <- val_plt[val_plt$type %in% c("RMSEsd_elev_pred", 
+                                             "RMSEsd_sum_elev_pred_ldr_pred_resid", 
+                                             "RMSEsd_ldr_pred_SR"),]
   plt <- ggplot() +
-                  geom_boxplot(data = val_plt, aes(x=resp, y=value, fill=type), width = 1) +   #in aes(position=position_dodge(5))
-                  facet_grid(~val_plt$szenario, scales = "free_x", space="free_x", switch = "x") +
+                  geom_boxplot(data = val_plt_flt, aes(x=resp, y=value, fill=type), width = 1) +   #in aes(position=position_dodge(5))
+                  facet_grid(~val_plt_flt$szenario, scales = "free_x", space="free_x", switch = "x") +
                   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10)) + #,
                   #       strip.text.x = element_blank()) +
                   theme(axis.text.x = element_text(size = 16))+
@@ -142,6 +145,31 @@ for (i in set_lst){# i <- set_lst[[1]]
   dev.off()
   #######################
   ###end: sort and troph by median relations
+  #######################
+  p <- ggplot()+
+    geom_point(data = val_troph_flt, aes(x = RMSEsd_ldr_pred_SR, 
+                                   y = RMSEsd_elev_pred, col = resp))+
+    geom_abline() +
+    facet_grid(~val_troph_flt$constll1_RMSEsd_mdn, 
+               scales = "free_x", space="free_x", switch = "x")
+    
+  ggplot() + geom_point(data = mpg, aes(cty, hwy)) + geom_abline()
+  
+  pairs(val_troph_flt[,c("RMSEsd_elev_pred", 
+                         "RMSEsd_sum_elev_pred_ldr_pred_resid", 
+                         "RMSEsd_ldr_pred_SR")], col=val_troph_flt$constll1_RMSEsd_mdn)
+  
+  pairs(val_troph_flt[,c("RMSEsd_elev_pred", 
+                         "RMSEsd_sum_elev_pred_ldr_pred_resid", 
+                         "RMSEsd_ldr_pred_SR")], col=val_troph_flt$resp)
+  
+  plot(val_plt$value[val_plt$type == "RMSEsd_elev_pred"] ~ val_plt$value[val_plt$type == "RMSEsd_ldr_pred_SR"])
+  #######################
+  ###begin: plot error in scatterplotmatrix
+  #######################
+  
+  #######################
+  ###end: plot error in scatterplotmatrix
   #######################
   
   #######################

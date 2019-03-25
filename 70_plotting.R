@@ -24,14 +24,14 @@ library(dplyr)
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 # setwd("/mnt/sd19006/data/users/aziegler/src")
-sub <- "feb19/"
+sub <- "mar19/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 outpath <- paste0("../out/", sub)
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2019-02-26frst_nofrst_allplts_noelev/"
+set_dir <- "2019-03-19frst_nofrst_allplts_noelev/"
 
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
@@ -59,9 +59,11 @@ source("lvlplt.R")
 ########################################################################################
 ###Settings
 ########################################################################################
-plts <- c("RMSEsd_", "RMSE_")
+plts <- c("RMSEsd_")#, "RMSE_")
 comm <- ""
 maxcat <- 20 #depending on the number of levels run
+resp_set <- c("lidarSR", "lidarelevSR", "lidarRES") #m <- "lidarSR" #loop model for SR and resid
+
 ########################################################################################
 ########################################################################################
 ########################################################################################
@@ -96,10 +98,12 @@ for (i in set_lst){# i <- set_lst[[1]]
   val_troph$diet <- factor(val_troph$diet, 
                            levels = levels(val_troph$diet))
   
-  val_troph_flt <- val_troph[is.finite(val_troph$RMSEsd_ldr_pred_SR),]
+  val_troph_flt <- val_troph[is.finite(val_troph$RMSEsd_lidarSR),]
   
   
-  val_type <- gather(val_troph_flt, type, value, -resp, -run, -diet, -troph_sep, -Taxon, -sd)
+  val_type <- gather(val_troph_flt, key = type, value = value, -c(resp, run, sd, mdn:troph_sep))
+  
+  # val_type <- gather(val_troph_flt, type, value, -resp, -run, -diet, -troph_sep, -Taxon, -sd)
   
   val_type$color[val_type$diet == "birds"] <- "cadetblue3"
   val_type$color[val_type$diet == "bats"] <- "grey25"
@@ -185,11 +189,12 @@ for (i in set_lst){# i <- set_lst[[1]]
   #####
   ###create df for heatmap, separate for SR and resid
   #####
-  resp_set <- c("SR", "resid") # loop model for SR and resid
-  SR_resid_lst <- lapply(resp_set, function(m){ #m <- "SR"
-    resp_lst <- lapply(names(i$resp), function(k){
+
+  SR_resid_lst <- lapply(resp_set, function(m){ #m <- "lidarSR"
+    m_name <- paste0("pred_", m)
+    resp_lst <- lapply(names(i$resp), function(k){ # k <- "SRmammals"
       print(k)
-      varsel_lst <- i$varsel[[k]][[m]]
+      varsel_lst <- i$varsel[[k]][[m_name]]
     })
     names(resp_lst) <- names(i$resp)
     df <- Reduce(function(x,y) merge(x,y, by = "pred", all = T), resp_lst)
@@ -217,7 +222,7 @@ for (i in set_lst){# i <- set_lst[[1]]
            lbl_x = colnames(mat), 
            lbl_y = rownames(mat), 
            rnge = seq(min(mat)+0.5, max(mat)+0.5, 1), 
-           main = paste0(names(set_lst)[cnt], "_", sub, "_", m))
+           main = paste0(names(set_lst)[cnt], "_", sub, m))
     pdf(file = paste0(modDir, "heat_selvars_", names(set_lst)[cnt], "_", m, "_", comm, ".pdf"), 
         width = 7, height = 10); par(mar=c(6, 4, 4, 2) + 0.1)#paper = "a4")
     print(l)

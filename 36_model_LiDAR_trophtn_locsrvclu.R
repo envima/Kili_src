@@ -18,9 +18,9 @@ library(parallel)
 #####
 ###set paths
 #####
-machine <- "local"
+# machine <- "local"
 # machine <- "server"
-# machine <- "cluster"
+machine <- "cluster"
 core_num <- 60
 
 if(machine == "local"){
@@ -44,7 +44,8 @@ inpath_pre <- paste0(inpath, set_dir)
 ###Settings
 ########################################################################################
 # comm <- "elev"
-comm <- "noelev"
+comm <- ""
+# comm <- "noelev"
 # comm <- "flt_elev"
 # comm <- "flt_noelev"
 method <- "pls"
@@ -62,7 +63,7 @@ resp_set <- c("lidarSR", "lidarelevSR", "lidarRES") #m <- "SR" #loop model for S
 ###read files
 #####
 set_lst <- lapply(set, function(o){
-  readRDS(file = paste0(outpath, "20_master_lst_resid_", o, ".rds"))
+  readRDS(file = paste0(outpath, "26_master_lst_resid_", o, ".rds"))
 })
 names(set_lst) <- set
 set_dir <- paste0(Sys.Date(), paste(set, collapse = "_"), "_", comm, "/")

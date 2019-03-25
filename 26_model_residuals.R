@@ -24,7 +24,7 @@ set <- c("nofrst", "frst", "allplts")
 ###read files
 #####
 set_lst <- lapply(set, function(o){
-  readRDS(file = paste0(outpath, "15_master_lst_", o, ".rds"))
+  readRDS(file = paste0(outpath, "16_master_lst_", o, ".rds"))
 })
 names(set_lst) <- set
 ########################################################################################
@@ -119,19 +119,19 @@ set_lst_res <- lapply(set_lst, function(i){# i <- set_lst[[1]]
         ###predict and write into new column
         #####
         prdct <- predict(object = mod_elev, newdata = new_dat)
-        i$resp[[k]]$pred_elevSR[i$resp[[k]]$plotID %in% plt_out] <- prdct
+        i$resp[[k]]$elev_pred[i$resp[[k]]$plotID %in% plt_out] <- prdct
       }else{ # if only one value in tbl_in: modeling isn't possible ==> NA in prediction
-        i$resp[[k]]$pred_elevSR[i$resp[[k]]$plotID %in% plt_out] <- NA
+        i$resp[[k]]$elev_pred[i$resp[[k]]$plotID %in% plt_out] <- NA
       }
     }
     #####
     ###calculate residuals
     #####
-    i$resp[[k]]$calc_elevRES <- i$resp[[k]]$SR - i$resp[[k]]$pred_elevSR
-    # i$resp[[k]]$resid <- i$resp[[k]]$SR - i$resp[[k]]$pred_elevSR
+    i$resp[[k]]$RES <- i$resp[[k]]$SR - i$resp[[k]]$elev_pred
+    # i$resp[[k]]$resid <- i$resp[[k]]$SR - i$resp[[k]]$elev_pred
     
   }
-  saveRDS(i, file = paste0(outpath, "20_master_lst_resid_", names(set_lst)[cnt], ".rds"))
+  saveRDS(i, file = paste0(outpath, "26_master_lst_resid_", names(set_lst)[cnt], ".rds"))
   return(i)
 })
 names(set_lst_res) <- set

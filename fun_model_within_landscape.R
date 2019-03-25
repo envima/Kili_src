@@ -1,21 +1,24 @@
 model_within_landscape<-function(i, set_lst, cv, comm, sub, inpath, inpath_general, outpath, 
                                  set, set_dir, method, type, cv_fold_in, 
-                                 cv_times_in, resp_set, preds_flt = NA)
-{
+                                 cv_times_in, resp_set, preds_flt = NA){
+  
+  modDir <- paste0(outpath, set_dir, Sys.Date(), "_", names(set_lst)[i], "_", type, "_", 
+                   method, "_", comm)
+  if (file.exists(modDir)==F){
+    dir.create(file.path(modDir))
+  }
+  if(grepl("cv_index", cv)){
+    runs <- sort(unique(set_lst[[i]]$meta$cvindex_run))
+  }else{
+    runs <- seq(sum(grepl("outerrun", colnames(set_lst[[i]]$meta))))
+  }
   foreach(k = names(set_lst[[i]]$resp), 
           .errorhandling = "remove", 
-          .packages=c("caret", "CAST", "plyr"))%dopar%{ # testing: k <- "SRmammals"
-            modDir <- paste0(outpath, set_dir, Sys.Date(), "_", names(set_lst)[i], "_", type, "_", method, "_", comm)
-            if (file.exists(modDir)==F){
-              dir.create(file.path(modDir))
-            }
-            if(grepl("cv_index", cv)){
-              runs <- sort(unique(set_lst[[i]]$meta$cvindex_run))
-            }else{
-              runs <- seq(sum(grepl("outerrun", colnames(set_lst[[i]]$meta))))
-            }  
-            
-            for (outs in runs){ # outs <- 1
+          .packages=c("caret", "CAST", "plyr"))%:% #{ # testing: k <- "SRmammals"
+            foreach (outs = runs, 
+                     .errorhandling = "remove", 
+                     .packages=c("caret", "CAST", "plyr"))%dopar%{ # outs <- 1
+            # for (outs in runs){ # outs <- 1
               #####
               ###split for outer loop (independet cv)
               ###and inner index selection for model
@@ -93,5 +96,5 @@ model_within_landscape<-function(i, set_lst, cv, comm, sub, inpath, inpath_gener
               }
             }
             
-          }
+          #  #foreach1
 }

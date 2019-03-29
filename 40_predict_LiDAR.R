@@ -27,7 +27,7 @@ outpath <- paste0("../data/", sub)
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2019-03-19frst_nofrst_allplts_noelev/"
+set_dir <- "2019-03-2325frst_no_frst_allplts_merge_somemissing/"
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
 # set <- c("nofrst")
@@ -37,6 +37,24 @@ set <- c("nofrst", "frst", "allplts")
 set_lst <- lapply(set, function(o){
   readRDS(file = paste0(outpath, "20_master_lst_resid_", o, ".rds"))
 })
+# ###vorläufig um alten datensatz und neue trophs zusammenzupacken
+# set_lst <- lapply(set, function(o){
+#   all <- readRDS(file = paste0(outpath, "20_master_lst_resid_", o, ".rds"))
+#   new_trophs <- readRDS(file = paste0(outpath, "26_master_lst_resid_", o, ".rds"))
+#   new_moreplts <- lapply(new_trophs$resp, function(resp){
+#     merge_tbls <- merge(all$meta, resp, by = "plotID", all = T)
+#     flt_tbls <- merge_tbls[,c("plotID", "SR", "elev_pred", "RES")]
+#     colnames(flt_tbls)[colnames(flt_tbls) == "RES"] <- "calc_elevRES"
+#     colnames(flt_tbls)[colnames(flt_tbls) == "elev_pred"] <- "pred_elevSR"
+#     return(flt_tbls)
+#   })
+#   all$resp <- append(all$resp, new_moreplts)
+#   all$meta <- merge(all$meta, new_trophs$meta[,c(colnames(new_trophs$meta) %in% c("plotID",
+#                                                    setdiff(colnames(new_trophs$meta),
+#                                                            colnames(all$meta))))], all = T)
+#   return(all)
+# })
+# ###ende vorläufig
 names(set_lst) <- set 
 set_lst <- set_lst[!is.na(set_lst)]
 ########################################################################################
@@ -56,7 +74,7 @@ resp_set <- c("lidarSR", "lidarelevSR", "lidarRES") #m <- "lidarSR" #loop model 
 ########################################################################################
 ########################################################################################
 cnt <- 0
-set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
+set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[2]]
   cnt <<- cnt+1
   if(grepl("cv_index", cv)){
     runs <- sort(unique(i$meta$cvindex_run))
@@ -69,10 +87,11 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
   
   set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst)[cnt], "_"), mod_dir_lst)]
   modDir <- paste0(inpath, set_dir, set_moddir, "/")
-  for(k in names(i$resp)){ # k <- "SRmammals"
+  for(k in names(i$resp)){ # k <- "SRmammals" k  <- "SRpredator"
     # print(k)
     # for (k in names(i$resp)){
     for (outs in runs){ #outs <- 1
+      # print(outs)
       #####
       ###split for outer loop (independet cv)
       #####
@@ -87,6 +106,7 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[1]]
         plt_out <- i$meta$plotID[i$meta[cv_nm] == 1]
       }
       for (m in resp_set){ #m <- "lidarSR"
+        # print(m)
         # if(length(unique(tbl_in[,m])) > 1){ #check if tbl_in has only 0 zB: SRlycopodiopsida/nofrst/outs = 1
           #####
           ###create newdata dataframes
@@ -132,21 +152,5 @@ return(i)
 
 })
 names(set_lst_ldr) <- set 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

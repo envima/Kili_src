@@ -21,7 +21,7 @@ library(parallel)
 # machine <- "local"
 # machine <- "server"
 machine <- "cluster"
-core_num <- 63
+core_num <- 60
 
 if(machine == "local"){
   setwd(dirname(rstudioapi::getSourceEditorContext()[[2]])) # lokal
@@ -31,7 +31,7 @@ if(machine == "local"){
   setwd("/home/ziegler5/src") # marc2
 }
 
-sub <- "apr19/"
+sub <- "mar19/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 outpath <- paste0("../data/", sub)
@@ -44,7 +44,8 @@ inpath_pre <- paste0(inpath, set_dir)
 ###Settings
 ########################################################################################
 # comm <- "elev"
-comm <- "noelev"
+comm <- ""
+# comm <- "noelev"
 # comm <- "flt_elev"
 # comm <- "flt_noelev"
 method <- "pls"
@@ -62,7 +63,7 @@ resp_set <- c("lidarSR", "lidarelevSR", "lidarRES") #m <- "SR" #loop model for S
 ###read files
 #####
 set_lst <- lapply(set, function(o){
-  readRDS(file = paste0(outpath, "20_master_lst_resid_", o, ".rds"))
+  readRDS(file = paste0(outpath, "26_master_lst_resid_", o, ".rds"))
 })
 names(set_lst) <- set
 set_dir <- paste0(Sys.Date(), paste(set, collapse = "_"), "_", comm, "/")
@@ -73,19 +74,7 @@ if(grepl("flt", comm)){
   preds_flt <- readRDS(file = paste0(inpath_pre, "80_preds_flt.rds"))
 }
 
-# #####
-# ###if only certain responses should be trained vorläufig...insg. sollte das in fun model als argument
-# #####
-# set_lst <- lapply(set_lst, function(i){
-#   resp <- c("SRdecomposer", "SRgeneralist", "SRpredator", "SRherbivore")
-#   i$resp <- i$resp[names(i$resp) %in% resp]
-#   return(i)
-# })
-# #####
-# ###end: only certain responses
-# #####
-
-source("fun_model.R")
+source("fun_model_within_landscape.R")
 ########################################################################################
 ########################################################################################
 ########################################################################################
@@ -96,22 +85,22 @@ source("fun_model.R")
 if (machine == "local"){
   set_lst_ldr <- lapply(seq(length(set_lst)), function(i){# i <- 1 , set_lst[[i]]
     
-    model(i = i, set_lst = set_lst, cv = cv, comm = comm, sub = sub, 
+    model_within_landscape(i = i, set_lst = set_lst, cv = cv, comm = comm, sub = sub, 
                            inpath = inpath, inpath_general = inpath_general, 
                            outpath = outpath, set = set, set_dir = set_dir, 
                            method = method, type = type, cv_fold_in = cv_fold_in, 
                            cv_times_in = cv_times_in, resp_set = resp_set)
-  }
+    }
   )
 }
 if (machine == "server"){ # not tested yet
   registerDoParallel(core_num)
   set_lst_ldr <- lapply(seq(length(set_lst)), function(i){# i <- 1 , set_lst[[i]]
-    model(i = i, set_lst = set_lst, cv = cv, comm = comm, sub = sub, 
-                           inpath = inpath, inpath_general = inpath_general, 
-                           outpath = outpath, set = set, set_dir = set_dir, 
-                           method = method, type = type, cv_fold_in = cv_fold_in, 
-                           cv_times_in = cv_times_in, resp_set = resp_set)}
+  model_within_landscape(i = i, set_lst = set_lst, cv = cv, comm = comm, sub = sub, 
+                         inpath = inpath, inpath_general = inpath_general, 
+                         outpath = outpath, set = set, set_dir = set_dir, 
+                         method = method, type = type, cv_fold_in = cv_fold_in, 
+                         cv_times_in = cv_times_in, resp_set = resp_set)}
   )
 }
 if (machine == "cluster"){
@@ -119,7 +108,7 @@ if (machine == "cluster"){
   i <- as.numeric(cmd_input[1])
   cl <- makeCluster(core_num, type = "FORK", outfile = paste0("/home/ziegler5/data/", sub, set_dir, "out.txt")) 
   registerDoParallel(cl)
-  model(i = i, set_lst = set_lst, cv = cv, comm = comm, sub = sub, 
+  model_within_landscape(i = i, set_lst = set_lst, cv = cv, comm = comm, sub = sub, 
                          inpath = inpath, inpath_general = inpath_general, 
                          outpath = outpath, set = set, set_dir = set_dir, 
                          method = method, type = type, cv_fold_in = cv_fold_in, 

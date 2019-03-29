@@ -15,7 +15,7 @@ library(caret)
 ###set paths
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-sub <- "apr19/"
+sub <- "mar19/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 outpath <- paste0("../data/", sub)
@@ -24,7 +24,7 @@ set <- c("nofrst", "frst", "allplts")
 ###read files
 #####
 set_lst <- lapply(set, function(o){
-  readRDS(file = paste0(outpath, "15_master_lst_", o, ".rds"))
+  readRDS(file = paste0(outpath, "16_master_lst_", o, ".rds"))
 })
 names(set_lst) <- set
 ########################################################################################
@@ -47,14 +47,14 @@ cv_fold_in <- 4
 ########################################################################################
 ########################################################################################
 cnt <- 0
-set_lst_res <- lapply(set_lst, function(i){# i <- set_lst[[2]]
+set_lst_res <- lapply(set_lst, function(i){# i <- set_lst[[1]]
   cnt <<- cnt+1
   if(grepl("cv_index", cv)){
     runs <- sort(unique(i$meta$cvindex_run))
   }else{
     runs <- seq(sum(grepl("outerrun", colnames(i$meta))))
   }
-  for (k in names(i$resp)){ # k <- "SRmammals" k  <- "SRpredator"
+  for (k in names(i$resp)){ # k <- "SRmammals" k <- "SRpredator"
     print(k)
     for (outs in runs){ # outs <- 1
       print(outs)
@@ -104,7 +104,7 @@ set_lst_res <- lapply(set_lst, function(i){# i <- set_lst[[2]]
         predictors <- c("scl_elevation","scl_elevsq")
         preds <- tbl_in$meta[notmissing,predictors] # take out NAs from resp so model can run
 
-        new_dat <- i$meta[i$meta$plotID %in% plt_out,]
+        new_dat <- i$meta[i$meta$plotID%in%plt_out,]
         #####
         ###actual model
         #####
@@ -119,19 +119,19 @@ set_lst_res <- lapply(set_lst, function(i){# i <- set_lst[[2]]
         ###predict and write into new column
         #####
         prdct <- predict(object = mod_elev, newdata = new_dat)
-        i$resp[[k]]$pred_elevSR[i$resp[[k]]$plotID %in% plt_out] <- prdct
+        i$resp[[k]]$elev_pred[i$resp[[k]]$plotID %in% plt_out] <- prdct
       }else{ # if only one value in tbl_in: modeling isn't possible ==> NA in prediction
-        i$resp[[k]]$pred_elevSR[i$resp[[k]]$plotID %in% plt_out] <- NA
+        i$resp[[k]]$elev_pred[i$resp[[k]]$plotID %in% plt_out] <- NA
       }
     }
     #####
     ###calculate residuals
     #####
-    i$resp[[k]]$calc_elevRES <- i$resp[[k]]$SR - i$resp[[k]]$pred_elevSR
-    # i$resp[[k]]$resid <- i$resp[[k]]$SR - i$resp[[k]]$pred_elevSR
+    i$resp[[k]]$RES <- i$resp[[k]]$SR - i$resp[[k]]$elev_pred
+    # i$resp[[k]]$resid <- i$resp[[k]]$SR - i$resp[[k]]$elev_pred
     
   }
-  saveRDS(i, file = paste0(outpath, "20_master_lst_resid_", names(set_lst)[cnt], ".rds"))
+  saveRDS(i, file = paste0(outpath, "26_master_lst_resid_", names(set_lst)[cnt], ".rds"))
   return(i)
 })
 names(set_lst_res) <- set

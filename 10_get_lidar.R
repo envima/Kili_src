@@ -25,7 +25,7 @@ library(stringr)
 ###set paths
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-sub <- "mar19/"
+sub <- "apr19/"
 inpath <- paste0("../data/", sub)
 if (file.exists(inpath)==F){
   dir.create(file.path(inpath))

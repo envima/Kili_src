@@ -91,7 +91,7 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
     }else{
       runs <- seq(sum(grepl("outerrun", colnames(i$meta))))
     }
-  for (k in names(i$resp)){ # k <- "SRdungbeetles" k <- "SRbirds" k <- "SRrosids"
+  for (k in names(i$resp)){ # k<- "SRmammals", k <- "SRdungbeetles" k <- "SRbirds" k <- "SRrosids"
     #####
     ###hier werden spalten aus verschiedenen Modellen zusammengefügt
     #####
@@ -103,7 +103,7 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
     #####
     ###end:spalten sind zusammengefügt
     #####
-        val_df_all_lst <- lapply (runs, function(outs){
+        val_df_all_lst <- lapply (runs, function(outs){ #outs <- 1
           #####
           ###out rows for thisrun (has to be chosen first, as depending on cv20/cv-index, 
           ###the rows are chosen by one column, or by several.)

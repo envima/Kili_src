@@ -91,7 +91,7 @@ nm_resp_SR <- c(colnames(mrg_tbl)[c(which(colnames(mrg_tbl) == "SRmammals") :
                                     # , 
                                     # which(colnames(mrg_tbl) == "SRrosids") : 
                                     #   which(colnames(mrg_tbl) == "SRmagnoliids")
-)])
+                                    )])
 nm_pred_pot <- c(colnames(mrg_tbl)[c(which(colnames(mrg_tbl) %in% "AGB"),
                                      which(colnames(mrg_tbl) %in% "BE_FHD") : 
                                        which(colnames(mrg_tbl) %in% "LAI"),
@@ -173,7 +173,7 @@ for (i in unique(troph_mrg$diet[!troph_mrg$diet %in% c("birds", "bats")])){
   troph_sum$summed <- summed
   colnames(troph_sum)[which(colnames(troph_sum) == "summed")] <- paste0("sum_", i, "_N", length(match))
 }
-mrg_tbl_troph_first <- merge(mrg_tbl, troph_sum, by = "plotID")
+mrg_tbl_troph_frst <- merge(mrg_tbl, troph_sum, by = "plotID")
 
 #####
 ###Thomas Daten reduziert auf trophische level 
@@ -182,7 +182,7 @@ mrg_tbl_troph_first <- merge(mrg_tbl, troph_sum, by = "plotID")
 tbl_tn <- as.data.frame(gpm_tn@data$input)
 troph_tn <- tbl_tn[names(tbl_tn) %in% c("plotID", "SRpredator", "SRherbivore", "SRgeneralist", "SRdecomposer")]
 
-mrg_tbl_troph <- merge(mrg_tbl_troph_first, troph_tn, by = "plotID", all = T)
+mrg_tbl_troph <- merge(mrg_tbl_troph_frst, troph_tn, by = "plotID")
 
 #####
 ###append troph_mrg with sum trophics
@@ -200,7 +200,7 @@ troph_mrg_tn <- data.frame(Taxon = c(colnames(troph_tn[2:ncol(troph_tn)])),
                            resp = c(colnames(troph_tn[2:ncol(troph_tn)])))
 troph_mrg <- rbind(troph_mrg_frst, troph_mrg_tn)
 
-saveRDS(troph_mrg, file = paste0(outpath, "15_troph_mrg.rds"))
+saveRDS(troph_mrg, file = paste0(outpath, "16_troph_mrg.rds"))
 #####
 ###append nm_resp mit nm_resp_troph
 #####
@@ -274,6 +274,6 @@ for (o in set){ # o <- set[[1]]
                      }))
   names(master_lst$resp) <- c(nm_resp_SR, nm_resp_troph)
   
-  saveRDS(master_lst, file = paste0(outpath, "15_master_lst_", o, ".rds"))
+  saveRDS(master_lst, file = paste0(outpath, "16_master_lst_", o, ".rds"))
   # master_lst <- readRDS(file = paste0(outpath, "master_lst_", o, ".rds"))
 }#for o in set

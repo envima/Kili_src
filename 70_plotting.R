@@ -19,6 +19,9 @@ library(rasterVis)
 library(compositions)
 library(RColorBrewer)
 library(dplyr)
+library(grid)
+library(pBrackets)  
+
 #####
 ###set paths
 #####
@@ -31,7 +34,7 @@ outpath <- paste0("../out/", sub)
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2019-03-19frst_nofrst_allplts_noelev/"
+set_dir <- "2019-03-2325frst_no_frst_allplts_merge_somemissing/"
 
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
@@ -52,6 +55,17 @@ set_lst <- set_lst[!is.na(set_lst)]
 
 troph_mrg <- readRDS(paste0(inpath, "15_troph_mrg.rds"))
 troph_mrg <- troph_mrg[!duplicated(troph_mrg),]
+
+###vorläufig um alten Datensatz und neue trophs zusammenzuplotten
+trophlev_new <- data.frame(Taxon = c("SRpredator", "SRgeneralist", 
+                                     "SRdecomposer", "SRherbivore"), 
+                           diet = c("predator", "generalist", 
+                                    "decomposer", "herbivore"), 
+                           resp = c("SRpredator", "SRgeneralist", 
+                                    "SRdecomposer", "SRherbivore"))
+troph_mrg <- rbind(troph_mrg, trophlev_new)
+###########Ende vorläufig
+
 #####
 ###read functions
 #####
@@ -103,8 +117,19 @@ for (i in set_lst){# i <- set_lst[[1]]
   
   val_type <- gather(val_troph_flt, key = type, value = value, -c(resp, run, sd, mdn:troph_sep))
   
-  # val_type <- gather(val_troph_flt, type, value, -resp, -run, -diet, -troph_sep, -Taxon, -sd)
+  val_type_per_resp <- val_type[,!names(val_type) %in% c("run", "value")]
+  val_overview <- val_type_per_resp[!duplicated(val_type_per_resp),]
+  if (file.exists(modDir)==F){
+    dir.create(file.path(modDir), recursive = T)
+  }
+  saveRDS(val_overview, file = paste0(modDir, "val_overview", names(set_lst)[cnt], "_", comm, ".rds"))
   
+  
+
+
+  #######################
+  ###val plots sorted by trophic levels
+  #######################
   val_type$color[val_type$diet == "birds"] <- "cadetblue3"
   val_type$color[val_type$diet == "bats"] <- "grey25"
   val_type$color[val_type$diet == "predator"] <- "orange"
@@ -113,31 +138,12 @@ for (i in set_lst){# i <- set_lst[[1]]
   val_type$color[val_type$diet == "herbivore"] <- "limegreen"
   val_type$color[val_type$diet == "plant"] <- "springgreen4"
   val_type$color <- factor(val_type$color, levels = c("orange", "dodgerblue4", "indianred3", "limegreen", 
-                              "springgreen4", "cadetblue3", "grey25"))
-
+                                                      "springgreen4", "cadetblue3", "grey25"))
   #####
   ###sort resp by troph levels for further operations
   #####
-  # resp_srt <- unique(val_type[with(val_type, order(troph_sep, resp)),"resp"])
-  #####
-  ###plot settings
-  #####
-  # myColors <- c(rev(levels(val_type$color)), "mediumslateblue", "blue2", "aquamarine3", "chocolate1")
-  # myColors <- c(rev(levels(val_type$color)), "black", "grey70", "grey30", "white") ##needs to be changed, so reduced number of respnses is dispayed correctly
-  # myColors <- c(rev(levels(droplevels(val_type$color))), "black", "grey70", "grey30", "white")
-  # myColors <- c(levels(droplevels(val_type$color)), "black", "grey70", "grey30", "white")
-
   sort_by_diet_alphabet <- (val_type %>% distinct(diet, .keep_all = TRUE))[match(sort(levels(droplevels(val_type$diet))), (val_type %>% distinct(diet, .keep_all = TRUE))[,which(colnames(val_type %>% distinct(diet, .keep_all = TRUE)) == "diet")]),]
-  myColors <- c(as.character(sort_by_diet_alphabet$color), "black", "grey70", "grey30", "white")
-  # unique(val_type$color)[order(match(unique(val_type$color),levels(val_type$color)))]
-  # myColors <- c("mediumslateblue", "blue2", "aquamarine3", "chocolate1", 
-  #               "firebrick1", "darkmagenta", "aquamarine", "aquamarine1", 
-  #               "aquamarine2", "aquamarine3", "aquamarine4", "azure", 
-  #               "azure1", "azure2", "azure3", "azure4")
-
-  #####
-  ###actual plotting
-  #####
+  myColors <- c(as.character(sort_by_diet_alphabet$color), "black", "grey70", "grey30", "grey90", "white")
   for (n in plts){ #n <- "RMSEsd_"
     val_plt <- subset(val_type, grepl(n, val_type$type))
     levels(val_plt$troph_sep) <- levels(val_type$troph_sep)
@@ -172,18 +178,68 @@ for (i in set_lst){# i <- set_lst[[1]]
       theme(axis.text.x = element_text(size = 16))+
         scale_fill_manual(name = "col",values = myColors) +
         ggtitle(paste0(names(set_lst)[cnt], "_", sub, "_", n))
-    pdf(file = paste0(modDir, "/val_plot_", names(set_lst)[cnt], "_", comm, n, ".pdf"), height= 10, 
+    pdf(file = paste0(modDir, "/val_plot_trophiclvl_", names(set_lst)[cnt], "_", comm, n, ".pdf"), height= 10, 
         width = 20)
     # par(mar=c(50, 50, 50, 50) + 1)#, paper = "a4r")
     print(p)
     dev.off()
-    png(paste0(modDir, "/val_plot_", names(set_lst)[cnt], "_", comm, n, ".png"), 
+    png(paste0(modDir, "/val_plot_trophicslvl_", names(set_lst)[cnt], "_", comm, n, ".png"), 
         width = 297, height = 210, units = "mm", res = 720)
     # par(mai=c(50, 50, 50, 50) + 1)
     print(p)
     dev.off()
   }
+  
+  
   #######################
+  ### val plots sorted by best model performance
+  #######################
+  n <- "RMSEsd_"
+  # nm <- substr(n , 1, nchar(n)-1)
+  val_plt <- subset(val_type, grepl(n, val_type$type))
+  
+  
+
+  rank_df <- val_plt[,grepl("_mdn_rank", colnames(val_plt)) & 
+                       grepl("RMSEsd_", colnames(val_plt))]
+  rank_df <- rank_df[,grepl("_elevSR", colnames(rank_df)) | 
+                       grepl("_sumSR", colnames(rank_df)) |
+                       grepl("_lidarSR", colnames(rank_df))]
+  # val_plt$szenario <- colnames(rank_df)[]
+  
+  for(row_nr in seq(nrow(val_plt))){
+    min_colnm <- colnames(rank_df)[rank_df[row_nr,] == min(rank_df[row_nr,])]
+    val_plt$best_mod[row_nr] <- strsplit(min_colnm, "_")[[1]][2]
+  }
+  
+  # val_plt$szenario[val_plt$constll1_RMSEsd_mdn == 4 & 
+  #                    val_plt$RMSEsd_elevSR_mdn_rank < val_plt$RMSEsd_lidarSR_mdn_rank] <- 4.1###verallgemeinern! mit RMSEmdn hard gecoded!
+  # val_plt$szenario[val_plt$constll1_RMSEsd_mdn == 4 & 
+  #                    val_plt$RMSEsd_lidarRES_mdn_rank < val_plt$RMSEsd_elevSR_mdn_rank] <- 4.2
+  val_plt_flt <- val_plt[val_plt$type %in% c("RMSEsd_elevSR", 
+                                             "RMSEsd_sumSR", 
+                                             "RMSEsd_lidarSR"),]
+  # plt <- 
+    ggplot() +
+    geom_boxplot(data = val_plt_flt, aes(x=resp, y=value, fill=type), width = 1) +   #in aes(position=position_dodge(5))
+    facet_grid(~val_plt_flt$best_mod, scales = "free_x", space="free_x", switch = "x") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 16, 
+                                     # colour = val_plt_flt$troph_sep, 
+                                     margin = margin(0,0,0,0))) + #,
+    #       strip.text.x = element_blank()) +
+    # # scale_fill_manual(name = "col",values = myColors) +
+      geom_vline()
+    ggtitle(paste0(names(set_lst)[cnt], "_", sub, "_", n))
+  pdf(file = paste0(modDir, "val_plot_sortconstll1_", names(set_lst)[cnt], "_", comm, n, ".pdf"), 
+      height= 21, width = 29)
+  print(plt)
+  dev.off()
+  
+  # grid.locator(unit="native") 
+  grid.brackets(220, 400, 40, 400, lwd=2, col="black")
+  grid.text("bla", x = unit(3.5, "cm"), y = unit(0.7, "cm"))
+  ##plan: vertikale Linie an den enden der Klammern hochzeihen bis in Plot
+    #######################
   ###varimp Plots
   #######################
   #####

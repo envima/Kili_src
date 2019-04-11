@@ -17,13 +17,13 @@ library(caret)
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 # setwd("/mnt/sd19006/data/users/aziegler/src")
-sub <- "mar19/"
+sub <- "apr19/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2019-03-2325frst_no_frst_allplts_merge_somemissing/"
+set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
 
@@ -88,6 +88,7 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
                                     obs = i$resp[[k]]$SR[outrows], na.rm = T)
       RMSE_lidarSR <- caret::RMSE(pred = i$resp[[k]]$pred_lidarSR[outrows], 
                                       obs = i$resp[[k]]$SR[outrows], na.rm = T)
+  
       RMSE_lidarRES <- caret::RMSE(pred = i$resp[[k]]$pred_lidarRES[outrows], 
                                          obs = i$resp[[k]]$calc_elevRES[outrows], na.rm = T)
       RMSE_sumSR <- caret::RMSE(pred = i$resp[[k]]$pred_sumSR[outrows], 
@@ -100,16 +101,20 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
       sd <- sd(i$resp[[k]]$SR, na.rm = T)
       RMSEsd_elevSR <- RMSE_elevSR/sd
       RMSEsd_lidarSR<- RMSE_lidarSR/sd
-      RMSEsd_lidarRES <- RMSE_lidarRES/sd(i$resp[[k]]$calc_elevRES, na.rm = T)
+      # residuen fehler soll auf sd absoluten werten gerechnet werden
+      # es ist egal ob residuen + oder - x sind
+      RMSEsd_lidarRES <- RMSE_lidarRES/sd(abs(i$resp[[k]]$calc_elevRES), na.rm = T)
       RMSEsd_sumSR <- RMSE_sumSR/sd
       RMSEsd_lidarelevSR <- RMSE_lidarelevSR/sd
       #####
       ###RMSE/median
       #####
-      mdn <- median(i$resp[[k]]$SR, na.rm = T)
+      mdn <- mean(i$resp[[k]]$SR, na.rm = T)
       RMSEmdn_elevSR <- RMSE_elevSR/mdn
       RMSEmdn_lidarSR<- RMSE_lidarSR/mdn
-      RMSEmdn_lidarRES <- RMSE_lidarRES/median(i$resp[[k]]$calc_elevRES, na.rm = T)
+      # residuen fehler soll auf mdn absoluten werten gerechnet werden
+      # es ist egal ob residuen + oder - x sind
+      RMSEmdn_lidarRES <- RMSE_lidarRES/mean(abs(i$resp[[k]]$calc_elevRES), na.rm = T)
       RMSEmdn_sumSR <- RMSE_sumSR/mdn
       RMSEmdn_lidarelevSR <- RMSE_lidarelevSR/mdn
       
@@ -335,3 +340,27 @@ set_lst_var_imp <- lapply(set_lst_val, function(i){# i <- set_lst[[1]]
   saveRDS(i, file = paste0(modDir, "data/", "60_master_lst_varimp_", names(set_lst)[cnt], ".rds"))
   return(i)
   })
+
+
+########################################################################################
+###descriptive stuff for general overview of responses (in frst, nofrst, all, sr, median, sd, mean)
+########################################################################################
+resp_overview <- data.frame(resp = names(set_lst_val$allplts$resp))
+
+for (i in seq(set_lst_val)){# i <- 1
+  set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst_val)[cnt], "_"), mod_dir_lst)]
+  modDir <- paste0(inpath, set_dir, set_moddir, "/")
+  nm_mean <- paste0("mean_", names(set_lst_val)[i])
+  nm_mdn <- paste0("mdn_", names(set_lst_val)[i])
+  nm_sd <- paste0("sd_", names(set_lst_val)[i])
+  for (k in resp_overview$resp){
+    resp_overview$tmp[which(resp_overview$resp == k)] <- mean(set_lst_val[[i]]$resp[[k]]$SR, na.rm = T)
+    resp_overview$mdn[which(resp_overview$resp == k)] <- set_lst_val[[i]]$val[[k]]$mdn
+    resp_overview$sd[which(resp_overview$resp == k)] <- set_lst_val[[i]]$val[[k]]$sd
+  }
+  colnames(resp_overview)[colnames(resp_overview) == "tmp"] <- nm_mean
+  colnames(resp_overview)[colnames(resp_overview) == "mdn"] <- nm_mdn
+  colnames(resp_overview)[colnames(resp_overview) == "sd"] <- nm_sd
+}
+
+saveRDS(resp_overview, file = paste0(modDir, "data/60_resp_overview_descriptive.rds"))

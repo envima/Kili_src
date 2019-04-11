@@ -21,7 +21,7 @@ library(parallel)
 # machine <- "local"
 # machine <- "server"
 machine <- "cluster"
-core_num <- 63
+core_num <- 10
 
 if(machine == "local"){
   setwd(dirname(rstudioapi::getSourceEditorContext()[[2]])) # lokal
@@ -84,8 +84,8 @@ if(grepl("flt", comm)){
 # #####
 # ###end: only certain responses
 # #####
-# source("fun_model_test_keininhalt")
-source("fun_model.R")
+source("fun_model_test_keininhalt.R")
+# source("fun_model.R")
 ########################################################################################
 ########################################################################################
 ########################################################################################

@@ -164,6 +164,7 @@ troph_mrg <- merge(trophic_tbl, as.data.frame(do.call(rbind, troph_resp)), by = 
 
 troph_sum <- data.frame(plotID = mrg_tbl$plotID)
 for (i in unique(troph_mrg$diet[!troph_mrg$diet %in% c("birds", "bats")])){
+  print(i)
   match <- colnames(mrg_tbl)[c(which(colnames(mrg_tbl) %in% 
                                        as.character(troph_mrg$resp[which(troph_mrg$diet == i)])))]
   # drop = F, muss sein, weil es sonst für level mit nur einer Spalte (bats/birds) 
@@ -187,15 +188,17 @@ mrg_tbl_troph <- merge(mrg_tbl_troph_first, troph_tn, by = "plotID", all = T)
 #####
 ###append troph_mrg with sum trophics
 #####
+troph_mrg_frst <- troph_mrg
 for (i in seq(colnames(troph_sum)[(grepl("sum", colnames(troph_sum)))])){
   print(i)
   tmp <- data.frame(Taxon = colnames(troph_sum)[[i+1]], 
                     diet = str_split(colnames(troph_sum)[(grepl("sum", colnames(troph_sum)))], pattern = "_")[[i]][2], 
                     resp =  colnames(troph_sum)[[i+1]])
-  troph_mrg_frst <- rbind(troph_mrg, tmp)
+  print(tmp)
+  troph_mrg_frst <- rbind(troph_mrg_frst, tmp)
 }
 
-troph_mrg_tn <- data.frame(Taxon = c(colnames(troph_tn[2:ncol(troph_tn)])), 
+troph_mrg_tn <- data.frame(Taxon = c("predator", "herbivore", "generalist", "decomposer"), 
                            diet = c("predator", "herbivore", "generalist", "decomposer"), 
                            resp = c(colnames(troph_tn[2:ncol(troph_tn)])))
 troph_mrg <- rbind(troph_mrg_frst, troph_mrg_tn)

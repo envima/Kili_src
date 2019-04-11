@@ -27,14 +27,14 @@ library(pBrackets)
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 # setwd("/mnt/sd19006/data/users/aziegler/src")
-sub <- "mar19/"
+sub <- "apr19/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 outpath <- paste0("../out/", sub)
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2019-03-2325frst_no_frst_allplts_merge_somemissing/"
+set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"
 
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
@@ -56,15 +56,6 @@ set_lst <- set_lst[!is.na(set_lst)]
 troph_mrg <- readRDS(paste0(inpath, "15_troph_mrg.rds"))
 troph_mrg <- troph_mrg[!duplicated(troph_mrg),]
 
-###vorläufig um alten Datensatz und neue trophs zusammenzuplotten
-trophlev_new <- data.frame(Taxon = c("SRpredator", "SRgeneralist", 
-                                     "SRdecomposer", "SRherbivore"), 
-                           diet = c("predator", "generalist", 
-                                    "decomposer", "herbivore"), 
-                           resp = c("SRpredator", "SRgeneralist", 
-                                    "SRdecomposer", "SRherbivore"))
-troph_mrg <- rbind(troph_mrg, trophlev_new)
-###########Ende vorläufig
 
 #####
 ###read functions
@@ -102,13 +93,13 @@ for (i in set_lst){# i <- set_lst[[1]]
   val_troph <- merge(val_all, troph_mrg, by = "resp") 
   val_troph$troph_sep[grepl("sum", val_troph$resp)] <- paste0(val_troph$diet[grepl("sum", val_troph$resp)], "_sum")
   val_troph$troph_sep[is.na(val_troph$troph_sep)] <- as.character(val_troph$diet[is.na(val_troph$troph_sep)])
-  val_troph$troph_sep <- factor(val_troph$troph_sep, 
-                                levels = c("predator", "predator_sum", "generalist", 
-                                           "generalist_sum", "decomposer", 
-                                           "decomposer_sum", "herbivore", "herbivore_sum", 
-                                           "plant", "plant_sum", "birds", "bats"))
-  val_troph$resp <- factor(val_troph$resp, 
-                           levels = unique(val_troph[with(val_troph, order(troph_sep, resp)),"resp"]))
+  # val_troph$troph_sep <- factor(val_troph$troph_sep, 
+  #                               levels = c("predator", "predator_sum", "generalist", 
+  #                                          "generalist_sum", "decomposer", 
+  #                                          "decomposer_sum", "herbivore", "herbivore_sum", 
+  #                                          "plant", "plant_sum", "birds", "bats"))
+  # val_troph$resp <- factor(val_troph$resp, 
+                           # levels = unique(val_troph[with(val_troph, order(troph_sep, resp)),"resp"]))
   val_troph$diet <- factor(val_troph$diet, 
                            levels = levels(val_troph$diet))
   
@@ -139,6 +130,15 @@ for (i in set_lst){# i <- set_lst[[1]]
   val_type$color[val_type$diet == "plant"] <- "springgreen4"
   val_type$color <- factor(val_type$color, levels = c("orange", "dodgerblue4", "indianred3", "limegreen", 
                                                       "springgreen4", "cadetblue3", "grey25"))
+  
+  val_type$type_col[grepl("elevSR", val_type$type)] <- "firebrick1"
+  val_type$type_col[grepl("sumSR", val_type$type)] <- "darkorange2"
+  val_type$type_col[grepl("lidarSR", val_type$type)] <- "dodgerblue4"
+  val_type$type_col[grepl("lidarelevSR", val_type$type)] <- "darkorchid3"
+  val_type$type_col[grepl("lidarRES", val_type$type)] <- "goldenrod1"
+  
+  
+
   #####
   ###sort resp by troph levels for further operations
   #####
@@ -151,9 +151,9 @@ for (i in set_lst){# i <- set_lst[[1]]
     levels(val_plt$resp) <- levels(val_type$resp)
     levels(val_plt$diet) <- levels(val_type$diet)
     
-    val_plt$troph_sep <- droplevels(val_plt$troph_sep)
+    # val_plt$troph_sep <- droplevels(val_plt$troph_sep)
     val_plt$color <- droplevels(val_plt$color)
-    val_plt$resp <- droplevels(val_plt$resp)
+    # val_plt$resp <- droplevels(val_plt$resp)
     val_plt$diet <- droplevels(val_plt$diet)
     
     table <- aggregate(val_plt$value, by = list(val_plt$Taxon, val_plt$type), FUN = median)
@@ -167,7 +167,6 @@ for (i in set_lst){# i <- set_lst[[1]]
       dir.create(file.path(paste0(outpath, set_dir, set_moddir)), recursive = T)
     }
     
-    
     p <- ggplot() +
       geom_rect(data = val_plt,aes(fill = val_plt$diet),xmin = -Inf,xmax = Inf,
                 ymin = -Inf,ymax = Inf, alpha = 0.007) +
@@ -178,12 +177,12 @@ for (i in set_lst){# i <- set_lst[[1]]
       theme(axis.text.x = element_text(size = 16))+
         scale_fill_manual(name = "col",values = myColors) +
         ggtitle(paste0(names(set_lst)[cnt], "_", sub, "_", n))
-    pdf(file = paste0(modDir, "/val_plot_trophiclvl_", names(set_lst)[cnt], "_", comm, n, ".pdf"), height= 10, 
+    pdf(file = paste0(modDir, "/val_plot_srt_trophicslvl_", comm, n, names(set_lst)[cnt], ".pdf"), height= 10, 
         width = 20)
     # par(mar=c(50, 50, 50, 50) + 1)#, paper = "a4r")
     print(p)
     dev.off()
-    png(paste0(modDir, "/val_plot_trophicslvl_", names(set_lst)[cnt], "_", comm, n, ".png"), 
+    png(paste0(modDir, "/val_plot_srt_trophicslvl_", comm, n, names(set_lst)[cnt], ".png"), 
         width = 297, height = 210, units = "mm", res = 720)
     # par(mai=c(50, 50, 50, 50) + 1)
     print(p)
@@ -194,11 +193,8 @@ for (i in set_lst){# i <- set_lst[[1]]
   #######################
   ### val plots sorted by best model performance
   #######################
-  n <- "RMSEsd_"
   # nm <- substr(n , 1, nchar(n)-1)
-  val_plt <- subset(val_type, grepl(n, val_type$type))
-  
-  
+  val_plt <- subset(val_type, grepl("RMSEsd_", val_type$type))
 
   rank_df <- val_plt[,grepl("_mdn_rank", colnames(val_plt)) & 
                        grepl("RMSEsd_", colnames(val_plt))]
@@ -219,27 +215,228 @@ for (i in set_lst){# i <- set_lst[[1]]
   val_plt_flt <- val_plt[val_plt$type %in% c("RMSEsd_elevSR", 
                                              "RMSEsd_sumSR", 
                                              "RMSEsd_lidarSR"),]
-  # plt <- 
-    ggplot() +
-    geom_boxplot(data = val_plt_flt, aes(x=resp, y=value, fill=type), width = 1) +   #in aes(position=position_dodge(5))
+  
+  plt <- ggplot() +
+    geom_boxplot(data = val_plt_flt, aes(x=Taxon, y=value, fill=type), width = 1) +   #in aes(position=position_dodge(5))
     facet_grid(~val_plt_flt$best_mod, scales = "free_x", space="free_x", switch = "x") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 16, 
                                      # colour = val_plt_flt$troph_sep, 
                                      margin = margin(0,0,0,0))) + #,
     #       strip.text.x = element_blank()) +
     # # scale_fill_manual(name = "col",values = myColors) +
-      geom_vline()
-    ggtitle(paste0(names(set_lst)[cnt], "_", sub, "_", n))
-  pdf(file = paste0(modDir, "val_plot_sortconstll1_", names(set_lst)[cnt], "_", comm, n, ".pdf"), 
+    labs(x = "", y = "RMSE/sd")+
+    scale_fill_manual(name = "col",values = c(unique(val_plt_flt$type_col))) +
+    ggtitle(paste0(names(set_lst)[cnt], "_", sub, "_", "RMSEsd_"))
+  pdf(file = paste0(modDir, "val_plot_srt_bestmodel_", comm, "RMSEsd_", names(set_lst)[cnt], ".pdf"), 
       height= 21, width = 29)
   print(plt)
   dev.off()
   
   # grid.locator(unit="native") 
-  grid.brackets(220, 400, 40, 400, lwd=2, col="black")
-  grid.text("bla", x = unit(3.5, "cm"), y = unit(0.7, "cm"))
+  # grid.brackets(220, 400, 40, 400, lwd=2, col="black")
+  # grid.text("bla", x = unit(3.5, "cm"), y = unit(0.7, "cm"))
   ##plan: vertikale Linie an den enden der Klammern hochzeihen bis in Plot
-    #######################
+  
+  
+  #####
+  ###check if some taxa are put into mixed category, if lidarelev is also part of the ranking
+  #####
+  val_plt <- subset(val_type, grepl("RMSEsd_", val_type$type))
+  
+  rank_df <- val_plt[,grepl("_mdn_rank", colnames(val_plt)) & 
+                       grepl("RMSEsd_", colnames(val_plt))]
+  rank_df <- rank_df[,grepl("_elevSR", colnames(rank_df)) | 
+                       grepl("_sumSR", colnames(rank_df)) |
+                       grepl("_lidarSR", colnames(rank_df))|
+                       grepl("_lidarelevSR", colnames(rank_df))]
+  # val_plt$szenario <- colnames(rank_df)[]
+  
+  for(row_nr in seq(nrow(val_plt))){
+    min_colnm <- colnames(rank_df)[rank_df[row_nr,] == min(rank_df[row_nr,])]
+    val_plt$best_mod[row_nr] <- strsplit(min_colnm, "_")[[1]][2]
+  }
+  
+  # val_plt$szenario[val_plt$constll1_RMSEsd_mdn == 4 & 
+  #                    val_plt$RMSEsd_elevSR_mdn_rank < val_plt$RMSEsd_lidarSR_mdn_rank] <- 4.1###verallgemeinern! mit RMSEmdn hard gecoded!
+  # val_plt$szenario[val_plt$constll1_RMSEsd_mdn == 4 & 
+  #                    val_plt$RMSEsd_lidarRES_mdn_rank < val_plt$RMSEsd_elevSR_mdn_rank] <- 4.2
+  val_plt_flt <- val_plt[val_plt$type %in% c("RMSEsd_elevSR", 
+                                             "RMSEsd_sumSR", 
+                                             "RMSEsd_lidarSR", 
+                                             "RMSEsd_lidarelevSR"),]
+  
+  plt <- ggplot() +
+    geom_boxplot(data = val_plt_flt, aes(x=Taxon, y=value, fill=type), width = 1) +   #in aes(position=position_dodge(5))
+    facet_grid(~val_plt_flt$best_mod, scales = "free_x", space="free_x", switch = "x") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 16, 
+                                     # colour = val_plt_flt$troph_sep, 
+                                     margin = margin(0,0,0,0))) + #,
+    #       strip.text.x = element_blank()) +
+    # # scale_fill_manual(name = "col",values = myColors) +
+    labs(x = "", y = "RMSE/sd")+
+    scale_fill_manual(name = "col",values = c(unique(val_plt_flt$type_col))) +
+    ggtitle(paste0(names(set_lst)[cnt], "_", sub, "_", "RMSEsd_"))
+  pdf(file = paste0(modDir, "val_plot_srt_bestmodel_with_lidarelevSR", comm, "RMSEsd_", names(set_lst)[cnt], ".pdf"), 
+      height= 21, width = 29)
+  print(plt)
+  dev.off()
+  
+  
+  # #####
+  # ###test für bboxplot mit punkten, eingefärbt nach run (eigentlich sollte hier 
+  # ###helichrysum gezeigt werden, aber das geht a gar nciht nach landuse.)
+  # #####
+  # ggplot() +
+  #   geom_boxplot(data = val_plt_flt, aes(x=resp, y=value, fill=type), 
+  #                width = 1) +   #in aes(position=position_dodge(5))
+  #   facet_grid(~val_plt_flt$best_mod, scales = "free_x", space="free_x", switch = "x") +
+  #   theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 16,
+  #                                    # colour = val_plt_flt$troph_sep,
+  #                                    margin = margin(0,0,0,0))) + #,
+  #   geom_point(data = val_plt_flt, 
+  #              aes(x=resp, y=value, fill = val_plt_flt$type), 
+  #              size = 2, 
+  #              shape = 21,
+  #              position = position_jitterdodge(), 
+  #              color = factor(val_plt_flt$run)) +
+  #   ggtitle(paste0(names(set_lst)[cnt], "_", sub, "_", n))
+  # #####
+  # ###ende test für bboxplot
+  # #####
+  
+  #####
+  ###boxplot für RMSE/mdn to see the elevation influence within the lidarSR 
+  ###(lidarSR, lidarRES, elevSR)
+  #####
+  resp_lidarSR <- unique(val_plt$resp[val_plt$best_mod == "lidarSR"])
+  flt_grp_lidarSR <- val_type[c((val_type$resp %in% resp_lidarSR) & 
+                                     val_type$type %in% c("RMSEmdn_lidarSR", 
+                                                          "RMSEmdn_lidarRES", 
+                                                          "RMSEmdn_elevSR")),]
+
+  plt_lidarSR <- ggplot() +
+    geom_boxplot(data = flt_grp_lidarSR, aes(x=resp, y=value, fill=type), width = 1) +   #in aes(position=position_dodge(5))
+    #facet_grid(~flt_grp_sumSR$best_mod, scales = "free_x", space="free_x", switch = "x") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 16, 
+                                     # colour = val_plt_flt$troph_sep, 
+                                     margin = margin(0,0,0,0))) + #,
+    labs(x = "", y = "RMSE/median")+
+    scale_fill_manual(name = "col",values = c(unique(flt_grp_lidarSR$type_col))) +
+    #       strip.text.x = element_blank()) +
+    # # scale_fill_manual(name = "col",values = myColors) +
+    ggtitle(paste0(names(set_lst)[cnt], "_", sub, "_", "RMSEmdn_lidarSR"))
+  pdf(file = paste0(modDir, "val_plot_lidarSR_", comm, "RMSEmdn_", names(set_lst)[cnt], ".pdf"), 
+      height= 21, width = 29)
+  print(plt_lidarSR)
+  dev.off()
+  
+  
+  
+  #####
+  ###boxplot für RMSE to see the elevation influence within the lidarSR 
+  ###(lidarSR, lidarRES, elevSR)
+  #####
+  resp_lidarSR <- unique(val_plt$resp[val_plt$best_mod == "lidarSR"])
+  flt_grp_lidarSR <- val_type[c((val_type$resp %in% resp_lidarSR) & 
+                                  val_type$type %in% c("RMSE_lidarSR", 
+                                                       "RMSE_lidarRES", 
+                                                       "RMSE_elevSR")),]
+  
+  plt_lidarSR <- ggplot() +
+    geom_boxplot(data = flt_grp_lidarSR, aes(x=resp, y=value, fill=type), width = 1) +   #in aes(position=position_dodge(5))
+    #facet_grid(~flt_grp_sumSR$best_mod, scales = "free_x", space="free_x", switch = "x") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 16, 
+                                     # colour = val_plt_flt$troph_sep, 
+                                     margin = margin(0,0,0,0))) + #,
+    labs(x = "", y = "RMSE")+
+    scale_fill_manual(name = "col",values = c(unique(flt_grp_lidarSR$type_col))) +
+    #       strip.text.x = element_blank()) +
+    # # scale_fill_manual(name = "col",values = myColors) +
+    ggtitle(paste0(names(set_lst)[cnt], "_", sub, "_", "RMSE_lidarSR"))
+  pdf(file = paste0(modDir, "val_plot_lidarSR_", comm, "RMSE_", names(set_lst)[cnt], ".pdf"), 
+      height= 21, width = 29)
+  print(plt_lidarSR)
+  dev.off()
+  #####
+  ###test für Taxa die in sumSR Gruppe landen RMSE/sd plotten. 
+  ###sumSR und lidarelevSR plotten ==> man kann sehen, ob Taxa 
+  ###von zweistufigem Verfahren profitiert
+  #####
+
+  resp_sumSR <- unique(val_plt$resp[val_plt$best_mod == "sumSR"])
+
+  flt_grp_sumSR_2stp <- val_type[c((val_type$resp %in% resp_sumSR) & 
+                                val_type$type %in% c("RMSEsd_sumSR", 
+                                                     "RMSEsd_lidarelevSR")),]
+  resp_2stp <- unique(flt_grp_sumSR_2stp[flt_grp_sumSR_2stp$RMSEsd_sumSR_mdn < 
+                       flt_grp_sumSR_2stp$RMSEsd_lidarelevSR_mdn,"resp"])
+  resp_1stp <- setdiff(resp_sumSR, resp_2stp)
+  
+  plt_2stp <- ggplot() +
+    geom_boxplot(data = flt_grp_sumSR_2stp, aes(x=resp, y=value, fill=type), width = 1) +   #in aes(position=position_dodge(5))
+    #facet_grid(~flt_grp_sumSR$best_mod, scales = "free_x", space="free_x", switch = "x") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 16, 
+                                     # colour = val_plt_flt$troph_sep, 
+                                     margin = margin(0,0,0,0))) + #,
+    #       strip.text.x = element_blank()) +
+    # # scale_fill_manual(name = "col",values = myColors) +
+    labs(x = "", y = "RMSE/sd")+
+    scale_fill_manual(name = "col",values = c(unique(flt_grp_sumSR_2stp$type_col))) +
+    ggtitle(paste0(names(set_lst)[cnt], "_", sub, "_", "RMSEsd_2stp"))
+  pdf(file = paste0(modDir, "val_plot_sumSR_mix_", comm, "RMSEsd_", names(set_lst)[cnt], ".pdf"), 
+      height= 21, width = 29)
+  print(plt_2stp)
+  dev.off()
+  #####
+  ###test für Taxa die in sumSR Gruppe landen RMSE/median plotten. 
+  ###sumSR, lidarRES und elevSR plotten ==> man kann sehen, ob elevSR oder lidarRES 
+  ###mehr Einfluss auf sum SR hat
+  #####
+  flt_grp_sumSR_infl <- val_type[c((val_type$resp %in% resp_2stp) & 
+                                val_type$type %in% c("RMSEmdn_sumSR", 
+                                                     "RMSEmdn_lidarRES", 
+                                                     "RMSEmdn_elevSR")),]
+  plt_infl <- ggplot() +
+    geom_boxplot(data = flt_grp_sumSR_infl, aes(x=resp, y=value, fill=type), width = 1) +   #in aes(position=position_dodge(5))
+    #facet_grid(~flt_grp_sumSR$best_mod, scales = "free_x", space="free_x", switch = "x") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 16, 
+                                     # colour = val_plt_flt$troph_sep, 
+                                     margin = margin(0,0,0,0))) + #,
+    #       strip.text.x = element_blank()) +
+    # # scale_fill_manual(name = "col",values = myColors) +
+    labs(x = "", y = "RMSE/median")+
+    scale_fill_manual(name = "col",values = c(unique(flt_grp_sumSR_infl$type_col))) +
+    ggtitle(paste0(names(set_lst)[cnt], "_", sub, "_", "RMSEmdn_"))
+  pdf(file = paste0(modDir, "val_plot_sumSR_2stp_", comm, "RMSEmdn_", names(set_lst)[cnt], ".pdf"), 
+      height= 21, width = 29)
+  print(plt_infl)
+  dev.off()
+ 
+  
+  #####
+  ###die taxa, die von 2stufigem Verfahren profitieren: 
+  ###elevSR, lidarSR und lidarelevSR vergleichen. 
+  #####
+  flt_grp_sumSR_infl_ldr <- val_type[c((val_type$resp %in% resp_1stp) & 
+                                     val_type$type %in% c("RMSEsd_lidarelevSR", 
+                                                          "RMSEsd_lidarSR", 
+                                                          "RMSEsd_elevSR")),]
+  plt_infl_ldr <- ggplot() +
+    geom_boxplot(data = flt_grp_sumSR_infl_ldr, aes(x=resp, y=value, fill=type), width = 1) +   #in aes(position=position_dodge(5))
+    #facet_grid(~flt_grp_sumSR$best_mod, scales = "free_x", space="free_x", switch = "x") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 16, 
+                                     # colour = val_plt_flt$troph_sep, 
+                                     margin = margin(0,0,0,0))) + #,
+    #       strip.text.x = element_blank()) +
+    # # scale_fill_manual(name = "col",values = myColors) +
+    labs(x = "", y = "RMSE/sd")+
+    scale_fill_manual(name = "col",values = c(unique(flt_grp_sumSR_infl_ldr$type_col))) +
+    ggtitle(paste0(names(set_lst)[cnt], "_", sub, "_", "RMSEmdn_"))
+  pdf(file = paste0(modDir, "val_plot_sumSR_1stp_", comm, "RMSEsd_", names(set_lst)[cnt], ".pdf"), 
+      height= 21, width = 29)
+  print(plt_infl_ldr)
+  dev.off()
+  #######################
   ###varimp Plots
   #######################
   #####
@@ -262,7 +459,7 @@ for (i in set_lst){# i <- set_lst[[1]]
     ###cols by trophic levels
     ###rows by number of occurances
     #####
-    df <- df[c("pred", levels(val_troph$resp))]
+    df <- df[c("pred", unique(val_troph$resp))]
     df <- df[order(rowSums(df[,2:ncol(df)], na.rm = T), decreasing = T),]
     row.names(df) <- as.character(df$pred)
     
@@ -271,7 +468,7 @@ for (i in set_lst){# i <- set_lst[[1]]
     mat <- as.matrix(df_flt[,!colnames(df_flt) == "pred"])
     
     #######################
-    ###actual plotting
+    ###heatmap plotting
     #######################
     l <- lvlplt(mat = mat, 
                 maxcat = maxcat, 
@@ -279,11 +476,11 @@ for (i in set_lst){# i <- set_lst[[1]]
            lbl_y = rownames(mat), 
            rnge = seq(min(mat)+0.5, max(mat)+0.5, 1), 
            main = paste0(names(set_lst)[cnt], "_", sub, m))
-    pdf(file = paste0(modDir, "heat_selvars_", names(set_lst)[cnt], "_", m, "_", comm, ".pdf"), 
+    pdf(file = paste0(modDir, "heats_", m, "_", names(set_lst)[cnt], "_", comm, ".pdf"), 
         width = 7, height = 10); par(mar=c(6, 4, 4, 2) + 0.1)#paper = "a4")
     print(l)
     dev.off()
-    png(paste0(modDir, "heat_selvars_", names(set_lst)[cnt], "_", m, "_", comm, ".png"), 
+    png(paste0(modDir, "heats_", m, "_", names(set_lst)[cnt], "_", comm, ".png"), 
         width = 210, height = 297, units = "mm", res = 720); par(mar=c(6, 4, 4, 2) + 0.1)
     print(l)
     dev.off()

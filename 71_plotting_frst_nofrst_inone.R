@@ -37,21 +37,14 @@ outpath <- paste0("../out/", sub)
 set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"
 
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
-set <- c("nofrst", "frst", "allplts")
+modDir <- paste0(inpath, set_dir, "mix/")
 comm <- ""
 #####
 ###read files
 #####
-set_lst <- lapply(set, function(o){
-  set_moddir <- mod_dir_lst[grepl(paste0("_", o, "_"), mod_dir_lst)]
-  modDir <- paste0(inpath, set_dir, set_moddir, "/")
-  file <- tryCatch(
-    readRDS(file = paste0(modDir, "data/", "60_master_lst_varimp_",o, ".rds")), 
-    error = function(e)file <- NA)
-  return(file)
-})
-names(set_lst) <- set
-set_lst <- set_lst[!is.na(set_lst)]
+
+mix_lst <- readRDS(file = paste0(modDir, "data/", "61_master_lst_varimp_.rds")) 
+
 
 troph_mrg <- readRDS(paste0(inpath, "15_troph_mrg.rds"))
 troph_mrg <- troph_mrg[!duplicated(troph_mrg),]
@@ -59,14 +52,8 @@ troph_mrg <- troph_mrg[!duplicated(troph_mrg),]
 #####
 ###create list with dataframes including non forested and forested validation measures
 #####
-mix_lst <- lapply(names(set_lst$allplts$val), function(i){
-  mix_df <- rbind(set_lst$nofrst$val[[i]], set_lst$frst$val[[i]])
-})
-names(mix_lst) <- names(set_lst$allplts$val)
 
-modDir <- paste0(outpath, set_dir, "mix/")
-
-val_all <- do.call(rbind, mix_lst)
+val_all <- do.call(rbind, mix_lst$val)
 resp_nm <- lapply(rownames(val_all), function(nm){
   splt <- strsplit(nm, split = "\\.")[[1]][1]
 })
@@ -177,7 +164,7 @@ n <- "RMSEsd_"
     theme(axis.text.x = element_text(size = 16))+
     scale_fill_manual(name = "col",values = myColors) +
     ggtitle(paste0(sub, "_", n))
-  pdf(file = paste0(modDir, "/val_plot_srt_trophicslvl_", comm, n, ".pdf"), height= 10, 
+  pdf(file = paste0(outpath, set_dir, "mix/val_plot_srt_trophicslvl_", comm, n, ".pdf"), height= 10, 
       width = 20)
   # par(mar=c(50, 50, 50, 50) + 1)#, paper = "a4r")
   print(p)
@@ -204,7 +191,7 @@ plt <- ggplot() +
   labs(x = "", y = "RMSE/sd")+
   # scale_fill_manual(name = "col",values = c(unique(val_plt_flt$type_col))) +
   ggtitle(paste0(sub, "_", "RMSEsd_"))
-  pdf(file = paste0(modDir, "/val_plot_srt_bestmodel_", comm, n, ".pdf"), height= 10, 
+  pdf(file = paste0(outpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, ".pdf"), height= 10, 
       width = 20)
   # par(mar=c(50, 50, 50, 50) + 1)#, paper = "a4r")
   print(plt)

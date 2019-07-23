@@ -20,7 +20,9 @@ library(compositions)
 library(RColorBrewer)
 library(dplyr)
 library(grid)
+library(gridExtra)
 library(pBrackets)  
+library(gtable)
 
 #####
 ###set paths
@@ -39,6 +41,8 @@ set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 modDir <- paste0(inpath, set_dir, "mix/")
 comm <- ""
+grp <- c("specs", "trophs")
+trophs <- c("generalist", "herbivore", "decomposer", "predator")
 #####
 ###read files
 #####
@@ -50,7 +54,7 @@ troph_mrg <- readRDS(paste0(inpath, "15_troph_mrg.rds"))
 troph_mrg <- troph_mrg[!duplicated(troph_mrg),]
 
 #####
-###create list with dataframes including non forested and forested validation measures
+###create list with dataframes including non-forested and forested validation measures
 #####
 
 val_all <- do.call(rbind, mix_lst$val)
@@ -76,13 +80,22 @@ val_troph_flt <- val_troph[is.finite(val_troph$RMSEsd_lidarSR),]
 
 val_type <- gather(val_troph_flt, key = type, value = value, -c(resp, run, sd, mdn:troph_sep))
 
-val_type_per_resp <- val_type[,!names(val_type) %in% c("run", "value")]
+val_type_per_resp <- val_type[,!names(val_type) %in% c("run", "value", "type")]
 val_overview <- val_type_per_resp[!duplicated(val_type_per_resp),]
 if (file.exists(modDir)==F){
   dir.create(file.path(modDir), recursive = T)
 }
 saveRDS(val_overview, file = paste0(modDir, "val_mix_overview_mix_", comm, ".rds"))
 
+val_results <- val_overview[, colnames(val_overview) %in% c("resp", "Taxon", 
+                                                            "sd", "mdn", "armean", 
+                                                            "RMSEsd_elevSR_mdn", 
+                                                            "RMSEsd_lidarSR_mdn", 
+                                                            "RMSEsd_sumSR_mdn", 
+                                                            "RMSE_elevSR_mdn", 
+                                                            "RMSE_lidarSR_mdn", 
+                                                            "RMSE_sumSR_mdn")]
+write.csv(val_results, file = paste0(outpath, set_dir, "mix/val_results_mix_", comm, ".csv"))
 #####
 ###plotting trophic levels
 #####
@@ -128,7 +141,15 @@ n <- "RMSEsd_"
   for(row_nr in seq(nrow(val_plt))){
     min_colnm <- colnames(rank_df)[rank_df[row_nr,] == min(rank_df[row_nr,])]
     val_plt$best_mod[row_nr] <- strsplit(min_colnm, "_")[[1]][2]
+    if (val_plt$best_mod[row_nr] == "elevSR"){
+      val_plt$best_mod[row_nr] <- "elevation"
+    }else if (val_plt$best_mod[row_nr] == "lidarSR"){
+      val_plt$best_mod[row_nr] <- "structure"
+    }else if (val_plt$best_mod[row_nr] == "sumSR"){
+      val_plt$best_mod[row_nr] <- "combination"
+    }
   }
+  val_plt$best_mod <- factor(val_plt$best_mod, levels = c("elevation", "structure", "combination"))
   
   val_plt_flt <- val_plt[val_plt$type %in% c("RMSEsd_elevSR", 
                                              "RMSEsd_sumSR", 
@@ -154,12 +175,13 @@ n <- "RMSEsd_"
   write.csv(table_sd, file = paste0(inpath, set_dir, "mix/data/validation_table_", comm, n, ".csv"))
   
   
-  p <- ggplot() +
+  p <-
+    ggplot() +
     geom_rect(data = val_plt_flt,aes(fill = val_plt_flt$diet),xmin = -Inf,xmax = Inf,
               ymin = -Inf,ymax = Inf, alpha = 0.007) +
     geom_boxplot(data = val_plt_flt, aes(x=resp, y=value, fill=type), width = 1) +   #in aes(position=position_dodge(5))
     facet_grid(~val_plt_flt$troph_sep, scales = "free_x", space="free_x", switch = "x") +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 0.5, size = 10),
           strip.text.x = element_blank()) +
     theme(axis.text.x = element_text(size = 16))+
     scale_fill_manual(name = "col",values = myColors) +
@@ -179,24 +201,50 @@ n <- "RMSEsd_"
 ###best model sorting
 #####
 
+  for (i in grp){
+    if(i == "specs"){
+      val_plt_grp <- val_plt_flt[!val_plt_flt$Taxon %in% trophs,]
+      width = 20
+    } else if(i == "trophs"){
+      width = 6.5
+      val_plt_grp <- val_plt_flt[val_plt_flt$Taxon %in% trophs,]
+    }
 
-plt <- ggplot() +
-  geom_boxplot(data = val_plt_flt, aes(x=Taxon, y=value, fill=type), width = 1) +   #in aes(position=position_dodge(5))
-  facet_grid(~val_plt_flt$best_mod, scales = "free_x", space="free_x", switch = "x") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 16, 
-                                   # colour = val_plt_flt$troph_sep, 
-                                   margin = margin(0,0,0,0))) + #,
-  #       strip.text.x = element_blank()) +
-  # # scale_fill_manual(name = "col",values = myColors) +
-  labs(x = "", y = "RMSE/sd")+
-  # scale_fill_manual(name = "col",values = c(unique(val_plt_flt$type_col))) +
-  ggtitle(paste0(sub, "_", "RMSEsd_"))
-  pdf(file = paste0(outpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, ".pdf"), height= 10, 
-      width = 20)
+    
+    plt <- 
+      ggplot() +
+      geom_boxplot(data = val_plt_grp, aes(x=Taxon, y=value, fill=type), notch = T) +   #in aes(position=position_dodge(5))
+      facet_grid(~best_mod, scales = "free_x", space="free_x") +
+      theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 16))+
+      # colour = val_plt_grp$troph_sep,
+      labs(x = "", y = "RMSE/sd")+
+      ylim(0,4.5)+
+      scale_fill_manual(labels = c("elevation", "structure", "combination"), 
+                        values = c("lightblue2", "mediumseagreen", "orange2"))+
+      theme(plot.margin=unit(c(1,0,0,0),"cm"))
+    
+    # grid.locator(unit="npc")
+    plt_crds <- par( "plt" )
+    v <- ggplotGrob(plt)
+    v <- gtable_add_rows(v, unit(0.75, 'cm'), 2)
+    v <- gtable_add_grob(v,
+                         list(rectGrob(gp = gpar(col = NA, fill = gray(0.8))),
+                              textGrob("best model performance:", gp = gpar(col = "black"), x = unit(plt_crds[3], "npc"), 
+                                       y = unit(plt_crds[4], "npc"), vjust = 1.3, hjust = 1.55
+                                       # hjust = c(2,0)
+                              )),
+                         3, 5, 3, 9, name = paste(runif(2)))
+    
+    grid.newpage()
+    grid.draw(v)
+  pdf(file = paste0(outpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, i, ".pdf"), height= 10, 
+      width = width)
   # par(mar=c(50, 50, 50, 50) + 1)#, paper = "a4r")
-  print(plt)
+  # print(plt)
+  print(grid.draw(v))
   dev.off()
   
+  }
   
 # plt_boxplot <- function(df, x, y, fill){
 # 

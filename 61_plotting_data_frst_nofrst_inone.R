@@ -144,16 +144,26 @@ for (k in names(mix_lst$resp)){ # k <- "SRmammals" k <- "SRpredator"
     #####
     ###RMSE/median
     #####
-    mdn <- mean(mix_lst$resp[[k]]$SR, na.rm = T)
+    mdn <- median(mix_lst$resp[[k]]$SR, na.rm = T)
     RMSEmdn_elevSR <- RMSE_elevSR/mdn
     RMSEmdn_lidarSR<- RMSE_lidarSR/mdn
     # residuen fehler soll auf mdn absoluten werten gerechnet werden
     # es ist egal ob residuen + oder - x sind
-    RMSEmdn_lidarRES <- RMSE_lidarRES/mean(abs(mix_lst$resp[[k]]$calc_elevRES), na.rm = T)
+    RMSEmdn_lidarRES <- RMSE_lidarRES/median(abs(mix_lst$resp[[k]]$calc_elevRES), na.rm = T)
     RMSEmdn_sumSR <- RMSE_sumSR/mdn
     RMSEmdn_lidarelevSR <- RMSE_lidarelevSR/mdn
     
+    armean <- mean(mix_lst$resp[[k]]$SR, na.rm = T)
     
+    #####
+    ###check variation of ncomp
+    #####
+    # ncomp_lidarSR_frst <- unique(mix_lst$resp[[k]]$ncomp_lidarSR)
+    # ncomp_lidarelevSR_frst <- unique(mix_lst$resp[[k]]$ncomp_lidarelevSR)
+    # ncomp_lidarRES_frst <- unique(mix_lst$resp[[k]]$ncomp_lidarRES)
+    # ncomp_lidarSR_nofrst <- unique(mix_lst$resp[[k]]$ncomp_lidarSR)
+    # ncomp_lidarelevSR_nofrst <- unique(mix_lst$resp[[k]]$ncomp_lidarelevSR)
+    # ncomp_lidarRES_nofrst <- unique(mix_lst$resp[[k]]$ncomp_lidarRES)
     #####
     ###new list element with validation
     #####
@@ -174,7 +184,12 @@ for (k in names(mix_lst$resp)){ # k <- "SRmammals" k <- "SRpredator"
                          RMSEmdn_lidarRES = RMSEmdn_lidarRES, 
                          RMSEmdn_sumSR = RMSEmdn_sumSR,
                          RMSEmdn_lidarelevSR = RMSEmdn_lidarelevSR, 
-                         mdn = mdn)
+                         mdn = mdn, 
+                         armean = armean #, 
+                         # ncomp_lidarSR = ncomp_lidarSR, 
+                         # ncomp_lidarelevSR = ncomp_lidarelevSR, 
+                         # ncomp_lidarRES = ncomp_lidarRES
+                         )
     
   })
   val_df_all <- do.call(rbind, val_df_all_lst)
@@ -184,10 +199,10 @@ for (k in names(mix_lst$resp)){ # k <- "SRmammals" k <- "SRpredator"
   ###add columns with statistical information about the RMSE and RMSEsd errors
   #####
   for (p in colnames(val_df_all)[!colnames(val_df_all) %in% 
-                                 c("run", "sd", "mdn")]){ #p <- "RMSEsd_lidarSR"
-    val_df_all$sd_tmp <- sd(val_df_all[[p]])
+                                 c("run", "sd", "mdn", "armean")]){ #p <- "RMSEsd_lidarSR"
+    val_df_all$sd_tmp <- sd(val_df_all[[p]], na.rm = T)
     colnames(val_df_all)[colnames(val_df_all) == "sd_tmp"] <- paste0(p, "_sd")
-    val_df_all$mdn_tmp <- median(val_df_all[[p]])
+    val_df_all$mdn_tmp <- median(val_df_all[[p]], na.rm = T)
     colnames(val_df_all)[colnames(val_df_all) == "mdn_tmp"] <- paste0(p, "_mdn")
     qntls <- quantile(val_df_all[[p]], probs = c(0.25, 0.75), na.rm = T)
     val_df_all$q25_tmp <- qntls[[1]]
@@ -384,7 +399,7 @@ resp_overview <- data.frame(resp = names(mix_lst$resp))
 
 
   for (k in resp_overview$resp){
-    resp_overview$tmp[which(resp_overview$resp == k)] <- mean(mix_lst$resp[[k]]$SR, na.rm = T)
+    resp_overview$tmp[which(resp_overview$resp == k)] <- mix_lst$val[[k]]$armean
     resp_overview$mdn[which(resp_overview$resp == k)] <- mix_lst$val[[k]]$mdn
     resp_overview$sd[which(resp_overview$resp == k)] <- mix_lst$val[[k]]$sd
   }
@@ -394,3 +409,4 @@ resp_overview <- data.frame(resp = names(mix_lst$resp))
 
 
 saveRDS(resp_overview, file = paste0(modDir, "data/61_resp_overview_descriptive.rds"))
+write.csv(resp_overview, file = paste0(modDir, "data/61_resp_overview_descriptive.csv"))

@@ -109,16 +109,16 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
       #####
       ###RMSE/median
       #####
-      mdn <- mean(i$resp[[k]]$SR, na.rm = T)
+      mdn <- median(i$resp[[k]]$SR, na.rm = T)
       RMSEmdn_elevSR <- RMSE_elevSR/mdn
       RMSEmdn_lidarSR<- RMSE_lidarSR/mdn
       # residuen fehler soll auf mdn absoluten werten gerechnet werden
       # es ist egal ob residuen + oder - x sind
-      RMSEmdn_lidarRES <- RMSE_lidarRES/mean(abs(i$resp[[k]]$calc_elevRES), na.rm = T)
+      RMSEmdn_lidarRES <- RMSE_lidarRES/median(abs(i$resp[[k]]$calc_elevRES), na.rm = T)
       RMSEmdn_sumSR <- RMSE_sumSR/mdn
       RMSEmdn_lidarelevSR <- RMSE_lidarelevSR/mdn
       
-      
+      armean <- mean(i$resp[[k]]$SR, na.rm = T)
       #####
       ###new list element with validation
       #####
@@ -139,7 +139,8 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
                            RMSEmdn_lidarRES = RMSEmdn_lidarRES, 
                            RMSEmdn_sumSR = RMSEmdn_sumSR,
                            RMSEmdn_lidarelevSR = RMSEmdn_lidarelevSR, 
-                           mdn = mdn)
+                           mdn = mdn, 
+                           armean = armean)
       
     })
     val_df_all <- do.call(rbind, val_df_all_lst)

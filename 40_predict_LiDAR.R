@@ -123,14 +123,18 @@ set_lst_ldr <- lapply(set_lst, function(i){# i <- set_lst[[2]]
           #####
           if (!is.na(mod)){
             prdct <- predict(object = mod, newdata = new_dat)
-            col_nm <- paste0("pred_", m) #column depending on sr or resid
+            col_nm <- paste0("pred_", m) #column depending on model
             i$resp[[k]][[col_nm]][i$resp[[k]]$plotID %in% plt_out] <- prdct
+            ncomp_nm <- paste0("ncomp_", m) #column name depending on model
+            i$resp[[k]][[ncomp_nm]] <- mod$bestTune[[1]]
           }else{
             col_nm <- paste0("pred_", m)
             i$resp[[k]][[col_nm]][i$resp[[k]]$plotID %in% plt_out] <- NA
             ###vorübergehend: 
             colnames(i$resp[[k]])[colnames(i$resp[[k]]) == "elev_pred"] <- "pred_elevSR"
             colnames(i$resp[[k]])[colnames(i$resp[[k]]) == "RES"] <- "calc_elevRES"
+            ncomp_nm <- paste0("ncomp_", m) #column name depending on model
+            i$resp[[k]][[ncomp_nm]] <- NA
             
           }
         # }else{ # if only one value in tbl_in: modeling isn't possible ==> NA in prediction

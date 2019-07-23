@@ -217,9 +217,9 @@ for (i in set_lst){# i <- set_lst[[1]]
                                                "RMSEsd_lidarSR"),]
     
     plt <- ggplot() +
-      geom_boxplot(data = val_plt_flt, aes(x=Taxon, y=value, fill=type), width = 1) +   #in aes(position=position_dodge(5))
+      geom_boxplot(data = val_plt_flt, aes(x=Taxon, y=value, fill=type), notch = T) +   #in aes(position=position_dodge(5))
       facet_grid(~val_plt_flt$best_mod, scales = "free_x", space="free_x", switch = "x") +
-      theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 16, 
+      theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 16, 
                                        # colour = val_plt_flt$troph_sep, 
                                        margin = margin(0,0,0,0))) + #,
       #       strip.text.x = element_blank()) +
@@ -474,8 +474,9 @@ for (i in set_lst){# i <- set_lst[[1]]
                   maxcat = maxcat, 
                   lbl_x = colnames(mat), 
                   lbl_y = rownames(mat), 
-                  rnge = seq(min(mat)+0.5, max(mat)+0.5, 1), 
-                  main = paste0(names(set_lst)[cnt], "_", sub, m))
+                  rnge = seq(min(mat)+0.5, max(mat)+0.5, 1) #, 
+                  #main = paste0(names(set_lst)[cnt], "_", sub, m)
+                  )
       pdf(file = paste0(modDir, "heats_", m, "_", names(set_lst)[cnt], "_", comm, ".pdf"), 
           width = 7, height = 10); par(mar=c(6, 4, 4, 2) + 0.1)#paper = "a4")
       print(l)

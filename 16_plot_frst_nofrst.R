@@ -1,6 +1,6 @@
-# Description: Describing properties and relationships between taxa and trophic levels
+# Description:
 # Author: Alice Ziegler
-# Date: 2019-07-29 12:08:23
+# Date: 2018-12-03 11:21:51
 # to do:
 rm(list=ls())
 
@@ -10,18 +10,24 @@ rm(list=ls())
 #####
 ###load packages
 #####
-
+library(tidyr)
+library(ggplot2)
 #####
 ###set paths
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-sub <- "/"
-inpath <- "../data/"
-outpath <- paste0("../data/", sub)
-
+sub <- "apr19/"
+inpath <- paste0("../data/", sub)
+inpath_general <- "../data/"
+outpath <- paste0("../out/", sub)
+set <- c("nofrst", "frst", "allplts")
 #####
 ###read files
 #####
+set_lst <- lapply(set, function(o){
+  readRDS(file = paste0(inpath, "15_master_lst_", o, ".rds"))
+})
+names(set_lst) <- set
 
 ########################################################################################
 ###Settings
@@ -35,16 +41,25 @@ outpath <- paste0("../data/", sub)
 ########################################################################################
 ########################################################################################
 ########################################################################################
-tbl <- read.csv(file = paste0(inpath, "animals_plotIDcomplete_Syn1.csv"), sep = ";")
+df_nofrst <- data.frame(plotID = set_lst$nofrst$meta$plotID, LAI = set_lst$nofrst$meta$LAI, 
+                        AGB = set_lst$nofrst$meta$AGB, veg = "non-forest")
+df_frst <- data.frame(plotID = set_lst$frst$meta$plotID, LAI = set_lst$frst$meta$LAI, 
+                                   AGB = set_lst$frst$meta$AGB, veg = "forest")
+
+df <- rbind(df_nofrst, df_frst)
+
+df_vars <- gather(df, key = "vars", value = value, -c(plotID, veg))
+
+  plt <-
+  ggplot(data = df_vars, aes(x = veg, y = value))+
+    geom_boxplot(notch = T)+
+    xlab("")+
+    ylab("")+
+    facet_wrap(. ~ vars, scales = "free_y") 
+    
+  
+  pdf(file = paste0(outpath, "frst_nofrst_diff.pdf"))
+  print(plt)
+  dev.off()
 
 
-x_tbl <- table(tbl$taxon, tbl$diet)
-
-x_tbl_rel <- prop.table(x_tbl, margin = 1) #get relative values for each row= taxa
-x_tbl_rel <- round(x_tbl_rel, 2)
-write.csv(x_tbl_rel, file = paste0(outpath, "descr_troph_composition_taxa_animals_plotIDcomplete_Syn1.csv"))
-
-x_tbl_rel_col <- prop.table(x_tbl, margin = 2) #get relative values for each col= troph
-x_tbl_rel_col <- round(x_tbl_rel_col, 2)
-write.csv(x_tbl_rel_col, file = paste0(outpath, "descr_troph_composition_troph_animals_plotIDcomplete_Syn1.csv"))
-###tabelle 

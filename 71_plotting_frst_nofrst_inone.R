@@ -91,9 +91,11 @@ val_results <- val_overview[, colnames(val_overview) %in% c("resp", "Taxon",
                                                             "sd", "mdn", "armean", 
                                                             "RMSEsd_elevSR_mdn", 
                                                             "RMSEsd_lidarSR_mdn", 
+                                                            "RMSEsd_lidarRES_mdn",
                                                             "RMSEsd_sumSR_mdn", 
                                                             "RMSE_elevSR_mdn", 
-                                                            "RMSE_lidarSR_mdn", 
+                                                            "RMSE_lidarSR_mdn",
+                                                            "RMSE_lidarRES_mdn", 
                                                             "RMSE_sumSR_mdn")]
 write.csv(val_results, file = paste0(outpath, set_dir, "mix/val_results_mix_", comm, ".csv"))
 #####
@@ -246,7 +248,80 @@ n <- "RMSEsd_"
   
   }
   
-# plt_boxplot <- function(df, x, y, fill){
-# 
-# }
+#####
+###comparing RMSE of only residuals
+#####
+  
+  val_plt_res <- val_plt[val_plt$type %in% c("RMSEsd_lidarRES"),]
+  levels(val_plt_res$troph_sep) <- levels(val_type$troph_sep)
+  levels(val_plt_res$color) <- levels(val_type$color)
+  levels(val_plt_res$resp) <- levels(val_type$resp)
+  levels(val_plt_res$diet) <- levels(val_type$diet)
+  
+  # val_plt_res$troph_sep <- droplevels(val_plt_res$troph_sep)
+  val_plt_res$color <- droplevels(val_plt_res$color)
+  # val_plt_res$resp <- droplevels(val_plt_res$resp)
+  val_plt_res$diet <- droplevels(val_plt_res$diet)
+  
+  table_res <- aggregate(val_plt_res$value, by = list(val_plt_res$Taxon, val_plt_res$type), FUN = median)
+  colnames(table_res) <- c("Taxon", "type", "mdn_value")
+  unq_sd <- data.frame(val_troph_res[,c("Taxon", "sd")])[!duplicated(data.frame(val_troph_res[,c("Taxon", "sd")])),]
+  
+  # table_res_sd <- merge(table_res, unq_sd, by = "Taxon", all = F)
+  # if (file.exists(paste0(inpath, set_dir, "mix/data/"))==F){
+  #   dir.create(file.path(paste0(inpath, set_dir, "mix/data/")), recursive = T)
+  # }
+  # write.csv(table_res_sd, file = paste0(inpath, set_dir, "mix/data/validation_table_res_", comm, n, ".csv"))
+  # 
+  
+  
+  
+  for (i in grp){
+    #i <- "specs"
+    if(i == "specs"){
+      val_plt_grp <- val_plt_res[!val_plt_res$Taxon %in% trophs,]
+      width = 7
+    } else if(i == "trophs"){
+      width = 3
+      val_plt_grp <- val_plt_res[val_plt_res$Taxon %in% trophs,]
+    }
+    
+    unq_Taxon <- unique(data.frame(Taxon = val_plt_grp$Taxon, RMSEsd_lidarRES_mdn = val_plt_grp$RMSEsd_lidarRES_mdn))
+    srt_Taxon <- unq_Taxon[order(unq_Taxon$RMSEsd_lidarRES_mdn),]
+    val_plt_grp$Taxon <- factor(val_plt_grp$Taxon, levels = srt_Taxon$Taxon)
+    
+    plt <- 
+      ggplot(data = val_plt_grp, aes(x=Taxon, y=value, fill = type)) +
+      geom_boxplot(notch = T) +   #in aes(position=position_dodge(5))
+      # facet_grid(~best_mod, scales = "free_x", space="free_x") +
+      theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 16))+
+      # colour = val_plt_grp$troph_sep,
+      labs(x = "", y = "RMSE/sd")+
+      ylim(0,9)+
+        # scale_y_continuous(limits = c(0,4.5))+
+      scale_fill_manual(labels = c("residuals"), values = "tomato1")+
+      theme(plot.margin=unit(c(1,0,0,0),"cm"))
+    
+    # grid.locator(unit="npc")
+    # plt_crds <- par( "plt" )
+    # v <- ggplotGrob(plt)
+    # v <- gtable_add_rows(v, unit(0.75, 'cm'), 2)
+    # v <- gtable_add_grob(v,
+    #                      list(rectGrob(gp = gpar(col = NA, fill = gray(0.8))),
+    #                           textGrob("best model performance:", gp = gpar(col = "black"), x = unit(plt_crds[3], "npc"), 
+    #                                    y = unit(plt_crds[4], "npc"), vjust = 1.3, hjust = 1.55
+    #                                    # hjust = c(2,0)
+    #                           )),
+    #                      3, 5, 3, 9, name = paste(runif(2)))
+    # 
+    # grid.newpage()
+    # grid.draw(v)
+    pdf(file = paste0(outpath, set_dir, "mix/val_plot_residuals_", comm, n, i, ".pdf"), height= 10, 
+        width = width)
+    # par(mar=c(50, 50, 50, 50) + 1)#, paper = "a4r")
+    # print(plt)
+    print(plt)
+    dev.off()
+    
+  }
 

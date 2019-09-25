@@ -199,7 +199,7 @@ for (k in names(mix_lst$resp)){ # k <- "SRmammals" k <- "SRpredator"
   ###add columns with statistical information about the RMSE and RMSEsd errors
   #####
   for (p in colnames(val_df_all)[!colnames(val_df_all) %in% 
-                                 c("run", "sd", "mdn", "armean")]){ #p <- "RMSEsd_lidarSR"
+                                 c("run", "sd", "mdn", "armean")]){ #p <- "RMSEsd_lidarRES"
     val_df_all$sd_tmp <- sd(val_df_all[[p]], na.rm = T)
     colnames(val_df_all)[colnames(val_df_all) == "sd_tmp"] <- paste0(p, "_sd")
     val_df_all$mdn_tmp <- median(val_df_all[[p]], na.rm = T)

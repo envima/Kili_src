@@ -467,6 +467,10 @@ for (i in set_lst){# i <- set_lst[[1]]
       
       mat <- as.matrix(df_flt[,!colnames(df_flt) == "pred"])
       
+      ##taxa umbenennen und nach alphabet sortieren
+      colnames(mat) <- troph_mrg$Tax_label[match(colnames(mat), troph_mrg$resp)]
+      mat <- mat[, order(colnames(mat))]
+     
       #######################
       ###heatmap plotting
       #######################
@@ -476,7 +480,7 @@ for (i in set_lst){# i <- set_lst[[1]]
                   lbl_y = rownames(mat), 
                   rnge = seq(min(mat)+0.5, max(mat)+0.5, 1) #, 
                   #main = paste0(names(set_lst)[cnt], "_", sub, m)
-                  )
+      )
       pdf(file = paste0(modDir, "heats_", m, "_", names(set_lst)[cnt], "_", comm, ".pdf"), 
           width = 7, height = 10); par(mar=c(6, 4, 4, 2) + 0.1)#paper = "a4")
       print(l)

@@ -410,3 +410,4 @@ resp_overview <- data.frame(resp = names(mix_lst$resp))
 
 saveRDS(resp_overview, file = paste0(modDir, "data/61_resp_overview_descriptive.rds"))
 write.csv(resp_overview, file = paste0(modDir, "data/61_resp_overview_descriptive.csv"))
+#resp_overview <- read.csv(file = paste0(modDir, "data/61_resp_overview_descriptive.csv"))

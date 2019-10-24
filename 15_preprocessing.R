@@ -203,6 +203,17 @@ troph_mrg_tn <- data.frame(Taxon = c("predator", "herbivore", "generalist", "dec
                            resp = c(colnames(troph_tn[2:ncol(troph_tn)])))
 troph_mrg <- rbind(troph_mrg_frst, troph_mrg_tn)
 
+troph_mrg$Tax_label <- troph_mrg$Taxon
+troph_mrg$Tax_label[troph_mrg$Tax_label == "bats"] <- "insectivorous bats"
+troph_mrg$Tax_label[troph_mrg$Tax_label == "dungbeetles"] <- "dung beetles"
+troph_mrg$Tax_label[troph_mrg$Tax_label == "mammals"] <- "large mammals"
+troph_mrg$Tax_label[troph_mrg$Tax_label == "otheraculeata"] <- "other aculeate wasps"
+troph_mrg$Tax_label[troph_mrg$Tax_label == "othercoleoptera"] <- "other beetles"
+troph_mrg$Tax_label[troph_mrg$Tax_label == "parasitoids"] <- "parasitoid wasps"
+troph_mrg$Tax_label[troph_mrg$Tax_label == "snails"] <- "gastropods"
+troph_mrg$Tax_label[troph_mrg$Tax_label == "syrphid"] <- "syrphid flies"
+
+
 saveRDS(troph_mrg, file = paste0(outpath, "15_troph_mrg.rds"))
 #####
 ###append nm_resp mit nm_resp_troph

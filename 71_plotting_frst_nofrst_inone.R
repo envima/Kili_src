@@ -215,7 +215,7 @@ n <- "RMSEsd_"
     
     plt <- 
       ggplot() +
-      geom_boxplot(data = val_plt_grp, aes(x=Taxon, y=value, fill=type), notch = T) +   #in aes(position=position_dodge(5))
+      geom_boxplot(data = val_plt_grp, aes(x=Tax_label, y=value, fill=type), notch = T) +   #in aes(position=position_dodge(5))
       facet_grid(~best_mod, scales = "free_x", space="free_x") +
       theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 16))+
       # colour = val_plt_grp$troph_sep,
@@ -286,12 +286,12 @@ n <- "RMSEsd_"
       val_plt_grp <- val_plt_res[val_plt_res$Taxon %in% trophs,]
     }
     
-    unq_Taxon <- unique(data.frame(Taxon = val_plt_grp$Taxon, RMSEsd_lidarRES_mdn = val_plt_grp$RMSEsd_lidarRES_mdn))
+    unq_Taxon <- unique(data.frame(Tax_label = val_plt_grp$Tax_label, RMSEsd_lidarRES_mdn = val_plt_grp$RMSEsd_lidarRES_mdn))
     srt_Taxon <- unq_Taxon[order(unq_Taxon$RMSEsd_lidarRES_mdn),]
-    val_plt_grp$Taxon <- factor(val_plt_grp$Taxon, levels = srt_Taxon$Taxon)
+    val_plt_grp$Tax_label <- factor(val_plt_grp$Tax_label, levels = srt_Taxon$Tax_label)
     
     plt <- 
-      ggplot(data = val_plt_grp, aes(x=Taxon, y=value, fill = type)) +
+      ggplot(data = val_plt_grp, aes(x=Tax_label, y=value, fill = type)) +
       geom_boxplot(notch = T) +   #in aes(position=position_dodge(5))
       # facet_grid(~best_mod, scales = "free_x", space="free_x") +
       theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 16))+

@@ -29,6 +29,8 @@ library(gtable)
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 # setwd("/mnt/sd19006/data/users/aziegler/src")
+# sub <- "oct19/" 
+#paper: 
 sub <- "apr19/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
@@ -36,6 +38,8 @@ outpath <- paste0("../out/", sub)
 #####
 ###where are the models and derived data
 #####
+# set_dir <- "2019-10-10frst_nofrst_allplts_noelev/" 
+#paper: 
 set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"
 
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
@@ -97,6 +101,9 @@ val_results <- val_overview[, colnames(val_overview) %in% c("resp", "Taxon",
                                                             "RMSE_lidarSR_mdn",
                                                             "RMSE_lidarRES_mdn", 
                                                             "RMSE_sumSR_mdn")]
+if (file.exists(paste0(outpath, set_dir, "mix/"))==F){
+  dir.create(file.path(paste0(outpath, set_dir, "mix/")), recursive = T)
+}
 write.csv(val_results, file = paste0(outpath, set_dir, "mix/val_results_mix_", comm, ".csv"))
 #####
 ###plotting trophic levels
@@ -213,26 +220,30 @@ n <- "RMSEsd_"
     }
 
     
-    plt <- 
+    plt <-
       ggplot() +
       geom_boxplot(data = val_plt_grp, aes(x=Tax_label, y=value, fill=type), notch = T) +   #in aes(position=position_dodge(5))
       facet_grid(~best_mod, scales = "free_x", space="free_x") +
-      theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 16))+
+      theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 20), 
+            legend.position = "none",
+            plot.margin=unit(c(1,0,0,0),"cm"), 
+            strip.text.x = element_text(size = 22), 
+            axis.title=element_text(size=22))+
       # colour = val_plt_grp$troph_sep,
       labs(x = "", y = "RMSE/sd")+
       ylim(0,4.5)+
       scale_fill_manual(labels = c("elevation", "structure", "combination"), 
-                        values = c("lightblue2", "mediumseagreen", "orange2"))+
-      theme(plot.margin=unit(c(1,0,0,0),"cm"))
+                        values = c("lightblue2", "mediumseagreen", "orange2"))
     
     # grid.locator(unit="npc")
     plt_crds <- par( "plt" )
     v <- ggplotGrob(plt)
-    v <- gtable_add_rows(v, unit(0.75, 'cm'), 2)
+    v <- gtable_add_rows(v, unit(1, 'cm'), 2)
     v <- gtable_add_grob(v,
                          list(rectGrob(gp = gpar(col = NA, fill = gray(0.8))),
-                              textGrob("best model performance:", gp = gpar(col = "black"), x = unit(plt_crds[3], "npc"), 
-                                       y = unit(plt_crds[4], "npc"), vjust = 1.3, hjust = 1.55
+                              textGrob("best model performance:", gp = gpar(col = "black", fontsize = 22), 
+                                       x = unit(plt_crds[3], "npc"), 
+                                       y = unit(plt_crds[4], "npc"), vjust = 1, hjust = 0.9
                                        # hjust = c(2,0)
                               )),
                          3, 5, 3, 9, name = paste(runif(2)))
@@ -290,17 +301,19 @@ n <- "RMSEsd_"
     srt_Taxon <- unq_Taxon[order(unq_Taxon$RMSEsd_lidarRES_mdn),]
     val_plt_grp$Tax_label <- factor(val_plt_grp$Tax_label, levels = srt_Taxon$Tax_label)
     
-    plt <- 
+    plt <-
       ggplot(data = val_plt_grp, aes(x=Tax_label, y=value, fill = type)) +
       geom_boxplot(notch = T) +   #in aes(position=position_dodge(5))
       # facet_grid(~best_mod, scales = "free_x", space="free_x") +
-      theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 16))+
+      theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 16), 
+            plot.margin=unit(c(1,0,0,0),"cm"), 
+            legend.position = "none")+
       # colour = val_plt_grp$troph_sep,
       labs(x = "", y = "RMSE/sd")+
       ylim(0,9)+
         # scale_y_continuous(limits = c(0,4.5))+
-      scale_fill_manual(labels = c("residuals"), values = "tomato1")+
-      theme(plot.margin=unit(c(1,0,0,0),"cm"))
+      scale_fill_manual(labels = c("residuals"), values = "gray50")
+    
     
     # grid.locator(unit="npc")
     # plt_crds <- par( "plt" )

@@ -56,7 +56,7 @@ set_lst_res <- lapply(set_lst, function(i){# i <- set_lst[[2]]
   }
   for (k in names(i$resp)){ # k <- "SRmammals" k  <- "SRpredator"
     print(k)
-    for (outs in runs){ # outs <- 1
+    for (outs in runs){ # outs <- 1 outs <- 5
       print(outs)
       #####
       ###split for outer loop (independet cv)

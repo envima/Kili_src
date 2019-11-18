@@ -21,7 +21,7 @@ library(parallel)
 # machine <- "local"
 # machine <- "server"
 machine <- "cluster"
-core_num <- 63
+core_num <- 10
 
 if(machine == "local"){
   setwd(dirname(rstudioapi::getSourceEditorContext()[[2]])) # lokal
@@ -31,7 +31,7 @@ if(machine == "local"){
   setwd("/home/ziegler5/src") # marc2
 }
 
-sub <- "oct19/"
+sub <- "apr19/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 outpath <- paste0("../data/", sub)
@@ -73,7 +73,19 @@ if(grepl("flt", comm)){
   preds_flt <- readRDS(file = paste0(inpath_pre, "80_preds_flt.rds"))
 }
 
-source("fun_model.R")
+# #####
+# ###if only certain responses should be trained vorläufig...insg. sollte das in fun model als argument
+# #####
+# set_lst <- lapply(set_lst, function(i){
+#   resp <- c("SRdecomposer", "SRgeneralist", "SRpredator", "SRherbivore")
+#   i$resp <- i$resp[names(i$resp) %in% resp]
+#   return(i)
+# })
+# #####
+# ###end: only certain responses
+# #####
+source("fun_model_test_keininhalt.R")
+# source("fun_model.R")
 ########################################################################################
 ########################################################################################
 ########################################################################################

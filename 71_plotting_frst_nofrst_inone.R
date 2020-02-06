@@ -81,6 +81,7 @@ val_troph$diet <- factor(val_troph$diet,
 
 val_troph_flt <- val_troph[is.finite(val_troph$RMSEsd_lidarSR),]
 
+saveRDS(val_troph, file = paste0(modDir, "val_troph_mix_", comm, ".rds"))
 
 val_type <- gather(val_troph_flt, key = type, value = value, -c(resp, run, sd, mdn:troph_sep))
 
@@ -213,21 +214,48 @@ n <- "RMSEsd_"
   for (i in grp){
     if(i == "specs"){
       val_plt_grp <- val_plt_flt[!val_plt_flt$Taxon %in% trophs,]
-      width = 20
+      width = 22
     } else if(i == "trophs"){
-      width = 6.5
+      width = 7.5
       val_plt_grp <- val_plt_flt[val_plt_flt$Taxon %in% trophs,]
     }
 
+    ###
+    #reorder by median performance of each facet (elevation facet ordered by elevation perf., structure facet ordered by structure,...)
+    ### 
+    unq_mdn <- unique(data.frame(Tax_label = val_plt_grp$Tax_label, 
+                                   RMSEsd_elevSR_mdn = val_plt_grp$RMSEsd_elevSR_mdn, 
+                                   RMSEsd_lidarSR_mdn = val_plt_grp$RMSEsd_lidarSR_mdn, 
+                                   RMSEsd_sumSR_mdn = val_plt_grp$RMSEsd_sumSR_mdn, 
+                                   best_mod = val_plt_grp$best_mod))
+    unq_mdn$Tax_label <- as.character(unq_mdn$Tax_label)
+    
+    srt_mdn <- c()
+    lookup <- data.frame(best_mod = c("elevation", "structure", "combination"), 
+                         title = c("RMSEsd_elevSR_mdn", "RMSEsd_lidarSR_mdn", "RMSEsd_sumSR_mdn"))
+    lookup[] <- lapply(lookup, as.character)    
+    for(o in levels(val_plt_grp$best_mod)){
+      #o <- "elevation"
+      sub_tmp <- unq_mdn[unq_mdn$best_mod == o,]
+      title_tmp <- lookup$title[lookup$best_mod == o]
+      srt_tmp <- sub_tmp[order(sub_tmp[as.character(title_tmp)]),]
+      srt_mdn <- c(srt_mdn, rev(srt_tmp$Tax_label))
+    }
+    val_plt_grp$Tax_label <- factor(val_plt_grp$Tax_label, levels = srt_mdn)    
+    
     
     plt <-
       ggplot() +
       geom_boxplot(data = val_plt_grp, aes(x=Tax_label, y=value, fill=type), notch = T) +   #in aes(position=position_dodge(5))
       facet_grid(~best_mod, scales = "free_x", space="free_x") +
       theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 20), 
-            legend.position = "none",
-            plot.margin=unit(c(1,0,0,0),"cm"), 
-            strip.text.x = element_text(size = 22), 
+            axis.text.y = element_text(size = 20), 
+            # legend.position = "none",
+            legend.title = element_blank(),
+            legend.text = element_text(size = 20),
+            legend.key.size = unit(3,"line"),
+            plot.margin=unit(c(1,1,0,1),"cm"), 
+            strip.text.x = element_text(size = 12), 
             axis.title=element_text(size=22))+
       # colour = val_plt_grp$troph_sep,
       labs(x = "", y = "RMSE/sd")+
@@ -235,26 +263,26 @@ n <- "RMSEsd_"
       scale_fill_manual(labels = c("elevation", "structure", "combination"), 
                         values = c("lightblue2", "mediumseagreen", "orange2"))
     
-    # grid.locator(unit="npc")
-    plt_crds <- par( "plt" )
-    v <- ggplotGrob(plt)
-    v <- gtable_add_rows(v, unit(1, 'cm'), 2)
-    v <- gtable_add_grob(v,
-                         list(rectGrob(gp = gpar(col = NA, fill = gray(0.8))),
-                              textGrob("best model performance:", gp = gpar(col = "black", fontsize = 22), 
-                                       x = unit(plt_crds[3], "npc"), 
-                                       y = unit(plt_crds[4], "npc"), vjust = 1, hjust = 0.9
-                                       # hjust = c(2,0)
-                              )),
-                         3, 5, 3, 9, name = paste(runif(2)))
-    
-    grid.newpage()
-    grid.draw(v)
+    # # grid.locator(unit="npc")
+    # plt_crds <- par( "plt" )
+    # v <- ggplotGrob(plt)
+    # v <- gtable_add_rows(v, unit(1, 'cm'), 2)
+    # v <- gtable_add_grob(v,
+    #                      list(rectGrob(gp = gpar(col = NA, fill = gray(0.8))),
+    #                           textGrob("best model performance:", gp = gpar(col = "black", fontsize = 22), 
+    #                                    x = unit(plt_crds[3], "npc"), 
+    #                                    y = unit(plt_crds[4], "npc"), vjust = 1, hjust = 0.9
+    #                                    # hjust = c(2,0)
+    #                           )),
+    #                      3, 5, 3, 9, name = paste(runif(2)))
+    # 
+    # grid.newpage()
+    # grid.draw(v)
   pdf(file = paste0(outpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, i, ".pdf"), height= 10, 
       width = width)
   # par(mar=c(50, 50, 50, 50) + 1)#, paper = "a4r")
-  # print(plt)
-  print(grid.draw(v))
+  print(plt)
+  # print(grid.draw(v))
   dev.off()
   
   }
@@ -299,14 +327,14 @@ n <- "RMSEsd_"
     
     unq_Taxon <- unique(data.frame(Tax_label = val_plt_grp$Tax_label, RMSEsd_lidarRES_mdn = val_plt_grp$RMSEsd_lidarRES_mdn))
     srt_Taxon <- unq_Taxon[order(unq_Taxon$RMSEsd_lidarRES_mdn),]
-    val_plt_grp$Tax_label <- factor(val_plt_grp$Tax_label, levels = srt_Taxon$Tax_label)
+    val_plt_grp$Tax_label <- factor(val_plt_grp$Tax_label, levels = rev(srt_Taxon$Tax_label))
     
     plt <-
       ggplot(data = val_plt_grp, aes(x=Tax_label, y=value, fill = type)) +
       geom_boxplot(notch = T) +   #in aes(position=position_dodge(5))
       # facet_grid(~best_mod, scales = "free_x", space="free_x") +
       theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 16), 
-            plot.margin=unit(c(1,0,0,0),"cm"), 
+            plot.margin=unit(c(1,1,0,1),"cm"), 
             legend.position = "none")+
       # colour = val_plt_grp$troph_sep,
       labs(x = "", y = "RMSE/sd")+

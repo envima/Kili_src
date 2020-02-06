@@ -17,13 +17,17 @@ library(caret)
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 # setwd("/mnt/sd19006/data/users/aziegler/src")
-sub <- "oct19/"
+# sub <- "oct19/"
+sub <- "apr19/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
+outpath <- paste0("../out/", sub)
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2019-10-10frst_nofrst_allplts_noelev/" #paper: set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"
+# set_dir <- "2019-10-10frst_nofrst_allplts_noelev/" 
+#paper: 
+set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
 

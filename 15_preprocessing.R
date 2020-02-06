@@ -210,8 +210,23 @@ troph_mrg$Tax_label[troph_mrg$Tax_label == "mammals"] <- "large mammals"
 troph_mrg$Tax_label[troph_mrg$Tax_label == "otheraculeata"] <- "other aculeate wasps"
 troph_mrg$Tax_label[troph_mrg$Tax_label == "othercoleoptera"] <- "other beetles"
 troph_mrg$Tax_label[troph_mrg$Tax_label == "parasitoids"] <- "parasitoid wasps"
-troph_mrg$Tax_label[troph_mrg$Tax_label == "snails"] <- "gastropods"
 troph_mrg$Tax_label[troph_mrg$Tax_label == "syrphid"] <- "syrphid flies"
+troph_mrg$Tax_label[troph_mrg$Tax_label == "orthoptera"] <- "grasshoppers"
+troph_mrg$Tax_label[troph_mrg$Tax_label == "collembola"] <- "springtails"
+troph_mrg$Tax_label[troph_mrg$Tax_label == "heteroptera"] <- "bugs"
+
+
+###fly - binary
+troph_mrg$fly <- 0
+troph_mrg$fly[troph_mrg$Tax_label == "insectivorous bats"] <- 1
+troph_mrg$fly[troph_mrg$Tax_label == "bees"] <- 1
+troph_mrg$fly[troph_mrg$Tax_label == "birds"] <- 1
+troph_mrg$fly[troph_mrg$Tax_label == "moths"] <- 1
+troph_mrg$fly[troph_mrg$Tax_label == "orthoptera"] <- 1
+troph_mrg$fly[troph_mrg$Tax_label == "other aculeate wasps"] <- 1
+troph_mrg$fly[troph_mrg$Tax_label == "parasitoid wasps"] <- 1
+troph_mrg$fly[troph_mrg$Tax_label == "syrphid flies"] <- 1
+
 
 
 saveRDS(troph_mrg, file = paste0(outpath, "15_troph_mrg.rds"))

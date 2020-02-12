@@ -26,7 +26,8 @@ library(gpm)
 ###set paths
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-sub <- "apr19/"
+# sub <- "apr19/" #paper
+sub <- "feb20/"
 inpath <- paste0("../data/", sub)
 if (file.exists(inpath)==F){
   dir.create(file.path(inpath))
@@ -181,7 +182,14 @@ mrg_tbl_troph_first <- merge(mrg_tbl, troph_sum, by = "plotID")
 ###(trophische level, die auf Artenniveau getrennt sind))
 #####
 tbl_tn <- as.data.frame(gpm_tn@data$input)
-troph_tn <- tbl_tn[names(tbl_tn) %in% c("plotID", "SRpredator", "SRherbivore", "SRgeneralist", "SRdecomposer")]
+
+##correction dataset: spiders are 100% predators, collembola are 100% decomposers
+troph_tn <- data.frame(plotID = tbl_tn$plotID, 
+                          SRpredator = rowSums(cbind(tbl_tn$SRpredator, tbl_tn$SRspiders), na.rm = T), 
+                          SRherbivore = tbl_tn$SRherbivore, 
+                          SRgeneralist = tbl_tn$SRgeneralist, 
+                          SRdecomposer = rowSums(cbind(tbl_tn$SRdecomposer, tbl_tn$SRcollembola), na.rm = T))
+
 
 mrg_tbl_troph <- merge(mrg_tbl_troph_first, troph_tn, by = "plotID", all = T)
 

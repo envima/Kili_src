@@ -21,7 +21,9 @@ library(parallel)
 # machine <- "local"
 # machine <- "server"
 machine <- "cluster"
-core_num <- 63
+# core_num <- 63
+core_num <- 5
+
 
 if(machine == "local"){
   setwd(dirname(rstudioapi::getSourceEditorContext()[[2]])) # lokal
@@ -31,7 +33,9 @@ if(machine == "local"){
   setwd("/home/ziegler5/src") # marc2
 }
 
-sub <- "oct19/"
+# sub <- "oct19/"
+# sub <- "apr19/"#paper
+sub <- "feb20/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 outpath <- paste0("../data/", sub)

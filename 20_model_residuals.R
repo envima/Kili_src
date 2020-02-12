@@ -15,7 +15,8 @@ library(caret)
 ###set paths
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-sub <- "apr19/"
+# sub <- "apr19/" #paper
+sub <- "feb20/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 outpath <- paste0("../data/", sub)
@@ -39,6 +40,15 @@ mod_meth <- "cv"
 cv_times_in <- 20
 cv_fold_in <- 4
 
+##reduce response variables with  names
+subset <- c("SRpredator", "SRherbivore", "Srgeneralist", "SRdecomposer")
+if (length(subset) > 0){
+  set_lst <- lapply(set_lst, function(i){ #i <- set_lst[[2]]
+   reduced <- i$resp[names(i$resp) %in% subset]
+   rdc_list <- list(meta = i$meta, resp = reduced)
+    return(rdc_list)
+  })
+}
 ########################################################################################
 ########################################################################################
 ########################################################################################

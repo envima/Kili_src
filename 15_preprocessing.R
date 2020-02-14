@@ -27,7 +27,7 @@ library(gpm)
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 # sub <- "apr19/" #paper
-sub <- "feb20/"
+sub <- "feb20_allresp/"
 inpath <- paste0("../data/", sub)
 if (file.exists(inpath)==F){
   dir.create(file.path(inpath))

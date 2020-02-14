@@ -16,7 +16,7 @@ library(caret)
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 # sub <- "apr19/" #paper
-sub <- "feb20/"
+sub <- "feb20_allresp/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 outpath <- paste0("../data/", sub)
@@ -41,7 +41,9 @@ cv_times_in <- 20
 cv_fold_in <- 4
 
 ##reduce response variables with  names
-subset <- c("SRpredator", "SRherbivore", "Srgeneralist", "SRdecomposer")
+# subset <- c()
+subset <- c("SRpredator", "SRherbivore", "SRgeneralist", "SRdecomposer")
+
 if (length(subset) > 0){
   set_lst <- lapply(set_lst, function(i){ #i <- set_lst[[2]]
    reduced <- i$resp[names(i$resp) %in% subset]

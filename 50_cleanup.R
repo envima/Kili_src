@@ -16,7 +16,7 @@ rm(list=ls())
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 # setwd("/mnt/sd19006/data/users/aziegler/src")
-sub <- "feb20/"
+sub <- "feb20_allresp/"
 # sub <- "apr19/" #paper
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
@@ -24,7 +24,7 @@ inpath_general <- "../data/"
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2020-02-06frst_nofrst_allplts_noelev/"
+set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"
 # set_dir <- "2019-03-26frst_nofrst_allplts_noelev/" #paper
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
@@ -58,6 +58,9 @@ set_lst <- set_lst[!is.na(set_lst)]
 
 cnt <- 0
 set_lst_cln <- lapply(set_lst, function(i){# i <- set_lst[[1]]
+  ##get rid of old sum_generalists... 
+  i$resp <- i$resp[names(i$resp)[!(grepl("sum_", names(i$resp)))]]
+  
   cnt <<- cnt+1
   set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst)[cnt], "_"), mod_dir_lst)]
   modDir <- paste0(inpath, set_dir, set_moddir, "/")

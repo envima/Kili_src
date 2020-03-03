@@ -14,15 +14,21 @@ rm(list=ls())
 #####
 ###set paths
 #####
-setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-sub <- "/"
-inpath <- "../data/"
-outpath <- paste0("../data/", sub)
 
+setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
+# setwd("/mnt/sd19006/data/users/aziegler/src")
+sub <- "feb20_allresp/"
+# sub <- "apr19/" #paper
+inpath <- paste0("../data/", sub)
+inpath_general <- "../data/"
+outpath <- paste0("../out/", sub)
 #####
 ###read files
 #####
+tbl <- read.csv(file = paste0(inpath_general, "animals_plotIDcomplete_Syn1.csv"), sep = ";")
 
+# troph_mrg <- readRDS(paste0(inpath, "15_troph_mrg.rds"))
+# troph_mrg <- troph_mrg[!duplicated(troph_mrg),]
 ########################################################################################
 ###Settings
 ########################################################################################
@@ -35,7 +41,7 @@ outpath <- paste0("../data/", sub)
 ########################################################################################
 ########################################################################################
 ########################################################################################
-tbl <- read.csv(file = paste0(inpath, "animals_plotIDcomplete_Syn1.csv"), sep = ";")
+
 
 
 x_tbl <- table(tbl$taxon, tbl$diet)

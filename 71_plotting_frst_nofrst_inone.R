@@ -31,7 +31,7 @@ library(cowplot)
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 # setwd("/mnt/sd19006/data/users/aziegler/src")
-sub <- "feb20/"
+sub <- "feb20_allresp/"
 # sub <- "apr19/" #paper
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
@@ -40,8 +40,7 @@ outpath <- paste0("../out/", sub)
 ###where are the models and derived data
 #####
 
-set_dir <- "2020-02-06frst_nofrst_allplts_noelev/"
-#paper: 
+set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"#paper: 
 # set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"
 
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
@@ -94,16 +93,33 @@ if (file.exists(modDir)==F){
 }
 saveRDS(val_overview, file = paste0(modDir, "val_mix_overview_mix_", comm, ".rds"))
 
-val_results <- val_overview[, colnames(val_overview) %in% c("resp", "Taxon", 
-                                                            "sd", "mdn", "armean", 
-                                                            "RMSEsd_elevSR_mdn", 
-                                                            "RMSEsd_lidarSR_mdn", 
-                                                            "RMSEsd_lidarRES_mdn",
-                                                            "RMSEsd_sumSR_mdn", 
-                                                            "RMSE_elevSR_mdn", 
-                                                            "RMSE_lidarSR_mdn",
-                                                            "RMSE_lidarRES_mdn", 
-                                                            "RMSE_sumSR_mdn")]
+relv_cols <- c("resp", "Tax_label", 
+  "sd", "mdn", "armean", 
+  "RMSEsd_elevSR_mdn", 
+  "RMSEsd_elevSR_sd", 
+  "RMSEsd_lidarSR_mdn", 
+  "RMSEsd_lidarSR_sd", 
+  "RMSEsd_lidarRES_mdn",
+  "RMSEsd_lidarRES_sd", 
+  "RMSEsd_sumSR_mdn", 
+  "RMSEsd_sumSR_sd", 
+  "RMSE_elevSR_mdn", 
+  "RMSE_elevSR_sd", 
+  "RMSE_lidarSR_mdn",
+  "RMSE_lidarSR_sd",
+  "RMSE_lidarRES_mdn", 
+  "RMSE_lidarRES_sd",
+  "RMSE_sumSR_mdn", 
+  "RMSE_sumSR_sd")
+val_results <- val_overview[, colnames(val_overview) %in% relv_cols]
+val_results <- val_results[relv_cols]
+val_results <- data.frame(lapply(val_results, function(y) if(is.numeric(y)) signif(y, digits = 2) else y)) 
+row_ord <- c("ants", "bees", "birds", "bugs", "dung beetles", "grasshoppers", "insectivorous bats", "large mammals", 
+             "millipedes", "moths", "other aculeate wasps", "other beetles", "parasitoid wasps", "snails", "spiders", "springtails", 
+             "syrphid flies", "decomposer", "generalist", "herbivore", "predator")
+new_order <- sapply(row_ord, function(x,df){which(val_results$Tax_label == x)}, df=val_results)
+val_results <- val_results[new_order,]
+
 if (file.exists(paste0(outpath, set_dir, "mix/"))==F){
   dir.create(file.path(paste0(outpath, set_dir, "mix/")), recursive = T)
 }

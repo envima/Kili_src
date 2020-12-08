@@ -18,16 +18,16 @@ library(caret)
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 # setwd("/mnt/sd19006/data/users/aziegler/src")
 
-sub <- "feb20_allresp/"
-# sub <- "apr19/"
+# sub <- "feb20_allresp/"
+sub <- "apr19/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 #####
 ###where are the models and derived data
 #####
-set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"#paper: 
+# set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"
 
-# set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"
+set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"#paper:
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
 
@@ -267,7 +267,7 @@ set_lst_var_imp <- lapply(set_lst_val, function(i){# i <- set_lst[[1]]
   }else{
     runs <- seq(sum(grepl("outerrun", colnames(i$meta))))
   }  
-  for(k in names(i$resp)){ # k <- "SRmammals"
+  for(k in names(i$resp)){ # k <- "SRmammals" k <- "SRheteroptera"
     # print(k)
     for (outs in runs){ #outs <- 1
       # print(outs)
@@ -325,7 +325,8 @@ set_lst_var_imp <- lapply(set_lst_val, function(i){# i <- set_lst[[1]]
     for (m in resp_set){
       m_name <- paste0("pred_", m)
       selvars_allruns <- do.call(rbind, i$varimp[[k]][[m_name]])
-      if (!is.na(sum(selvars_allruns$Overall))){
+      # if (!is.na(sum(selvars_allruns$Overall))){
+        if ((sum(selvars_allruns$Overall, na.rm = T)!= 0)){
       frq <- as.data.frame(table(selvars_allruns$sel_vars))
       }else{
         frq <- data.frame(resp = NA, frq = NA)

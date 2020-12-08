@@ -41,8 +41,8 @@ cv_times_in <- 20
 cv_fold_in <- 4
 
 ##reduce response variables with  names
-# subset <- c()
-subset <- c("SRpredator", "SRherbivore", "SRgeneralist", "SRdecomposer")
+subset <- c()
+# subset <- c("SRpredator", "SRherbivore", "SRgeneralist", "SRdecomposer")
 
 if (length(subset) > 0){
   set_lst <- lapply(set_lst, function(i){ #i <- set_lst[[2]]

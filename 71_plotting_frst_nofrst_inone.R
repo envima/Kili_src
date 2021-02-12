@@ -31,8 +31,8 @@ library(cowplot)
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 # setwd("/mnt/sd19006/data/users/aziegler/src")
-sub <- "feb20_allresp/"
-# sub <- "apr19/" #paper
+# sub <- "feb20_allresp/"
+sub <- "apr19/" #paper
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 outpath <- paste0("../out/", sub)
@@ -40,8 +40,8 @@ outpath <- paste0("../out/", sub)
 ###where are the models and derived data
 #####
 
-set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"#paper: 
-# set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"
+# set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"
+set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"#paper
 
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 modDir <- paste0(inpath, set_dir, "mix/")
@@ -294,6 +294,10 @@ n <- "RMSEsd_"
   trophs_ord <- order_fun(dat = val_plt_flt[val_plt_flt$Taxon %in% trophs,])
   trophs_plt <- plt_fun(dat = trophs_ord) + theme(legend.position = "none")
   
+  write.csv(specs_ord, paste0(outpath, set_dir, "mix/71_val_plot_srt_bestmodel_", comm, n, "specs.csv"))
+  write.csv(trophs_ord, paste0(outpath, set_dir, "mix/71_val_plot_srt_bestmodel_", comm, n, "trophs.csv"))
+  
+  
   # a <- plot_grid(specs_plt, trophs_plt, leg, labels = c('A', 'B'), label_size = 12)
   # # a <- arrangeGrob(specs_plt, trophs_plt, leg, ncol=3, widths=c(2.3, 2.3, 0.8))
   # 
@@ -310,7 +314,6 @@ n <- "RMSEsd_"
   # pdf(file = paste0(outpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "legend.pdf"))
   # plot(leg)
   # dev.off()
-
 
   # both
   # pdf(file = paste0(outpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "both.pdf"))

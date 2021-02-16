@@ -31,8 +31,8 @@ library(cowplot)
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 # setwd("/mnt/sd19006/data/users/aziegler/src")
-# sub <- "feb20_allresp/"
-sub <- "apr19/" #paper
+sub <- "feb20_allresp/"
+# sub <- "apr19/" #paper
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 outpath <- paste0("../out/", sub)
@@ -40,8 +40,8 @@ outpath <- paste0("../out/", sub)
 ###where are the models and derived data
 #####
 
-# set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"
-set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"#paper
+set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"
+# set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"#paper
 
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 modDir <- paste0(inpath, set_dir, "mix/")
@@ -251,51 +251,93 @@ n <- "RMSEsd_"
     return(dat)
   }
   
-  dat_text <- data.frame(label = c("elevation", "structure", "combination"), 
-                         best_mod = c("elevation", "structure", "combination"))
+  dat_text <- data.frame(label = factor(c("elevation", "structure", "combination"), levels = c("elevation", "structure", "combination")), 
+                         best_mod = factor(c("elevation", "structure", "combination"), levels = c("elevation", "structure", "combination")))
   
-  plt_fun <- function(dat){
-    plt <- 
+  plt_fun <- function(dat, dat_text){
+    plt <-
       ggplot() +
-      geom_boxplot(data = dat, aes(x=Tax_label, y=value, fill=type), notch = T, width=0.8) +   #in aes(position=position_dodge(5))
+      geom_boxplot(data = dat, aes(x=signif_Tax_label, y=value, fill=type), notch = T, width=0.8) +   #in aes(position=position_dodge(5))
       facet_grid(~best_mod, scales = "free_x", space="free_x") +
       theme_bw() +
-      theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 20), 
-            axis.text.y = element_text(size = 20), 
+      theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 20),
+            axis.text.y = element_text(size = 20),
             legend.title = element_blank(),
             legend.text = element_text(size = 20),
             legend.key.size = unit(3,"line"),
-            plot.margin=unit(c(1,1,0,1),"cm"), 
-            strip.text.x =  element_blank(),#element_text(size = 20), 
-            axis.title=element_text(size=20), 
-            axis.ticks.y = element_blank(), 
+            plot.margin=unit(c(1,1,0,1),"cm"),
+            strip.text.x =  element_blank(),#element_text(size = 20),
+            axis.title=element_text(size=20),
+            axis.ticks.y = element_blank(),
             axis.ticks.x = element_blank(),
             axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)))+
       # theme_bw()+
       # colour = dat$troph_sep,
-      geom_text(data = dat_text, mapping = aes(x = c(0.5,0.5,0.5), y = c(4.5,4.5,4.5), label = label, angle = 90), 
+      geom_text(data = dat_text, mapping = aes(x = rep(0.5, nrow(dat_text)), y = rep(4.5, nrow(dat_text)), label = label, angle = 90),
                 hjust   = 1, vjust   = 1, size = (20*0.352777778))+ #divide by pts per inch
       labs(x = "", y = "RMSE/sd")+
       ylim(0,4.5)+
-      scale_fill_manual(labels = c("elevation", "structure", "combination"), 
+      scale_fill_manual(labels = c("elevation", "structure", "combination"),
                         values = c("lightblue2", "mediumseagreen", "orange2"))
     return(plt)
   }
-  
 
+  
+  ###test significance between model performances
+  signif_lst <- lapply(unique(val_plt_flt$Tax_label), function(i){
+    # i <- "collembola"
+    # print(i)
+    subset <- val_plt_flt[val_plt_flt$Tax_label == i,]
+    best_mod <- unique(subset$best_mod)
+    anova <- aov(value ~ as.factor(type), data = subset)
+    tuk_rw <- TukeyHSD(anova)
+    tuk_rw <- as.data.frame(tuk_rw$`as.factor(type)`)
+    tuk <- data.frame(comparison = row.names(tuk_rw), diff = tuk_rw$diff, p = tuk_rw$`p adj`)
+    df_long <- pivot_longer(tuk, cols=2:3, names_to = "metric", values_to = "values")
+    df_long$comp_met <- paste0(df_long$comparison, "_", df_long$metric)
+    df <- data.frame(comp_met = df_long$comp_met, value = df_long$values)
+    #renaming
+    df$comp_met <- gsub('RMSEsd_lidarSR', 'structure', df$comp_met)
+    df$comp_met <- gsub('RMSEsd_sumSR', 'combination', df$comp_met)
+    df$comp_met <- gsub('RMSEsd_elevSR', 'elevation', df$comp_met)
+    df_t <- setNames(data.frame(t(df[,-1])), df[,1])
+    
+    #checking columns that regard p-value of comparison with best model:
+    match_cols <- colnames(df_t)[grepl(pattern = as.character(best_mod), colnames(df_t)) & 
+                                   grepl(pattern = "p", colnames(df_t))]
+    
+    
+    if(all(df_t[,match_cols]<0.05)){
+      df_t$signif_best_mod <- 1
+    }else{
+      df_t$signif_best_mod <- 0
+    }
+    return(df_t)
+  })
+  
+  names(signif_lst) <- unique(val_plt_flt$Tax_label)
+  signif_df <- do.call(rbind, signif_lst)
+  signif_df$Tax_label <- row.names(signif_df)
+  # if difference of best odel to others is significant, mark Taxon with star
+  signif_df <- transform(signif_df, signif_Tax_label = ifelse(signif_best_mod ==0, paste0(signif_df$Tax_label, "  "), paste0(signif_df$Tax_label, " *")))
+ 
+  #merge to big data_frame
+  val_plt_flt <- merge(val_plt_flt, signif_df, by = "Tax_label")
+  
   # specs
   specs_ord <- order_fun(dat = val_plt_flt[!val_plt_flt$Taxon %in% trophs,])
-  specs_plt <- plt_fun(dat = specs_ord)
+  dat_text_specs <- dat_text[dat_text$label %in% unique(specs_ord$best_mod),]
+  specs_plt <- plt_fun(dat = specs_ord, dat_text = dat_text_specs)
   leg <- get_legend(specs_plt) #get legend
   specs_plt <- specs_plt + theme(legend.position = "none")
-  
-  
-  #trophics
+
+    #trophics
   trophs_ord <- order_fun(dat = val_plt_flt[val_plt_flt$Taxon %in% trophs,])
-  trophs_plt <- plt_fun(dat = trophs_ord) + theme(legend.position = "none")
+  dat_text_trophs <- dat_text[dat_text$label %in% unique(trophs_ord$best_mod),]
+  trophs_plt <- plt_fun(dat = trophs_ord, dat_text = dat_text_trophs) + theme(legend.position = "none")
   
-  write.csv(specs_ord, paste0(outpath, set_dir, "mix/71_val_plot_srt_bestmodel_", comm, n, "specs.csv"))
-  write.csv(trophs_ord, paste0(outpath, set_dir, "mix/71_val_plot_srt_bestmodel_", comm, n, "trophs.csv"))
+  write.csv(specs_ord, paste0(outpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "specs.csv"))
+  write.csv(trophs_ord, paste0(outpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "trophs.csv"))
   
   
   # a <- plot_grid(specs_plt, trophs_plt, leg, labels = c('A', 'B'), label_size = 12)
@@ -303,11 +345,11 @@ n <- "RMSEsd_"
   # 
   ##printing
   # specs
-  pdf(file = paste0(outpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "specs.pdf"), height= 11, width = 22)
+  pdf(file = paste0(outpath, set_dir, "mix/71_val_plot_srt_bestmodel_", comm, n, "specs.pdf"), height= 11, width = 22)
   print(specs_plt)
   dev.off()
   # trophs
-  pdf(file = paste0(outpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "trophs.pdf"), height= 9.8, width = 7)
+  pdf(file = paste0(outpath, set_dir, "mix/71_val_plot_srt_bestmodel_", comm, n, "trophs.pdf"), height= 9.8, width = 7)
   print(trophs_plt)
   dev.off()
   # legend #to be cropped outside R
@@ -331,20 +373,20 @@ n <- "RMSEsd_"
   
   
   # 
-  # ###
-  # #reorder by median performance of each facet (elevation facet ordered by elevation perf., structure facet ordered by structure,...)
-  # ### 
-  # unq_mdn <- unique(data.frame(Tax_label = val_plt_grp$Tax_label, 
-  #                              RMSEsd_elevSR_mdn = val_plt_grp$RMSEsd_elevSR_mdn, 
-  #                              RMSEsd_lidarSR_mdn = val_plt_grp$RMSEsd_lidarSR_mdn, 
-  #                              RMSEsd_sumSR_mdn = val_plt_grp$RMSEsd_sumSR_mdn, 
+  ###
+  #reorder by median performance of each facet (elevation facet ordered by elevation perf., structure facet ordered by structure,...)
+  ###
+  # unq_mdn <- unique(data.frame(Tax_label = val_plt_grp$Tax_label,
+  #                              RMSEsd_elevSR_mdn = val_plt_grp$RMSEsd_elevSR_mdn,
+  #                              RMSEsd_lidarSR_mdn = val_plt_grp$RMSEsd_lidarSR_mdn,
+  #                              RMSEsd_sumSR_mdn = val_plt_grp$RMSEsd_sumSR_mdn,
   #                              best_mod = val_plt_grp$best_mod))
   # unq_mdn$Tax_label <- as.character(unq_mdn$Tax_label)
   # 
   # srt_mdn <- c()
-  # lookup <- data.frame(best_mod = c("elevation", "structure", "combination"), 
+  # lookup <- data.frame(best_mod = c("elevation", "structure", "combination"),
   #                      title = c("RMSEsd_elevSR_mdn", "RMSEsd_lidarSR_mdn", "RMSEsd_sumSR_mdn"))
-  # lookup[] <- lapply(lookup, as.character)    
+  # lookup[] <- lapply(lookup, as.character)
   # for(o in levels(val_plt_grp$best_mod)){
   #   #o <- "elevation"
   #   sub_tmp <- unq_mdn[unq_mdn$best_mod == o,]
@@ -352,7 +394,7 @@ n <- "RMSEsd_"
   #   srt_tmp <- sub_tmp[order(sub_tmp[as.character(title_tmp)]),]
   #   srt_mdn <- c(srt_mdn, rev(srt_tmp$Tax_label))
   # }
-  # val_plt_grp$Tax_label <- factor(val_plt_grp$Tax_label, levels = srt_mdn)  
+  # val_plt_grp$Tax_label <- factor(val_plt_grp$Tax_label, levels = srt_mdn)
   # 
   # 
   # 

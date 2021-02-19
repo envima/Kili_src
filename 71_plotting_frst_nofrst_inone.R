@@ -229,12 +229,12 @@ n <- "RMSEsd_"
 ###best model sorting
 #####
   order_fun <- function(dat){
-    unq_mdn <- unique(data.frame(Tax_label = dat$Tax_label, 
+    unq_mdn <- unique(data.frame(signif_Tax_label = dat$signif_Tax_label, 
                                  RMSEsd_elevSR_mdn = dat$RMSEsd_elevSR_mdn, 
                                  RMSEsd_lidarSR_mdn = dat$RMSEsd_lidarSR_mdn, 
                                  RMSEsd_sumSR_mdn = dat$RMSEsd_sumSR_mdn, 
                                  best_mod = dat$best_mod))
-    unq_mdn$Tax_label <- as.character(unq_mdn$Tax_label)
+    unq_mdn$signif_Tax_label <- as.character(unq_mdn$signif_Tax_label)
     
     srt_mdn <- c()
     lookup <- data.frame(best_mod = c("elevation", "structure", "combination"), 
@@ -245,9 +245,9 @@ n <- "RMSEsd_"
       sub_tmp <- unq_mdn[unq_mdn$best_mod == o,]
       title_tmp <- lookup$title[lookup$best_mod == o]
       srt_tmp <- sub_tmp[order(sub_tmp[as.character(title_tmp)]),]
-      srt_mdn <- c(srt_mdn, rev(srt_tmp$Tax_label))
+      srt_mdn <- c(srt_mdn, rev(srt_tmp$signif_Tax_label))
     }
-    dat$Tax_label <- factor(dat$Tax_label, levels = srt_mdn)  
+    dat$signif_Tax_label <- factor(dat$signif_Tax_label, levels = srt_mdn)  
     return(dat)
   }
   
@@ -339,17 +339,17 @@ n <- "RMSEsd_"
   write.csv(specs_ord, paste0(outpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "specs.csv"))
   write.csv(trophs_ord, paste0(outpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "trophs.csv"))
   
-  
+
   # a <- plot_grid(specs_plt, trophs_plt, leg, labels = c('A', 'B'), label_size = 12)
   # # a <- arrangeGrob(specs_plt, trophs_plt, leg, ncol=3, widths=c(2.3, 2.3, 0.8))
   # 
   ##printing
   # specs
-  pdf(file = paste0(outpath, set_dir, "mix/71_val_plot_srt_bestmodel_", comm, n, "specs.pdf"), height= 11, width = 22)
+  pdf(file = paste0(outpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "specs.pdf"), height= 11, width = 22)
   print(specs_plt)
   dev.off()
   # trophs
-  pdf(file = paste0(outpath, set_dir, "mix/71_val_plot_srt_bestmodel_", comm, n, "trophs.pdf"), height= 9.8, width = 7)
+  pdf(file = paste0(outpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "trophs.pdf"), height= 9.8, width = 7)
   print(trophs_plt)
   dev.off()
   # legend #to be cropped outside R
@@ -361,6 +361,9 @@ n <- "RMSEsd_"
   # pdf(file = paste0(outpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "both.pdf"))
   # print(a)
   # dev.off()
+  
+  
+
   
   
   
@@ -406,30 +409,30 @@ n <- "RMSEsd_"
   #     width = 7.5
   #     val_plt_grp <- val_plt_flt[val_plt_flt$Taxon %in% trophs,]
   #   }
-  # 
+
   #   ###
   #   #reorder by median performance of each facet (elevation facet ordered by elevation perf., structure facet ordered by structure,...)
   #   ### 
-  #   unq_mdn <- unique(data.frame(Tax_label = val_plt_grp$Tax_label, 
-  #                                  RMSEsd_elevSR_mdn = val_plt_grp$RMSEsd_elevSR_mdn, 
-  #                                  RMSEsd_lidarSR_mdn = val_plt_grp$RMSEsd_lidarSR_mdn, 
-  #                                  RMSEsd_sumSR_mdn = val_plt_grp$RMSEsd_sumSR_mdn, 
-  #                                  best_mod = val_plt_grp$best_mod))
-  #   unq_mdn$Tax_label <- as.character(unq_mdn$Tax_label)
-  #   
-  #   srt_mdn <- c()
-  #   lookup <- data.frame(best_mod = c("elevation", "structure", "combination"), 
-  #                        title = c("RMSEsd_elevSR_mdn", "RMSEsd_lidarSR_mdn", "RMSEsd_sumSR_mdn"))
-  #   lookup[] <- lapply(lookup, as.character)    
-  #   for(o in levels(val_plt_grp$best_mod)){
-  #     #o <- "elevation"
-  #     sub_tmp <- unq_mdn[unq_mdn$best_mod == o,]
-  #     title_tmp <- lookup$title[lookup$best_mod == o]
-  #     srt_tmp <- sub_tmp[order(sub_tmp[as.character(title_tmp)]),]
-  #     srt_mdn <- c(srt_mdn, rev(srt_tmp$Tax_label))
-  #   }
-  #   val_plt_grp$Tax_label <- factor(val_plt_grp$Tax_label, levels = srt_mdn)    
-  #   
+    # unq_mdn <- unique(data.frame(Tax_label = val_plt_grp$Tax_label,
+    #                                RMSEsd_elevSR_mdn = val_plt_grp$RMSEsd_elevSR_mdn,
+    #                                RMSEsd_lidarSR_mdn = val_plt_grp$RMSEsd_lidarSR_mdn,
+    #                                RMSEsd_sumSR_mdn = val_plt_grp$RMSEsd_sumSR_mdn,
+    #                                best_mod = val_plt_grp$best_mod))
+    # unq_mdn$Tax_label <- as.character(unq_mdn$Tax_label)
+    # 
+    # srt_mdn <- c()
+    # lookup <- data.frame(best_mod = c("elevation", "structure", "combination"),
+    #                      title = c("RMSEsd_elevSR_mdn", "RMSEsd_lidarSR_mdn", "RMSEsd_sumSR_mdn"))
+    # lookup[] <- lapply(lookup, as.character)
+    # for(o in levels(val_plt_grp$best_mod)){
+    #   #o <- "elevation"
+    #   sub_tmp <- unq_mdn[unq_mdn$best_mod == o,]
+    #   title_tmp <- lookup$title[lookup$best_mod == o]
+    #   srt_tmp <- sub_tmp[order(sub_tmp[as.character(title_tmp)]),]
+    #   srt_mdn <- c(srt_mdn, rev(srt_tmp$Tax_label))
+    # }
+    # val_plt_grp$Tax_label <- factor(val_plt_grp$Tax_label, levels = srt_mdn)
+
   #   
   #   plt <-
   #     ggplot() +

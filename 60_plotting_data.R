@@ -12,24 +12,25 @@ rm(list=ls())
 #####
 library(CAST)
 library(caret)
+source("000_setup.R")
 #####
 ###set paths
-#####
-setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-# setwd("/mnt/sd19006/data/users/aziegler/src")
-
-# sub <- "feb20_allresp/"
-sub <- "apr19/"
-inpath <- paste0("../data/", sub)
-inpath_general <- "../data/"
-#####
-###where are the models and derived data
-#####
-set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"
-
-set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"#paper:
-# mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
-set <- c("nofrst", "frst", "allplts")
+# #####
+# setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
+# # setwd("/mnt/sd19006/data/users/aziegler/src")
+# 
+# # sub <- "feb20_allresp/"
+# sub <- "apr19/"
+# inpath <- paste0("../data/", sub)
+# inpath_general <- "../data/"
+# #####
+# ###where are the models and derived data
+# #####
+# set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"
+# 
+# set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"#paper:
+# # mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
+# set <- c("nofrst", "frst", "allplts")
 
 #####
 ###read files

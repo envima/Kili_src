@@ -98,10 +98,10 @@ row_ord <- c("ants", "bees", "birds", "bugs", "dung beetles", "grasshoppers", "i
 new_order <- sapply(row_ord, function(x,df){which(val_results$Tax_label == x)}, df=val_results)
 val_results <- val_results[new_order,]
 
-if (file.exists(paste0(outpath, set_dir, "mix/"))==F){
-  dir.create(file.path(paste0(outpath, set_dir, "mix/")), recursive = T)
+if (file.exists(paste0(figpath, set_dir, "mix/"))==F){
+  dir.create(file.path(paste0(figpath, set_dir, "mix/")), recursive = T)
 }
-write.csv(val_results, file = paste0(outpath, set_dir, "mix/val_results_mix_", comm, ".csv"))
+write.csv(val_results, file = paste0(figpath, set_dir, "mix/val_results_mix_", comm, ".csv"))
 #####
 ###plotting trophic levels
 #####
@@ -186,7 +186,7 @@ n <- "RMSEsd_"
     theme(axis.text.x = element_text(size = 16))+
     scale_fill_manual(name = "col",values = myColors) +
     ggtitle(paste0(sub, "_", n))
-  pdf(file = paste0(outpath, set_dir, "mix/val_plot_srt_trophicslvl_", comm, n, ".pdf"), height= 10, 
+  pdf(file = paste0(figpath, set_dir, "mix/val_plot_srt_trophicslvl_", comm, n, ".pdf"), height= 10, 
       width = 20)
   print(p)
   dev.off()
@@ -300,21 +300,21 @@ n <- "RMSEsd_"
   dat_text_trophs <- dat_text[dat_text$label %in% unique(trophs_ord$best_mod),]
   trophs_plt <- plt_fun(dat = trophs_ord, dat_text = dat_text_trophs) + theme(legend.position = "none")
   
-  write.csv(specs_ord, paste0(outpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "specs.csv"))
-  write.csv(trophs_ord, paste0(outpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "trophs.csv"))
+  write.csv(specs_ord, paste0(figpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "specs.csv"))
+  write.csv(trophs_ord, paste0(figpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "trophs.csv"))
   
 
   ##printing
   # specs
-  pdf(file = paste0(outpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "specs.pdf"), height= 11, width = 22)
+  pdf(file = paste0(figpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "specs.pdf"), height= 11, width = 22)
   print(specs_plt)
   dev.off()
   # trophs
-  pdf(file = paste0(outpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "trophs.pdf"), height= 9.8, width = 7)
+  pdf(file = paste0(figpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "trophs.pdf"), height= 9.8, width = 7)
   print(trophs_plt)
   dev.off()
   legend #to be cropped outside R
-  pdf(file = paste0(outpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "legend.pdf"))
+  pdf(file = paste0(figpath, set_dir, "mix/val_plot_srt_bestmodel_", comm, n, "legend.pdf"))
   plot(leg)
   dev.off()
 
@@ -372,11 +372,11 @@ n <- "RMSEsd_"
       
       ##printing
       # specs
-      pdf(file = paste0(outpath, set_dir, "mix/val_plot_srt_residuals_", comm, n, "specs.pdf"), height= 11, width = 7.5)
+      pdf(file = paste0(figpath, set_dir, "mix/val_plot_srt_residuals_", comm, n, "specs.pdf"), height= 11, width = 7.5)
       print(specs_plt_res)
       dev.off()
       # trophs
-      pdf(file = paste0(outpath, set_dir, "mix/val_plot_srt_residuals_", comm, n, "trophs.pdf"), height= 9.8, width = 3.5)
+      pdf(file = paste0(figpath, set_dir, "mix/val_plot_srt_residuals_", comm, n, "trophs.pdf"), height= 9.8, width = 3.5)
       print(trophs_plt_res)
       dev.off()
     

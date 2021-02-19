@@ -21,7 +21,7 @@ sub <- "feb_21_deleted_everything_from_40-end/"
 
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
-outpath <- paste0("../out/", sub)
+figpath <- paste0("../fig/", sub)
 #alter outpath war mal gleich mit inpath
 ###where are the models within the "sub"
 set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"

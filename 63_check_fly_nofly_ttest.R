@@ -65,8 +65,8 @@ results_mdn_all <- results_summary[,c(1:9)]
 results_mdn <- results_mdn_all[!duplicated(results_mdn_all[c("fig3_elev_median")]),]
 results_mdn <- merge(results_mdn, size, by = "response")
 
-write.csv(x = results_summary, file = paste0(outpath, "results_summary.csv"))
-write.csv(x = results_mdn, file = paste0(outpath, "results_mdn.csv"))
+write.csv(x = results_summary, file = paste0(figpath, "results_summary.csv"))
+write.csv(x = results_mdn, file = paste0(figpath, "results_mdn.csv"))
 
 
 #####
@@ -91,4 +91,4 @@ fly_size_tests <- merge(ctest, wtest, by = 0)
 fly_size_tests <- fly_size_tests[c(2,3,1,4),]
 
 
-write.csv(fly_size_tests, file = paste0(outpath, "fly_size_test.csv"))
+write.csv(fly_size_tests, file = paste0(figpath, "fly_size_test.csv"))

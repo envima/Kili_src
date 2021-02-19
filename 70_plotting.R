@@ -59,7 +59,7 @@ for (i in set_lst){# i <- set_lst[[1]]
   cnt <<- cnt+1
   set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst)[cnt], "_"), mod_dir_lst)]
   if (length(set_moddir) > 0){
-    modDir <- paste0(outpath, set_dir, set_moddir, "/")
+    modDir <- paste0(figpath, set_dir, set_moddir, "/")
     #######################
     ###validation Plots
     #######################

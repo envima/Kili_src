@@ -15,24 +15,6 @@ library(caret)
 source("000_setup.R")
 
 #####
-###set paths
-#####
-# setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-# # setwd("/mnt/sd19006/data/users/aziegler/src")
-# # sub <- "feb20_allresp/"
-# sub <- "apr19/" #paper
-# inpath <- paste0("../data/", sub)
-# inpath_general <- "../data/"
-# #####
-# ###where are the models and derived data
-# #####
-# # set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"
-# #paper: 
-# set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"
-# mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
-# set <- c("nofrst", "frst", "allplts")
-
-#####
 ###read files
 #####
 set_lst <- lapply(set, function(o){
@@ -45,7 +27,6 @@ set_lst <- lapply(set, function(o){
 })
 names(set_lst) <- set
 set_lst <- set_lst[!is.na(set_lst)]
-
 
 #####
 ###create mixed dataset
@@ -87,19 +68,13 @@ modDir <- paste0(inpath, set_dir, "mix/")
 
 
 ########################################################################################
-###Settings
-########################################################################################
-# # cv <- "cv_index"
-# cv <- "cv_20"
-# # cv <- "cv_50"
-# resp_set <- c("lidarSR", "lidarelevSR", "lidarRES") #m <- "lidarSR" #loop model for SR and resid
-########################################################################################
 ########################################################################################
 ########################################################################################
 ###Do it (Don't change anything past this point except you know what you are doing!) ###
 ########################################################################################
 ########################################################################################
 ########################################################################################
+
 ########################################################################################
 ###validation data
 ########################################################################################
@@ -163,12 +138,7 @@ for (k in names(mix_lst$resp)){ # k <- "SRmammals" k <- "SRpredator"
     #####
     ###check variation of ncomp
     #####
-    # ncomp_lidarSR_frst <- unique(mix_lst$resp[[k]]$ncomp_lidarSR)
-    # ncomp_lidarelevSR_frst <- unique(mix_lst$resp[[k]]$ncomp_lidarelevSR)
-    # ncomp_lidarRES_frst <- unique(mix_lst$resp[[k]]$ncomp_lidarRES)
-    # ncomp_lidarSR_nofrst <- unique(mix_lst$resp[[k]]$ncomp_lidarSR)
-    # ncomp_lidarelevSR_nofrst <- unique(mix_lst$resp[[k]]$ncomp_lidarelevSR)
-    # ncomp_lidarRES_nofrst <- unique(mix_lst$resp[[k]]$ncomp_lidarRES)
+
     #####
     ###new list element with validation
     #####
@@ -190,10 +160,7 @@ for (k in names(mix_lst$resp)){ # k <- "SRmammals" k <- "SRpredator"
                          RMSEmdn_sumSR = RMSEmdn_sumSR,
                          RMSEmdn_lidarelevSR = RMSEmdn_lidarelevSR, 
                          mdn = mdn, 
-                         armean = armean #, 
-                         # ncomp_lidarSR = ncomp_lidarSR, 
-                         # ncomp_lidarelevSR = ncomp_lidarelevSR, 
-                         # ncomp_lidarRES = ncomp_lidarRES
+                         armean = armean
                          )
     
   })
@@ -295,7 +262,7 @@ for (k in names(mix_lst$resp)){ # k <- "SRmammals" k <- "SRpredator"
   val_df_all$RMSEmdn_lidarRES_IQR_rank <- which(names(mod_df_IQR_tmp_srt) == "RMSEmdn_lidarRES_IQR")
   
   
-  mix_lst$val[[k]] <- val_df_all ##<- hier muss soll eigentlich ein df oder lsite, oder so reingeschreiben werden.
+  mix_lst$val[[k]] <- val_df_all 
 }
 if (file.exists(paste0(modDir, "data/"))==F){
   dir.create(file.path(paste0(modDir, "data/")), recursive = T)
@@ -347,7 +314,6 @@ for(k in names(mix_lst$resp)){ # k <- "SRmammals"
           #####
           ###read actual model
           #####
-          ####hier einf?gen, dass alle frst und nofrst modelle geladen werden
           mod <- tryCatch(
             readRDS(file = paste0(modDir, "../", dir_landuse, "/mod_run_", outs_corr, "_", k, "_", m, ".rds")),
             error = function(e)mod <- NA)

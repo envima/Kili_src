@@ -22,7 +22,7 @@ trophs <- c("generalist", "herbivore", "decomposer", "predator")
 #####
 ###read files
 #####
-
+modDir <- paste0(inpath, set_dir, "mix/")
 mix_lst <- readRDS(file = paste0(modDir, "data/", "61_master_lst_varimp_.rds")) 
 
 troph_mrg <- readRDS(paste0(inpath, "15_troph_mrg.rds"))

@@ -17,7 +17,7 @@ rm(list=ls())
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 
-sub <- "feb21/"
+sub <- "feb_21_deleted_everything_from_40-end/"
 
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"

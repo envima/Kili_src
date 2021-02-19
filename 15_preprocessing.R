@@ -230,7 +230,7 @@ troph_mrg$fly[troph_mrg$Tax_label == "insectivorous bats"] <- 1
 troph_mrg$fly[troph_mrg$Tax_label == "bees"] <- 1
 troph_mrg$fly[troph_mrg$Tax_label == "birds"] <- 1
 troph_mrg$fly[troph_mrg$Tax_label == "moths"] <- 1
-troph_mrg$fly[troph_mrg$Tax_label == "orthoptera"] <- 1
+troph_mrg$fly[troph_mrg$Tax_label == "grasshoppers"] <- 1
 troph_mrg$fly[troph_mrg$Tax_label == "other aculeate wasps"] <- 1
 troph_mrg$fly[troph_mrg$Tax_label == "parasitoid wasps"] <- 1
 troph_mrg$fly[troph_mrg$Tax_label == "syrphid flies"] <- 1

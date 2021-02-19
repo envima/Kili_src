@@ -2,7 +2,7 @@
 # Author: Alice Ziegler
 # Date: 2018-12-10 11:49:55
 # to do: colnames(df) <- sicherer gegen umsortieren machen
-# bei selvar plot legende eindeutig welche farbe welche zahl ist. (nicht tick im übergang)
+# bei selvar plot legende eindeutig welche farbe welche zahl ist. (nicht tick im ?bergang)
 rm(list=ls())
 
 ########################################################################################
@@ -21,26 +21,28 @@ library(RColorBrewer)
 library(dplyr)
 library(grid)
 library(pBrackets)  
+source("000_setup.R")
 
-#####
-###set paths
-#####
-setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-# setwd("/mnt/sd19006/data/users/aziegler/src")
-sub <- "feb20_allresp/"
-# sub <- "apr19/" #paper
-inpath <- paste0("../data/", sub)
-inpath_general <- "../data/"
-outpath <- paste0("../out/", sub)
+
+# #####
+# ###set paths
+# #####
+# setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
+# # setwd("/mnt/sd19006/data/users/aziegler/src")
+# sub <- "feb20_allresp/"
+# # sub <- "apr19/" #paper
+# inpath <- paste0("../data/", sub)
+# inpath_general <- "../data/"
+# outpath <- paste0("../out/", sub)
 #####
 ###where are the models and derived data
-#####
-set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"
-#paper: 
-# set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"
-
-mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
-set <- c("nofrst", "frst", "allplts")
+# #####
+# set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"
+# #paper: 
+# # set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"
+# 
+# mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
+# set <- c("nofrst", "frst", "allplts")
 
 #####
 ###read files
@@ -70,7 +72,7 @@ source("lvlplt.R")
 plts <- c("RMSEsd_")#, "RMSE_")
 comm <- ""
 maxcat <- 20 #depending on the number of levels run
-resp_set <- c("lidarSR", "lidarelevSR", "lidarRES") #m <- "lidarSR" #loop model for SR and resid
+# resp_set <- c("lidarSR", "lidarelevSR", "lidarRES") #m <- "lidarSR" #loop model for SR and resid
 
 ########################################################################################
 ########################################################################################
@@ -286,7 +288,7 @@ for (i in set_lst){# i <- set_lst[[1]]
   #   
   #   
   #   # #####
-  #   # ###test für bboxplot mit punkten, eingefärbt nach run (eigentlich sollte hier 
+  #   # ###test f?r bboxplot mit punkten, eingef?rbt nach run (eigentlich sollte hier 
   #   # ###helichrysum gezeigt werden, aber das geht a gar nciht nach landuse.)
   #   # #####
   #   # ggplot() +
@@ -304,11 +306,11 @@ for (i in set_lst){# i <- set_lst[[1]]
   #   #              color = factor(val_plt_flt$run)) +
   #   #   ggtitle(paste0(names(set_lst)[cnt], "_", sub, "_", n))
   #   # #####
-  #   # ###ende test für bboxplot
+  #   # ###ende test f?r bboxplot
   #   # #####
   #   
   #   #####
-  #   ###boxplot für RMSE/mdn to see the elevation influence within the lidarSR 
+  #   ###boxplot f?r RMSE/mdn to see the elevation influence within the lidarSR 
   #   ###(lidarSR, lidarRES, elevSR)
   #   #####
   #   resp_lidarSR <- unique(val_plt$resp[val_plt$best_mod == "lidarSR"])
@@ -336,7 +338,7 @@ for (i in set_lst){# i <- set_lst[[1]]
   #   
   #   
   #   #####
-  #   ###boxplot für RMSE to see the elevation influence within the lidarSR 
+  #   ###boxplot f?r RMSE to see the elevation influence within the lidarSR 
   #   ###(lidarSR, lidarRES, elevSR)
   #   #####
   #   resp_lidarSR <- unique(val_plt$resp[val_plt$best_mod == "lidarSR"])
@@ -361,7 +363,7 @@ for (i in set_lst){# i <- set_lst[[1]]
   #   print(plt_lidarSR)
   #   dev.off()
   #   #####
-  #   ###test für Taxa die in sumSR Gruppe landen RMSE/sd plotten. 
+  #   ###test f?r Taxa die in sumSR Gruppe landen RMSE/sd plotten. 
   #   ###sumSR und lidarelevSR plotten ==> man kann sehen, ob Taxa 
   #   ###von zweistufigem Verfahren profitiert
   #   #####
@@ -391,7 +393,7 @@ for (i in set_lst){# i <- set_lst[[1]]
   #   print(plt_2stp)
   #   dev.off()
   #   #####
-  #   ###test für Taxa die in sumSR Gruppe landen RMSE/median plotten. 
+  #   ###test f?r Taxa die in sumSR Gruppe landen RMSE/median plotten. 
   #   ###sumSR, lidarRES und elevSR plotten ==> man kann sehen, ob elevSR oder lidarRES 
   #   ###mehr Einfluss auf sum SR hat
   #   #####
@@ -455,7 +457,7 @@ for (i in set_lst){# i <- set_lst[[1]]
       names(resp_lst) <- names(i$resp)
       df <- Reduce(function(x,y) merge(x,y, by = "pred", all = T), resp_lst)
       df <- df[complete.cases(df$pred),]
-      colnames(df) <- c("pred", names(i$resp)) #unschön und unsicher...Spalten könnten irgendwie durcheinander kommen??? gecheckt: 17.12.
+      colnames(df) <- c("pred", names(i$resp)) #unsch?n und unsicher...Spalten k?nnten irgendwie durcheinander kommen??? gecheckt: 17.12.
       df[is.na(df)] <- 0 #NAs are not working in levelplot
       #####
       ###sort dataframe for heatmap

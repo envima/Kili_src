@@ -10,31 +10,31 @@ rm(list=ls())
 #####
 ###load packages
 #####
-
 library(pastecs)
-#####
-###set paths
-#####
-setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-# setwd("/mnt/sd19006/data/users/aziegler/src")
-# sub <- "oct19/" 
-#paper: 
-# sub <- "apr19/"
-sub <- "feb20_allresp/"
-inpath <- paste0("../data/", sub)
-inpath_general <- "../data/"
-outpath <- paste0("../out/", sub)
-#####
-###where are the models and derived data
-#####
-# set_dir <- "2019-10-10frst_nofrst_allplts_noelev/" 
-#paper: 
-# set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"
-set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"
-
-
-mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
-modDir <- paste0(inpath, set_dir, "mix/")
+source("000_setup.R")
+# #####
+# ###set paths
+# #####
+# setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
+# # setwd("/mnt/sd19006/data/users/aziegler/src")
+# # sub <- "oct19/" 
+# #paper: 
+# # sub <- "apr19/"
+# sub <- "feb20_allresp/"
+# inpath <- paste0("../data/", sub)
+# inpath_general <- "../data/"
+# outpath <- paste0("../out/", sub)
+# #####
+# ###where are the models and derived data
+# #####
+# # set_dir <- "2019-10-10frst_nofrst_allplts_noelev/" 
+# #paper: 
+# # set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"
+# set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"
+# 
+# 
+# mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
+# modDir <- paste0(inpath, set_dir, "mix/")
 comm <- ""
 grp <- c("specs", "trophs")
 trophs <- c("generalist", "herbivore", "decomposer", "predator")
@@ -66,7 +66,7 @@ size <- data.frame(response = c("SRants", "SRbats", "SRbees", "SRbirds", "SRcoll
 ########################################################################################
 
 #####
-###Tabellenübersicht der RMSE_sd Median Werte
+###Tabellen?bersicht der RMSE_sd Median Werte
 #####
 results_summary <- val_troph[!(val_troph$resp %in% c("sum_decomposer_N3", "sum_generalist_N4", 
                                                      "sum_herbivore_N3", "sum_predator_N5")), 
@@ -143,8 +143,8 @@ write.csv(fly_size_tests, file = paste0(outpath, "fly_size_test.csv"))
 # # val_troph, where elevation is best model
 # val_troph_elev <- val_troph[(val_troph$RMSEsd_elevSR_mdn_rank == 1 | 
 #                               #hier | statement, weil auch das lidar UND elevation auf 1 sein kann. 
-#                               #da das inzwischen nciht mehr verwendet wird, wäre das elev aber unter 
-#                               #umständen trotzdem noch das beste
+#                               #da das inzwischen nciht mehr verwendet wird, w?re das elev aber unter 
+#                               #umst?nden trotzdem noch das beste
 #                               (val_troph$RMSEsd_lidarelevSR_mdn_rank == 1 & 
 #                                  val_troph$RMSEsd_elevSR_mdn_rank == 2)),
 #                             c("resp", "run", "RMSEsd_elevSR", "RMSEsd_elevSR_mdn", "Tax_label", "fly", "troph_sep")]

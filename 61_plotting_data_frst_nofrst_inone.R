@@ -12,24 +12,25 @@ rm(list=ls())
 #####
 library(CAST)
 library(caret)
+source("000_setup.R")
+
 #####
 ###set paths
 #####
-setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-# setwd("/mnt/sd19006/data/users/aziegler/src")
-# sub <- "feb20_allresp/"
-sub <- "apr19/" #paper
-inpath <- paste0("../data/", sub)
-inpath_general <- "../data/"
-outpath <- paste0("../out/", sub)
-#####
-###where are the models and derived data
-#####
-# set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"
-#paper: 
-set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"
-mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
-set <- c("nofrst", "frst", "allplts")
+# setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
+# # setwd("/mnt/sd19006/data/users/aziegler/src")
+# # sub <- "feb20_allresp/"
+# sub <- "apr19/" #paper
+# inpath <- paste0("../data/", sub)
+# inpath_general <- "../data/"
+# #####
+# ###where are the models and derived data
+# #####
+# # set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"
+# #paper: 
+# set_dir <- "2019-03-26frst_nofrst_allplts_noelev/"
+# mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
+# set <- c("nofrst", "frst", "allplts")
 
 #####
 ###read files
@@ -88,10 +89,10 @@ modDir <- paste0(inpath, set_dir, "mix/")
 ########################################################################################
 ###Settings
 ########################################################################################
-# cv <- "cv_index"
-cv <- "cv_20"
-# cv <- "cv_50"
-resp_set <- c("lidarSR", "lidarelevSR", "lidarRES") #m <- "lidarSR" #loop model for SR and resid
+# # cv <- "cv_index"
+# cv <- "cv_20"
+# # cv <- "cv_50"
+# resp_set <- c("lidarSR", "lidarelevSR", "lidarRES") #m <- "lidarSR" #loop model for SR and resid
 ########################################################################################
 ########################################################################################
 ########################################################################################
@@ -346,7 +347,7 @@ for(k in names(mix_lst$resp)){ # k <- "SRmammals"
           #####
           ###read actual model
           #####
-          ####hier einfügen, dass alle frst und nofrst modelle geladen werden
+          ####hier einf?gen, dass alle frst und nofrst modelle geladen werden
           mod <- tryCatch(
             readRDS(file = paste0(modDir, "../", dir_landuse, "/mod_run_", outs_corr, "_", k, "_", m, ".rds")),
             error = function(e)mod <- NA)

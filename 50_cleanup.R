@@ -1,4 +1,5 @@
-# Description:
+# Description: cleanup dataset
+# get rid of deprecated more general trophic levels that are not based on species level.
 # Author: Alice Ziegler
 # Date: 2018-12-06 13:46:07
 # to do:
@@ -10,24 +11,24 @@ rm(list=ls())
 #####
 ###load packages
 #####
-
-#####
-###set paths
-#####
-setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-# setwd("/mnt/sd19006/data/users/aziegler/src")
-sub <- "feb20_allresp/"
-# sub <- "apr19/" #paper
-inpath <- paste0("../data/", sub)
-inpath_general <- "../data/"
-
-#####
-###where are the models and derived data
-#####
-set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"
-# set_dir <- "2019-03-26frst_nofrst_allplts_noelev/" #paper
-mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
-set <- c("nofrst", "frst", "allplts")
+source("000_setup.R")
+# #####
+# ###set paths
+# #####
+# setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
+# # setwd("/mnt/sd19006/data/users/aziegler/src")
+# sub <- "feb20_allresp/"
+# # sub <- "apr19/" #paper
+# inpath <- paste0("../data/", sub)
+# inpath_general <- "../data/"
+# 
+# #####
+# ###where are the models and derived data
+# #####
+# set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"
+# # set_dir <- "2019-03-26frst_nofrst_allplts_noelev/" #paper
+# mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
+# set <- c("nofrst", "frst", "allplts")
 
 #####
 ###read files

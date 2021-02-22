@@ -28,7 +28,6 @@ source("000_setup.R")
 ###settings
 #####
 
-modDir <- paste0(inpath, set_dir, "mix/")
 comm <- ""
 grp <- c("specs", "trophs")
 trophs <- c("generalist", "herbivore", "decomposer", "predator")
@@ -36,7 +35,7 @@ trophs <- c("generalist", "herbivore", "decomposer", "predator")
 ###read files
 #####
 
-mix_lst <- readRDS(file = paste0(modDir, "data/", "61_master_lst_varimp_.rds")) 
+mix_lst <- readRDS(file = paste0(outpath, set_dir, "mix/", "61_master_lst_varimp_.rds")) 
 
 
 troph_mrg <- readRDS(paste0(inpath, "15_troph_mrg.rds"))
@@ -60,16 +59,14 @@ val_troph$diet <- factor(val_troph$diet,
 
 val_troph_flt <- val_troph[is.finite(val_troph$RMSEsd_lidarSR),]
 
-saveRDS(val_troph, file = paste0(modDir, "val_troph_mix_", comm, ".rds"))
+saveRDS(val_troph, file = paste0(outpath, set_dir, "mix/", "val_troph_mix_", comm, ".rds"))
 
 val_type <- gather(val_troph_flt, key = type, value = value, -c(resp, run, sd, mdn:troph_sep))
 
 val_type_per_resp <- val_type[,!names(val_type) %in% c("run", "value", "type")]
 val_overview <- val_type_per_resp[!duplicated(val_type_per_resp),]
-if (file.exists(modDir)==F){
-  dir.create(file.path(modDir), recursive = T)
-}
-saveRDS(val_overview, file = paste0(modDir, "val_mix_overview_mix_", comm, ".rds"))
+
+saveRDS(val_overview, file = paste0(outpath, set_dir, "mix/", "val_mix_overview_mix_", comm, ".rds"))
 
 relv_cols <- c("resp", "Tax_label", 
   "sd", "mdn", "armean", 

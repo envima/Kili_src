@@ -18,9 +18,8 @@ source("000_setup.R")
 #####
 set_lst <- lapply(set, function(o){
   set_moddir <- mod_dir_lst[grepl(paste0("_", o, "_"), mod_dir_lst)]
-  modDir <- paste0(inpath, set_dir, set_moddir, "/")
   file <- tryCatch(
-  readRDS(file = paste0(modDir, "data/", "40_master_lst_ldr_",o, ".rds")),    
+  readRDS(file = paste0(outpath, set_dir, set_moddir, "/", "40_master_lst_ldr_",o, ".rds")),    
   error = function(e)file <- NA)
   return(file)
 })
@@ -42,13 +41,9 @@ set_lst_cln <- lapply(set_lst, function(i){# i <- set_lst[[1]]
   
   cnt <<- cnt+1
   set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst)[cnt], "_"), mod_dir_lst)]
-  modDir <- paste0(inpath, set_dir, set_moddir, "/")
   for (k in names(i$resp)){ #k <- "SRmammals
     # print(k)
     i$resp[[k]][["pred_sumSR"]] <- rowSums(cbind(i$resp[[k]]$pred_elevSR, i$resp[[k]]$pred_lidarRES))
   }
-  if (file.exists(paste0(modDir, "data/"))==F){
-    dir.create(file.path(paste0(modDir, "data/")), recursive = T)
-  }
-  saveRDS(i, file = paste0(modDir, "data/", "50_master_lst_all_mods_", names(set_lst)[cnt], ".rds"))
+   saveRDS(i, file =  paste0(outpath, set_dir, set_moddir, "/", "50_master_lst_all_mods_", names(set_lst)[cnt], ".rds"))
 })

@@ -19,9 +19,8 @@ source("000_setup.R")
 #####
 set_lst <- lapply(set, function(o){
   set_moddir <- mod_dir_lst[grepl(paste0("_", o, "_"), mod_dir_lst)]
-  modDir <- paste0(inpath, set_dir, set_moddir, "/")
   file <- tryCatch(
-    readRDS(file = paste0(modDir, "data/", "50_master_lst_all_mods_",o, ".rds")),    
+    readRDS(file = paste0(outpath, set_dir, set_moddir, "/", "50_master_lst_all_mods_",o, ".rds")),    
     error = function(e)file <- NA)
   return(file)
 })
@@ -62,9 +61,6 @@ mix_meta_frst[setdiff(colnames(mix_meta_nofrst),
 mix_df_meta <- rbind(mix_meta_nofrst, mix_meta_frst)
 
 mix_lst <- list(meta = mix_df_meta, resp = mix_lst_resp)
-
-
-modDir <- paste0(inpath, set_dir, "mix/")
 
 
 ########################################################################################
@@ -264,16 +260,17 @@ for (k in names(mix_lst$resp)){ # k <- "SRmammals" k <- "SRpredator"
   
   mix_lst$val[[k]] <- val_df_all 
 }
-if (file.exists(paste0(modDir, "data/"))==F){
-  dir.create(file.path(paste0(modDir, "data/")), recursive = T)
+
+if (file.exists(paste0(outpath, set_dir, "mix/"))==F){
+  dir.create(file.path(paste0(outpath, set_dir, "mix/")), recursive = T)
 }
-saveRDS(mix_lst, file = paste0(modDir, "data/", "61_master_lst_val.rds"))
+saveRDS(mix_lst, file = paste0(outpath, set_dir, "mix/", "61_master_lst_val.rds"))
 
 
 ########################################################################################
 ###var Imp
 ########################################################################################
-pot_dirs <- list.dirs(path = paste0(modDir, "../"), recursive = F, full.names = F)          
+pot_dirs <- list.dirs(path = paste0(outpath, set_dir), recursive = F, full.names = F)          
 for(k in names(mix_lst$resp)){ # k <- "SRmammals"
     # print(k)
     for (outs in runs){ #outs <- 19
@@ -315,7 +312,7 @@ for(k in names(mix_lst$resp)){ # k <- "SRmammals"
           ###read actual model
           #####
           mod <- tryCatch(
-            readRDS(file = paste0(modDir, "../", dir_landuse, "/mod_run_", outs_corr, "_", k, "_", m, ".rds")),
+            readRDS(file = paste0(inpath, set_dir, dir_landuse, "/mod_run_", outs_corr, "_", k, "_", m, ".rds")),
             error = function(e)mod <- NA)
           var_imp <- tryCatch(
           data.frame(sel_vars = mod$selectedvars,
@@ -357,10 +354,7 @@ for(k in names(mix_lst$resp)){ # k <- "SRmammals"
     # }
   }##k names resp
 
-  if (file.exists(paste0(modDir, "data/"))==F){
-    dir.create(file.path(paste0(modDir, "data/")), recursive = T)
-  }
-  saveRDS(mix_lst, file = paste0(modDir, "data/", "61_master_lst_varimp_", ".rds"))
+  saveRDS(mix_lst, file = paste0(outpath, set_dir, "mix/", "61_master_lst_varimp_", ".rds"))
 
 
 
@@ -380,6 +374,6 @@ resp_overview <- data.frame(resp = names(mix_lst$resp))
   colnames(resp_overview)[colnames(resp_overview) == "sd"] <- "sd_mix"
 
 
-saveRDS(resp_overview, file = paste0(modDir, "data/61_resp_overview_descriptive.rds"))
-write.csv(resp_overview, file = paste0(modDir, "data/61_resp_overview_descriptive.csv"))
-#resp_overview <- read.csv(file = paste0(modDir, "data/61_resp_overview_descriptive.csv"))
+saveRDS(resp_overview, file = paste0(outpath, set_dir, "mix/", "61_resp_overview_descriptive.rds"))
+write.csv(resp_overview, file = paste0(outpath, set_dir, "mix/", "61_resp_overview_descriptive.csv"))
+#resp_overview <- read.csv(file = paste0(outpath, set_dir, "mix/", "61_resp_overview_descriptive.csv"))

@@ -17,14 +17,25 @@ rm(list=ls())
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 
-sub <- "feb_21_deleted_everything_from_40-end/"
+sub <- "feb_21_adaption_outpath/"
+
 
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
+outpath <- paste0("../out/", sub)
+if (file.exists(outpath)==F){
+  dir.create(file.path(outpath), recursive = T)
+}
+
 figpath <- paste0("../fig/", sub)
+if (file.exists(figpath)==F){
+  dir.create(file.path(figpath), recursive = T)
+}
 #alter outpath war mal gleich mit inpath
 ###where are the models within the "sub"
 set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"
+
+
 
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")

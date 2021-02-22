@@ -22,15 +22,14 @@ trophs <- c("generalist", "herbivore", "decomposer", "predator")
 #####
 ###read files
 #####
-modDir <- paste0(inpath, set_dir, "mix/")
-mix_lst <- readRDS(file = paste0(modDir, "data/", "61_master_lst_varimp_.rds")) 
+mix_lst <- readRDS(file = paste0(outpath, set_dir, "mix/", "61_master_lst_varimp_.rds")) 
 
 troph_mrg <- readRDS(paste0(inpath, "15_troph_mrg.rds"))
 troph_mrg <- troph_mrg[!duplicated(troph_mrg),]
 
-val_overview <- readRDS(file = paste0(modDir, "val_mix_overview_mix_", comm, ".rds"))
+val_overview <- readRDS(file = paste0(outpath, set_dir, "mix/", "val_mix_overview_mix_", comm, ".rds"))
 
-val_troph <- readRDS(file = paste0(modDir, "val_troph_mix_", comm, ".rds"))
+val_troph <- readRDS(file = paste0(outpath, set_dir, "mix/", "val_troph_mix_", comm, ".rds"))
 
 #size ranking
 size <- data.frame(response = c("SRants", "SRbats", "SRbees", "SRbirds", "SRcollembola", "SRdungbeetles", 

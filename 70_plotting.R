@@ -28,9 +28,8 @@ source("fun_lvlplt.R")
 #####
 set_lst <- lapply(set, function(o){
   set_moddir <- mod_dir_lst[grepl(paste0("_", o, "_"), mod_dir_lst)]
-  modDir <- paste0(inpath, set_dir, set_moddir, "/")
   file <- tryCatch(
-    readRDS(file = paste0(modDir, "data/", "60_master_lst_varimp_",o, ".rds")), 
+    readRDS(file = paste0(outpath, set_dir, set_moddir, "/", "60_master_lst_varimp_",o, ".rds")), 
     error = function(e)file <- NA)
   return(file)
 })
@@ -59,7 +58,6 @@ for (i in set_lst){# i <- set_lst[[1]]
   cnt <<- cnt+1
   set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst)[cnt], "_"), mod_dir_lst)]
   if (length(set_moddir) > 0){
-    modDir <- paste0(figpath, set_dir, set_moddir, "/")
     #######################
     ###validation Plots
     #######################
@@ -82,10 +80,10 @@ for (i in set_lst){# i <- set_lst[[1]]
 
     val_type_per_resp <- val_type[,!names(val_type) %in% c("run", "value")]
     val_overview <- val_type_per_resp[!duplicated(val_type_per_resp),]
-    if (file.exists(modDir)==F){
-      dir.create(file.path(modDir), recursive = T)
+    if (file.exists(paste0(figpath, set_dir, set_moddir, "/"))==F){
+      dir.create(file.path(paste0(figpath, set_dir, set_moddir, "/")), recursive = T)
     }
-    saveRDS(val_overview, file = paste0(modDir, "val_overview", names(set_lst)[cnt], "_", comm, ".rds"))
+    saveRDS(val_overview, file = paste0(figpath, set_dir, set_moddir, "/", "val_overview", names(set_lst)[cnt], "_", comm, ".rds"))
 
 
     #######################
@@ -134,11 +132,11 @@ for (i in set_lst){# i <- set_lst[[1]]
                   rnge = seq(min(mat)+0.5, max(mat)+0.5, 1) #, 
                   #main = paste0(names(set_lst)[cnt], "_", sub, m)
       )
-      pdf(file = paste0(modDir, "heats_", m, "_", names(set_lst)[cnt], "_", comm, ".pdf"), 
+      pdf(file = paste0(figpath, set_dir, set_moddir, "/", "heats_", m, "_", names(set_lst)[cnt], "_", comm, ".pdf"), 
           width = 7, height = 10); par(mar=c(6, 4, 4, 2) + 0.1)#paper = "a4")
       print(l)
       dev.off()
-      png(paste0(modDir, "heats_", m, "_", names(set_lst)[cnt], "_", comm, ".png"), 
+      png(paste0(figpath, set_dir, set_moddir, "/", "heats_", m, "_", names(set_lst)[cnt], "_", comm, ".png"), 
           width = 210, height = 297, units = "mm", res = 720); par(mar=c(6, 4, 4, 2) + 0.1)
       print(l)
       dev.off()

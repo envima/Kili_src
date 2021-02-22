@@ -97,13 +97,14 @@ set_lst_ldr <- lapply(set_lst, function(i){ # i <- set_lst[[1]]
       }
     }
   
-if (file.exists(paste0(modDir, "data/"))==F){
-  dir.create(file.path(paste0(modDir, "data/")), recursive = T)
-}
+# if (file.exists(paste0(modDir, "data/"))==F){
+  if (file.exists(paste0(outpath, set_dir, set_moddir, "/"))==F){
+    dir.create(file.path(paste0(outpath, set_dir, set_moddir, "/")), recursive = T)
+  }
   
 
-saveRDS(i, file = paste0(modDir, "data/", "40_master_lst_ldr_", names(set_lst)[cnt], ".rds"))
-# readRDS(file = paste0(modDir, "40_master_lst_ldr_", names(set_lst)[cnt], ".rds"))
+saveRDS(i, file = paste0(outpath, set_dir, set_moddir, "/", "40_master_lst_ldr_", names(set_lst)[cnt], ".rds"))
+# readRDS(file = paste0(outpath, set_dir, set_moddir, "/", "40_master_lst_ldr_", names(set_lst)[cnt], ".rds"))
 return(i)
 
 })

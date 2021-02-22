@@ -37,9 +37,8 @@ source("000_setup.R")
 #####
 set_lst <- lapply(set, function(o){
   set_moddir <- mod_dir_lst[grepl(paste0("_", o, "_"), mod_dir_lst)]
-  modDir <- paste0(inpath, set_dir, set_moddir, "/")
   file <- tryCatch(
-    readRDS(file = paste0(modDir, "data/", "50_master_lst_all_mods_",o, ".rds")),    
+    readRDS(file = paste0(outpath, set_dir, set_moddir, "/", "50_master_lst_all_mods_",o, ".rds")),    
     error = function(e)file <- NA)
   return(file)
 })
@@ -67,7 +66,6 @@ cnt <- 0
 set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
   cnt <<- cnt+1
   set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst)[cnt], "_"), mod_dir_lst)]
-  modDir <- paste0(inpath, set_dir, set_moddir, "/")
   if(grepl("cv_index", cv)){
     runs <- sort(unique(i$meta$cvindex_run))
   }else{
@@ -248,10 +246,8 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
     
     i$val[[k]] <- val_df_all ##<- hier muss soll eigentlich ein df oder lsite, oder so reingeschreiben werden.
   }
-  if (file.exists(paste0(modDir, "data/"))==F){
-    dir.create(file.path(paste0(modDir, "data/")), recursive = T)
-  }
-  saveRDS(i, file = paste0(modDir, "data/", "60_master_lst_val_", names(set_lst)[cnt], ".rds"))
+
+  saveRDS(i, file = paste0(outpath, set_dir, set_moddir, "/", "60_master_lst_val_", names(set_lst)[cnt], ".rds"))
   return(i)
 })
 
@@ -259,7 +255,7 @@ set_lst_val <- lapply(set_lst, function(i){# i <- set_lst[[1]]
 ###var Imp
 ########################################################################################
 cnt <- 0
-set_lst_var_imp <- lapply(set_lst_val, function(i){# i <- set_lst[[1]]
+set_lst_var_imp <- lapply(set_lst_val, function(i){# i <- set_lst[[2]]
   cnt <<- cnt+1
   set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst)[cnt], "_"), mod_dir_lst)]
   modDir <- paste0(inpath, set_dir, set_moddir, "/")
@@ -268,7 +264,7 @@ set_lst_var_imp <- lapply(set_lst_val, function(i){# i <- set_lst[[1]]
   }else{
     runs <- seq(sum(grepl("outerrun", colnames(i$meta))))
   }  
-  for(k in names(i$resp)){ # k <- "SRmammals" k <- "SRheteroptera"
+  for(k in names(i$resp)){ # k <- "SRmammals" k <- "SRheteroptera" k <- "SRpredator"
     # print(k)
     for (outs in runs){ #outs <- 1
       # print(outs)
@@ -323,7 +319,7 @@ set_lst_var_imp <- lapply(set_lst_val, function(i){# i <- set_lst[[1]]
     # for (k in i$varimp){
     # print(k)
     # loop model for SR and resid
-    for (m in resp_set){
+    for (m in resp_set){ #m <- "lidarSR"
       m_name <- paste0("pred_", m)
       selvars_allruns <- do.call(rbind, i$varimp[[k]][[m_name]])
       # if (!is.na(sum(selvars_allruns$Overall))){
@@ -341,10 +337,7 @@ set_lst_var_imp <- lapply(set_lst_val, function(i){# i <- set_lst[[1]]
     # }
   }##k names resp
 
-  if (file.exists(paste0(modDir, "data/"))==F){
-    dir.create(file.path(paste0(modDir, "data/")), recursive = T)
-  }
-  saveRDS(i, file = paste0(modDir, "data/", "60_master_lst_varimp_", names(set_lst)[cnt], ".rds"))
+  saveRDS(i, file = paste0(outpath, set_dir, set_moddir, "/", "60_master_lst_varimp_", names(set_lst)[cnt], ".rds"))
   return(i)
   })
 
@@ -356,7 +349,6 @@ resp_overview <- data.frame(resp = names(set_lst_val$allplts$resp))
 
 for (i in seq(set_lst_val)){# i <- 1
   set_moddir <- mod_dir_lst[grepl(paste0("_", names(set_lst_val)[cnt], "_"), mod_dir_lst)]
-  modDir <- paste0(inpath, set_dir, set_moddir, "/")
   nm_mean <- paste0("mean_", names(set_lst_val)[i])
   nm_mdn <- paste0("mdn_", names(set_lst_val)[i])
   nm_sd <- paste0("sd_", names(set_lst_val)[i])
@@ -370,4 +362,4 @@ for (i in seq(set_lst_val)){# i <- 1
   colnames(resp_overview)[colnames(resp_overview) == "sd"] <- nm_sd
 }
 
-saveRDS(resp_overview, file = paste0(modDir, "data/60_resp_overview_descriptive.rds"))
+saveRDS(resp_overview, file = paste0(outpath, set_dir, set_moddir, "/", "60_resp_overview_descriptive.rds"))

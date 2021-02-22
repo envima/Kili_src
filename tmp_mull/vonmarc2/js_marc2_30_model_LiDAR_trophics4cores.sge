@@ -7,7 +7,7 @@
 #$ -m eas                   # notify by mail on end, abort, suspend             
 #$ -l h_rt=864000             # maximum estimated runtime in seconds (h_rt=1:00:00 is also a correct format)
 #$ -l h_vmem=1.9G           # maximum requested memory per core
-#$ -pe orte_smp* 63          # parallel environment 'orte_smp', all processes on the same node with 8 cores
+#$ -pe orte_smp* 5         # parallel environment 'orte_smp', all processes on the same node with 8 cores
 #$ -t 1-3			# set task id arguments
  
 #load modules
@@ -20,4 +20,4 @@ echo "starting program"
  
 #run R example
 # R CMD BATCH --vanilla 31_marc2_test_multi_prll.R $SGE_TASK_ID
-Rscript --vanilla 31_model_LiDAR.R $SGE_TASK_ID
+Rscript --vanilla 30_model_LiDAR.R $SGE_TASK_ID

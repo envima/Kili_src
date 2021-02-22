@@ -15,14 +15,6 @@ library(caret)
 library(doParallel)
 library(foreach)
 library(parallel)
-#####
-###set paths
-#####
-# machine <- "local"
-# machine <- "server"
-machine <- "cluster"
-# core_num <- 63
-core_num <- 5
 
 
 if(machine == "local"){
@@ -35,7 +27,7 @@ if(machine == "local"){
 
 # sub <- "oct19/"
 # sub <- "apr19/"#paper
-sub <- "feb20/"
+sub <- "feb20_allresp/"
 inpath <- paste0("../data/", sub)
 inpath_general <- "../data/"
 outpath <- paste0("../data/", sub)

@@ -44,8 +44,6 @@ if (file.exists(figpath)==F){
 ###where are the models within the "sub"
 set_dir <- "2020-02-12frst_nofrst_allplts_noelev/"
 
-
-
 mod_dir_lst <- list.dirs(path = paste0(inpath, set_dir), recursive = F, full.names = F)
 set <- c("nofrst", "frst", "allplts")
 
@@ -59,6 +57,11 @@ set <- c("nofrst", "frst", "allplts")
 cv <- "cv_20"
 resp_set <- c("lidarSR", "lidarelevSR", "lidarRES") #m <- "lidarSR" #loop model for SR and resid
 
+##relevant for 30_model_LiDAR.R
+# machine <- "local"
+# machine <- "server"
+machine <- "cluster"
+core_num <- 63
 ########################################################################################
 ########################################################################################
 ########################################################################################

@@ -19,9 +19,18 @@ setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 
 sub <- "feb_21_adaption_outpath/"
 
+inpath_general <- "../data/"
 
 inpath <- paste0("../data/", sub)
-inpath_general <- "../data/"
+if (file.exists(inpath)==F){
+  dir.create(file.path(inpath), recursive = T)
+}
+
+LiDAR_path <- paste0(inpath, "LiDAR/")
+if (file.exists(LiDAR_path)==F){
+  dir.create(file.path(LiDAR_path))
+}
+
 outpath <- paste0("../out/", sub)
 if (file.exists(outpath)==F){
   dir.create(file.path(outpath), recursive = T)

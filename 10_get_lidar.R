@@ -8,8 +8,6 @@
 # Author: Alice Ziegler
 # Date: 2018-12-01 14:50:05
 # to do: 
-##check flm6 und fer2 for availability
-##wirklich nur 5 durchläufe trotz flm6? wird das bei fehlendem flm5 zufällig gelost?? =>mechanismus einbauen
 rm(list=ls())
 
 ########################################################################################
@@ -21,22 +19,12 @@ rm(list=ls())
 library(LiDARtools)
 library(plyr)
 library(stringr)
+source("000_setup.R")
+
 #####
 ###set paths
 #####
-setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-sub <- "apr19/"
-inpath <- paste0("../data/", sub)
-if (file.exists(inpath)==F){
-  dir.create(file.path(inpath))
-}
-inpath_general <- "../data/"
-LiDAR_path <- paste0(inpath, "LiDAR/")
-# LiDAR_path <- "C:/Users/Alice/Uni/Projekte/Kili/data/dez18/LiDAR/"
-if (file.exists(LiDAR_path)==F){
-  dir.create(file.path(LiDAR_path))
-}
-outpath <- paste0("../data/", sub)
+
 #####
 ###read files
 #####
@@ -97,4 +85,4 @@ ldr_lst <- lapply(ldr_nms, function(i){
 })
 ldr_mrg <- Reduce(function(x, y) merge(x, y, all=TRUE), ldr_lst)
 
-saveRDS(ldr_mrg, file = paste0(outpath, "10_ldr_mrg.rds"))
+saveRDS(ldr_mrg, file = paste0(inpath, "10_ldr_mrg.rds"))

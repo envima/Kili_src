@@ -1,4 +1,4 @@
-# Description:
+# Description: calculate residual model
 # Author: Alice Ziegler
 # Date: 2018-12-03 11:21:51
 # to do:
@@ -11,21 +11,13 @@ rm(list=ls())
 ###load packages
 #####
 library(caret)
-#####
-###set paths
-#####
-setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-# sub <- "apr19/" #paper
-sub <- "feb20_allresp/"
-inpath <- paste0("../data/", sub)
-inpath_general <- "../data/"
-outpath <- paste0("../data/", sub)
-set <- c("nofrst", "frst", "allplts")
+source("000_setup.R")
+
 #####
 ###read files
 #####
 set_lst <- lapply(set, function(o){
-  readRDS(file = paste0(outpath, "15_master_lst_", o, ".rds"))
+  readRDS(file = paste0(inpath, "15_master_lst_", o, ".rds"))
 })
 names(set_lst) <- set
 ########################################################################################
@@ -143,7 +135,7 @@ set_lst_res <- lapply(set_lst, function(i){# i <- set_lst[[2]]
     # i$resp[[k]]$resid <- i$resp[[k]]$SR - i$resp[[k]]$pred_elevSR
     
   }
-  saveRDS(i, file = paste0(outpath, "20_master_lst_resid_", names(set_lst)[cnt], ".rds"))
+  saveRDS(i, file = paste0(inpath, "20_master_lst_resid_", names(set_lst)[cnt], ".rds"))
   return(i)
 })
 names(set_lst_res) <- set

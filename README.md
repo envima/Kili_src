@@ -16,5 +16,5 @@ allplts = allplots: forest and noforest calculated in one model.
 * out
 ** includes all tables after running the models and data for analysing models
 
-*fig
+* fig
 ** include all figures and tables that are ment for publication

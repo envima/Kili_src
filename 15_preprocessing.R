@@ -8,8 +8,7 @@
 # Author: Alice Ziegler
 # Date: 2018-12-01 14:50:05
 # to do: 
-##check flm6 und fer2 for availability
-##wirklich nur 5 durchläufe trotz flm6? wird das bei fehlendem flm5 zufällig gelost?? =>mechanismus einbauen
+
 rm(list=ls())
 
 ########################################################################################
@@ -22,23 +21,11 @@ library(plyr)
 library(stringr)
 library(caret)
 library(gpm)
+source("000_setup.R")
+
 #####
 ###set paths
 #####
-setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
-# sub <- "apr19/" #paper
-sub <- "feb20_allresp/"
-inpath <- paste0("../data/", sub)
-if (file.exists(inpath)==F){
-  dir.create(file.path(inpath))
-}
-inpath_general <- "../data/"
-LiDAR_path <- paste0(inpath, "LiDAR/")
-# LiDAR_path <- "C:/Users/Alice/Uni/Projekte/Kili/data/dez18/LiDAR/"
-if (file.exists(LiDAR_path)==F){
-  dir.create(file.path(LiDAR_path))
-}
-outpath <- paste0("../data/", sub)
 #####
 ###read files
 #####
@@ -168,8 +155,8 @@ for (i in unique(troph_mrg$diet[!troph_mrg$diet %in% c("birds", "bats")])){
   print(i)
   match <- colnames(mrg_tbl)[c(which(colnames(mrg_tbl) %in% 
                                        as.character(troph_mrg$resp[which(troph_mrg$diet == i)])))]
-  # drop = F, muss sein, weil es sonst für level mit nur einer Spalte (bats/birds) 
-  # fehlermeldung gibt, so können sie trotzdemtrotzdem weiter in die nächste Tabelle 
+  # drop = F, muss sein, weil es sonst f?r level mit nur einer Spalte (bats/birds) 
+  # fehlermeldung gibt, so k?nnen sie trotzdemtrotzdem weiter in die n?chste Tabelle 
   # geschrieben werden
   summed <- rowSums(mrg_tbl[,match, drop = F], na.rm = T)
   troph_sum$summed <- summed
@@ -237,7 +224,7 @@ troph_mrg$fly[troph_mrg$Tax_label == "syrphid flies"] <- 1
 
 
 
-saveRDS(troph_mrg, file = paste0(outpath, "15_troph_mrg.rds"))
+saveRDS(troph_mrg, file = paste0(inpath, "15_troph_mrg.rds"))
 #####
 ###append nm_resp mit nm_resp_troph
 #####
@@ -311,6 +298,6 @@ for (o in set){ # o <- set[[1]]
                      }))
   names(master_lst$resp) <- c(nm_resp_SR, nm_resp_troph)
   
-  saveRDS(master_lst, file = paste0(outpath, "15_master_lst_", o, ".rds"))
-  # master_lst <- readRDS(file = paste0(outpath, "master_lst_", o, ".rds"))
+  saveRDS(master_lst, file = paste0(inpath, "15_master_lst_", o, ".rds"))
+  # master_lst <- readRDS(file = paste0(inpath, "master_lst_", o, ".rds"))
 }#for o in set

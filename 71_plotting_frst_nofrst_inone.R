@@ -169,7 +169,7 @@ n <- "RMSEsd_"
   if (file.exists(paste0(inpath, set_dir, "mix/data/"))==F){
     dir.create(file.path(paste0(inpath, set_dir, "mix/data/")), recursive = T)
   }
-  write.csv(table_sd, file = paste0(inpath, set_dir, "mix/data/validation_table_", comm, n, ".csv"))
+  write.csv(table_sd, file = paste0(outpath, set_dir, "mix/validation_table_", comm, n, ".csv"))
   
   
   p <-

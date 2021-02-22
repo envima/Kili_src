@@ -1,0 +1,10 @@
+description.abstract: "This folder contains the Kili_src repository with all the scripts
+  \n  necessary to reproduces the results for the Potential-of-LiDAR-for-the-prediction-of-animal-species-r\n
+  \ richness-at-Mount-Kilimanjaro-article. data, out and figures are directories that
+  are created \n  from the scripts and contain all the data"
+creator:
+- Alice Ziegler
+- Hanna Meyer
+- Kili Group
+- Thomas Nauss
+date: '2021-02-22'

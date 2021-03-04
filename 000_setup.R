@@ -17,7 +17,7 @@ rm(list=ls())
 #####
 setwd(dirname(rstudioapi::getSourceEditorContext()[[2]]))
 
-sub <- "feb_21_adaption_outpath/"
+sub <- "feb_21_article/"
 
 inpath_general <- "../data/"
 

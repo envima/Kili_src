@@ -89,9 +89,13 @@ relv_cols <- c("resp", "Tax_label",
 val_results <- val_overview[, colnames(val_overview) %in% relv_cols]
 val_results <- val_results[relv_cols]
 val_results <- data.frame(lapply(val_results, function(y) if(is.numeric(y)) signif(y, digits = 2) else y)) 
-row_ord <- c("ants", "bees", "birds", "bugs", "dung beetles", "grasshoppers", "insectivorous bats", "large mammals", 
+
+##bugfix (literally!) should be done in script 15
+val_results$Tax_label[val_results$Tax_label == "bugs"] <- "true bugs"
+
+row_ord <- c("ants", "bees", "birds", "dung beetles", "grasshoppers", "insectivorous bats", "large mammals", 
              "millipedes", "moths", "other aculeate wasps", "other beetles", "parasitoid wasps", "snails", "spiders", "springtails", 
-             "syrphid flies", "decomposer", "generalist", "herbivore", "predator")
+             "syrphid flies", "true bugs", "decomposer", "generalist", "herbivore", "predator")
 new_order <- sapply(row_ord, function(x,df){which(val_results$Tax_label == x)}, df=val_results)
 val_results <- val_results[new_order,]
 
@@ -285,6 +289,12 @@ n <- "RMSEsd_"
   #merge to big data_frame
   val_plt_flt <- merge(val_plt_flt, signif_df, by = "Tax_label")
   
+  
+  #bugfix (literally!) "bugs" to "True bugs"
+  val_plt_flt$Tax_label[val_plt_flt$Tax_label == "bugs"] <- "true bugs"
+  val_plt_flt$signif_Tax_label[val_plt_flt$signif_Tax_label == "bugs  "] <- "true bugs  "
+  ####!!!!
+  
   # specs
   specs_ord <- order_fun(dat = val_plt_flt[!val_plt_flt$Taxon %in% trophs,])
   dat_text_specs <- dat_text[dat_text$label %in% unique(specs_ord$best_mod),]
@@ -359,6 +369,9 @@ n <- "RMSEsd_"
     return(plt)
   }
  
+  ###bugfix (literally!) "bugs" changed to "true bugs" should be done in script 15
+  val_plt_res$Tax_label[val_plt_res$Tax_label == "bugs"] <- "true bugs"
+  
       # specs
       specs_ord_res <- order_fun_res(dat = val_plt_res[!val_plt_res$Taxon %in% trophs,])
       specs_plt_res <- plt_fun_res(dat = specs_ord_res)

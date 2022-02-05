@@ -10,11 +10,11 @@ Code for prediction of species richness, etc. at Mt.Kilimajaro with LiDAR Data
 
 # data structure
 * data 
-** all raw data and data tables that are needed before actual modelling
-** actual models lie within directory with date of model start and then separated by forst/no forest/all plots
+  * all raw data and data tables that are needed before actual modelling
+  * actual models lie within directory with date of model start and then separated by forst/no forest/all plots
 
 * out
-** includes all tables after running the models and data for analysing models
+  * includes all tables after running the models and data for analysing models
 
 * fig
-** include all figures and tables that are ment for publication
+  * include all figures and tables that are ment for publication
